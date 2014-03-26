@@ -103,18 +103,18 @@ board importFEN(char *fen)
 	for (n = 0; n <= strlen(b); n++ )
 	switch (b[n])
 	{
-		case 'p' : chessb.b.P |= m >> (n + s); break;
-		case 'r' : chessb.b.R |= m >> (n + s); break; 
-		case 'n' : chessb.b.N |= m >> (n + s); break; 
-		case 'b' : chessb.b.B |= m >> (n + s); break; 
-		case 'q' : chessb.b.Q |= m >> (n + s); break; 
-		case 'k' : chessb.b.K |= m >> (n + s); break; 
-		case 'P' : chessb.w.P |= m >> (n + s); break; 
-		case 'R' : chessb.w.R |= m >> (n + s); break; 
-		case 'N' : chessb.w.N |= m >> (n + s); break; 
-		case 'B' : chessb.w.B |= m >> (n + s); break; 
-		case 'Q' : chessb.w.Q |= m >> (n + s); break; 
-		case 'K' : chessb.w.K |= m >> (n + s); break; 
+		case 'p' : chessb.b.P |= (m >> n + s); break;
+		case 'r' : chessb.b.R |= (m >> n + s); break; 
+		case 'n' : chessb.b.N |= (m >> n + s); break; 
+		case 'b' : chessb.b.B |= (m >> n + s); break; 
+		case 'q' : chessb.b.Q |= (m >> n + s); break; 
+		case 'k' : chessb.b.K |= (m >> n + s); break; 
+		case 'P' : chessb.w.P |= (m >> n + s); break; 
+		case 'R' : chessb.w.R |= (m >> n + s); break; 
+		case 'N' : chessb.w.N |= (m >> n + s); break; 
+		case 'B' : chessb.w.B |= (m >> n + s); break; 
+		case 'Q' : chessb.w.Q |= (m >> n + s); break; 
+		case 'K' : chessb.w.K |= (m >> n + s); break; 
 		case '/' : s--; break; 
 		case '1' : break; 
 		case '2' : s++; break; 
@@ -260,6 +260,8 @@ void printboard(board arg)
 		//m >>=1;
 		if ((i+1)%8 == 0) printf("\n");
 	}
+	//printf("\n");
+	//printBits(8, &arg.info);
 	hm = arg.info >> 16;
 	fm = arg.info >> 32;
 	stm = (arg.info & 1LL) ? 119 : 98;
@@ -285,7 +287,6 @@ void printboard(board arg)
 
 	printf("stm: %c hm: %d	fm: %d\n", stm, hm, fm);
 	printf("cast_fl: %s enp_square: %s\n", castle, enp);
-	//printBits(8, &arg.info);
 	
 }
 
@@ -421,14 +422,14 @@ void generatemovesNight()
 		movesNight[b] = 0;
 		f = b%8;
 		r = b/8;
-		if (f<7 && r<6) movesNight[b] |= 1LL << (b+17); //NNW
-		if (f<6 && r<7) movesNight[b] |= 1LL << (b+10); //Ww.N
-		if (f<6 && r>0) movesNight[b] |= 1LL << (b-6); //WWS
-		if (f<7 && r>1) movesNight[b] |= 1LL << (b-15); //SSW
-		if (f>0 && r>1) movesNight[b] |= 1LL << (b-17); //SSE
-		if (f>1 && r>0) movesNight[b] |= 1LL << (b-10); //EES
-		if (f>1 && r<7) movesNight[b] |= 1LL << (b+6); //EEN
-		if (f>0 && r<6) movesNight[b] |= 1LL << (b+15); //NNE
+		if (f<7 && r<6) movesNight[b] |= 1LL << b+17; //NNW
+		if (f<6 && r<7) movesNight[b] |= 1LL << b+10; //Ww.N
+		if (f<6 && r>0) movesNight[b] |= 1LL << b-6; //WWS
+		if (f<7 && r>1) movesNight[b] |= 1LL << b-15; //SSW
+		if (f>0 && r>1) movesNight[b] |= 1LL << b-17; //SSE
+		if (f>1 && r>0) movesNight[b] |= 1LL << b-10; //EES
+		if (f>1 && r<7) movesNight[b] |= 1LL << b+6; //EEN
+		if (f>0 && r<6) movesNight[b] |= 1LL << b+15; //NNE
 	}
 }
 
@@ -440,14 +441,14 @@ void generatemovesKing()
 		movesKing[b] = 0;
 		f = b%8;
 		r = b/8;
-		if (r<7) 	movesKing[b] |= 1LL << (b+8); //N
-		if (f<7 && r<7) movesKing[b] |= 1LL << (b+9); //w.N
-		if (f<7) 	movesKing[b] |= 1LL << (b+1); //W
-		if (f<7 && r>0) movesKing[b] |= 1LL << (b-7); //WS
-		if (r>0) 	movesKing[b] |= 1LL << (b-8); //S
-		if (f>0 && r>0) movesKing[b] |= 1LL << (b-9); //ES
-		if (f>0) 	movesKing[b] |= 1LL << (b-1); //E
-		if (f>0 && r<7) movesKing[b] |= 1LL << (b+7); //EN
+		if (r<7) 	movesKing[b] |= 1LL << b+8; //N
+		if (f<7 && r<7) movesKing[b] |= 1LL << b+9; //w.N
+		if (f<7) 	movesKing[b] |= 1LL << b+1; //W
+		if (f<7 && r>0) movesKing[b] |= 1LL << b-7; //WS
+		if (r>0) 	movesKing[b] |= 1LL << b-8; //S
+		if (f>0 && r>0) movesKing[b] |= 1LL << b-9; //ES
+		if (f>0) 	movesKing[b] |= 1LL << b-1; //E
+		if (f>0 && r<7) movesKing[b] |= 1LL << b+7; //EN
 	}
 }
 
@@ -685,7 +686,7 @@ move *generate_moves(board arg)
 			bb = arg.all_p & ~ (1LL << pp);
 			in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 			in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); & check_grid;
 			mpb &= check_grid;
 
 			if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) // vjerovatno ne treba popcount
@@ -962,13 +963,9 @@ move *generate_moves(board arg)
 					m_list->next = m;
 					m_list->from = ppr;
 					m_list->dest = (1LL << (mpp-1));
-					m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + (mpp-1)%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
-					//printf("m-info 16 mpp %d mpp%8 %d\n", mpp, (16 + mpp%8));
-					//printBits(8, &m_list->info);
-
+					m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + mpp%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					
 					mpb &= ~m_list->dest; 
 				}
 				//else 
@@ -1549,7 +1546,7 @@ move *generate_moves(board arg)
 
 void do_move(board *b, move *m)
 {
-	U64 *p, *capt_p, *prom_p, stm, castle, hm, fm, m_cas, f_cas, empty = 0ULL, CK, CQ, KS, KR, QR, hKR, hQR, t;
+	U64 *p, *capt_p, stm, castle, hm, fm, m_cas, f_cas, empty = 0LL, CK, CQ, KS, KR, QR, hKR, hQR, t;
 	piece_set *fr, *ho; 
 	
 	stm = b->info & 0x0000000000000001;
@@ -1557,8 +1554,8 @@ void do_move(board *b, move *m)
 	ho = stm ? &b->b : &b->w;
 	KR = 0x0100000000000000 >> (stm*56);
 	QR = 0x8000000000000000 >> (stm*56);
-	hKR = 0x0000000000000001ULL << (stm*56);//stavi ULL da izbjegnes left shift warning
-	hQR = 0x0000000000000080ULL << (stm*56);
+	hKR = 0x0000000000000001 << (stm*56);
+	hQR = 0x0000000000000080 << (stm*56);
 	//castle = 0x000000000000001E;
 	castle = 0LL;
 	
@@ -1574,12 +1571,12 @@ void do_move(board *b, move *m)
 	p = m->info & 1LL << 5 ? &fr->P : p;
 
 	//castle
-	/*t = (m->dest & hQR);
-	printf("hqr-dest\n");
-	printBits(8, &hQR);
-	 0;t = ( m->info & 1LL << 26 );
-	printf("hkr\n");
-	printBits(8, &hKR);*/
+	/*t = (m->dest & KR);
+	printf("KR-dest\n");
+	printBits(8, &t);
+	t = ( m->info & 1LL << 26 );
+	printf("igra top\n");
+	printBits(8, &t);*/
 	//provjera da li igra kralj ili je rokada fr gubi oba castla
 	m_cas = 0x000000000000018 >> (stm<<1);
 	f_cas = (m->info & 1LL) | (m->info & 0x000000000006000) >> 13;
@@ -1593,17 +1590,12 @@ void do_move(board *b, move *m)
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 	//provjera da li je top pojeden ho gubi castle 
 //nije provjereno jel je mask na vecoj mjeri od uvjeta
-	m_cas = 0x000000000000002 << (stm<<1);
-	f_cas = (m->dest & hKR) && ( m->info & 1LL << 26 );
+	m_cas = 0x000000000000001 << (stm<<1);
+	f_cas = (m->dest & hKR) && ( m->info & 1LL << 26 ); 
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//printf("fcasK\n");
-	//printBits(8, &f_cas);
-	 
-	m_cas = 0x000000000000004 << (stm<<1);
+	m_cas = 0x000000000000002 << (stm<<1);
 	f_cas = (m->dest & hQR) && ( m->info & 1LL << 26 );
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//printf("fcasQ\n");
-	//printBits(8, &f_cas);
 
 
 
@@ -1625,15 +1617,6 @@ void do_move(board *b, move *m)
 	capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 	capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
 	*capt_p &= ~m->dest;	
-
-	//promotion
-	prom_p = &empty;
-	prom_p = m->info & 1LL << 8 ? &fr->Q : prom_p;
-	prom_p = m->info & 1LL << 9 ? &fr->R : prom_p;
-	prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
-	prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
-	*prom_p ^= m->dest;
-	fr->P ^= m->info & 0x0000000000000F00 ? m->dest : 0ULL; 
 	
 	//update all_p
 	b->all_p &= ~m->from;
@@ -1705,13 +1688,7 @@ void do_move(board *b, move *m)
 	hm = m->info & 0x000000003E008000 ? -(b->info & 0x0000000000FF0000) : (1LL << 16);
 
 	// b_info = stm ^ castle ^ doublepawnpush ^ halfmove ^ fullmove
-	
-	/*printf("b-dpp\n");
-	t = b->info & 0x000000000000FF00;
-	printBits(8, &t);
-	printf("m-dpp\n");
-	t = m->info & 0x0000000000FF0000;
-	printBits(8, &t);*/
+
 	b->info &= ~castle; 
 	b->info ^= 0x0000000000000001;
 	b->info ^= (b->info & 0x000000000000FF00) ^ ( m->info & 0x0000000000FF0000) >> 8;
@@ -1721,7 +1698,7 @@ void do_move(board *b, move *m)
 
 void undo_move(board *b, move *m)
 {
-	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR;
+	U64 *p, *capt_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR;
 	piece_set *fr, *ho; 
 	
 	stm = m->info >> 24 & 0x0000000000000001 ;
@@ -1751,15 +1728,6 @@ void undo_move(board *b, move *m)
 	capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 	capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
 	*capt_p |= m->dest;	
-
-	//promotion
-	prom_p = &empty;
-	prom_p = m->info & 1LL << 8 ? &fr->Q : prom_p;
-	prom_p = m->info & 1LL << 9 ? &fr->R : prom_p;
-	prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
-	prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
-	*prom_p ^= m->dest;
-	fr->P |= m->info & 0x0000000000000F00 ? m->from : 0ULL; 
 
 	//update all_p
 	b->all_p &= m->info & 0x000000003E000000 ? ~0LL : ~m->dest;
@@ -1858,24 +1826,6 @@ void square(int index, char *sq)
 	
 }
 
-int eval( board *b)
-{	
-	int w_score = 0, b_score = 0;
-	
-	w_score += __builtin_popcountll( b->w.Q );
-	w_score += __builtin_popcountll( b->w.R );
-	w_score += __builtin_popcountll( b->w.B );
-	w_score += __builtin_popcountll( b->w.N );
-	w_score += __builtin_popcountll( b->w.P );
-
-	b_score += __builtin_popcountll( b->b.Q );
-	b_score += __builtin_popcountll( b->b.R );
-	b_score += __builtin_popcountll( b->b.B );
-	b_score += __builtin_popcountll( b->b.N );
-	b_score += __builtin_popcountll( b->b.P );
-
-}
-
 void print_state(board arg)
 {
 	printBits(8, &arg.w.K);
@@ -1899,13 +1849,12 @@ void print_state(board arg)
 
 void printmove(move *m_l)
 {
-	//int stm, capture, check, enp, castle, pawn_adv, dest, from, ;
-	int piece_type, count = 0;
+	int stm, piece_type, capture, check, enp, castle, pawn_adv, dest, from, count = 0;
 	short d_pa;
 	char promotion, fr[3], dst[3];
 
 		piece_type = __builtin_ffsll(m_l->info)-1;
-		/*capture = m_l->info >> 6 & 1LL;
+		capture = m_l->info >> 6 & 1LL;
 		check = m_l->info >> 7 & 1LL;
 		promotion = (m_l->info & 0x0000000000000F00) >> 8;
 		enp = m_l->info >> 12 & 1LL;
@@ -1913,7 +1862,7 @@ void printmove(move *m_l)
 		castle += m_l->info >> 14 & 1LL ? 2 : 0;
 		pawn_adv = m_l->info >> 15 & 1LL;
 		d_pa = (m_l->info & 0x0000000000FF0000) >> 16;
-		stm = (m_l->info & 0x0000000001000000) >> 24;;*/
+		stm = (m_l->info & 0x0000000001000000) >> 24;;
 		//dest = __builtin_ffsll(m_l->dest)-1;
 		//from = __builtin_ffsll(m_l->from)-1;
 		square( __builtin_ffsll(m_l->dest)-1, dst);
@@ -1930,7 +1879,9 @@ void printmove(move *m_l)
 
 void printmoves(move *m_l)
 {
-	int count = 0;
+	int stm, piece_type, capture, check, enp, castle, pawn_adv, dest, from, count = 0;
+	short d_pa;
+	char promotion;
 	while ( m_l)
 	{
 		printf("%d  ", count);
@@ -1982,7 +1933,8 @@ int delete_movelist(move *arg)
 
 U64 Perft(int depth, board *arg)
 {
-    move *move_list, *it;
+    move *move_list, *it, *fr;
+    int n_moves, i;
     U64 nodes = 0;
  
     if (depth == 1) return delete_movelist( generate_moves( *arg));
@@ -2003,7 +1955,8 @@ U64 Perft(int depth, board *arg)
 
 U64 divide_perft(int depth, board *arg)
 {
-    move *move_list, *it;
+    move *move_list, *it, *fr;
+    int n_moves, i;
     U64 childs, nodes = 0;
     
     mfree = 0;
@@ -2097,15 +2050,22 @@ int main ( int argc, char *argv[])
 //char starting_position[100] = "8/2p5/3p4/1P5r/KR3p1k/8/4P1P1/8 b - - 0 1";
 //char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/6P1/4P3/8 b - - 0 1";
 
-char starting_position[100] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";//pos 1 ply 8 84,998,978,956
-//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2 ply 5 193.690.690
-//char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";// pos 3 ply 7 178.633.661
-//pos 4 ply 6 706.045.033
-//char starting_position[100] = "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6";//pos 5 ply 3 53.392, 4 OK u usporedbi sa roce 
+char starting_position[100] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";// pos 1 ply 6 3.195.901.860
+//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2 ply 3 97.862
+//char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";// pos 3 ply 6 11.030.083
+//pos 4 ply 2 264	
+//char starting_position[100] = "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6";//pos 5 ply 2 1.352
 //pos 6 ply 6 6,923,051,137
 
 
+U64 blockers;
+U64 friendly = 0x6a96810026;
+U64 allpieces = 0x71290a7e92810026;
+U64 blank = 0LL;
+U64 _friendly;
+U64 movesR, movesB, movesQ, movesN, movesK;
 int n = 0;
+U64 index;
 board cb;
 move *list, *domove = NULL, *temp;
 char FEN[100];
@@ -2208,11 +2168,6 @@ while (1)
 		cb.info ^= 1LL;
 		printboard(cb);		
 	}
-	else if ( strstr(w,"new") != NULL )
-	{
-		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");		
-	}
-	
 	else if ( strstr(w,"fen") != NULL )
 	{
 		printf("%s\n", exportFEN(cb));

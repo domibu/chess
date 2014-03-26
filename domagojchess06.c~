@@ -1861,18 +1861,8 @@ void square(int index, char *sq)
 int eval( board *b)
 {	
 	int w_score = 0, b_score = 0;
-	
-	w_score += __builtin_popcountll( b->w.Q );
-	w_score += __builtin_popcountll( b->w.R );
-	w_score += __builtin_popcountll( b->w.B );
-	w_score += __builtin_popcountll( b->w.N );
-	w_score += __builtin_popcountll( b->w.P );
-
-	b_score += __builtin_popcountll( b->b.Q );
-	b_score += __builtin_popcountll( b->b.R );
-	b_score += __builtin_popcountll( b->b.B );
-	b_score += __builtin_popcountll( b->b.N );
-	b_score += __builtin_popcountll( b->b.P );
+		
+	__builtin_popcountll(b->)
 
 }
 

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define WIN 32000
+
 typedef unsigned long long U64;
 
 typedef struct piece_set {
@@ -21,6 +23,11 @@ typedef struct move {
 	U64 info, from, dest;
 	struct move *next;
 } move;
+
+typedef struct line {
+  int cmove;
+  move argmove[20]; // 20 je moveMAX
+} line;
 
 U64 magicNumberRook[64] = {
         0xa180022080400230L, 0x40100040022000L, 0x80088020001002L, 0x80080280841000L, 0x4200042010460008L, 0x4800a0003040080L, 0x400110082041008L, 0x8000a041000880L, 0x10138001a080c010L, 0x804008200480L, 0x10011012000c0L, 0x22004128102200L, 0x200081201200cL, 0x202a001048460004L, 0x81000100420004L, 0x4000800380004500L, 0x208002904001L, 0x90004040026008L, 0x208808010002001L, 0x2002020020704940L, 0x8048010008110005L, 0x6820808004002200L, 0xa80040008023011L, 0xb1460000811044L, 0x4204400080008ea0L, 0xb002400180200184L, 0x2020200080100380L, 0x10080080100080L, 0x2204080080800400L, 0xa40080360080L, 0x2040604002810b1L, 0x8c218600004104L, 0x8180004000402000L, 0x488c402000401001L, 0x4018a00080801004L, 0x1230002105001008L, 0x8904800800800400L, 0x42000c42003810L, 0x8408110400b012L, 0x18086182000401L, 0x2240088020c28000L, 0x1001201040c004L, 0xa02008010420020L, 0x10003009010060L, 0x4008008008014L, 0x80020004008080L, 0x282020001008080L, 0x50000181204a0004L, 0x102042111804200L, 0x40002010004001c0L, 0x19220045508200L, 0x20030010060a900L, 0x8018028040080L, 0x88240002008080L, 0x10301802830400L, 0x332a4081140200L, 0x8080010a601241L, 0x1008010400021L, 0x4082001007241L, 0x211009001200509L, 0x8015001002441801L, 0x801000804000603L, 0xc0900220024a401L, 0x1000200608243L
@@ -71,7 +78,10 @@ void resetboard(board *arg);
 char *exportFEN(board arg);
 move *generate_moves(board arg);
 
-int mmall = 0, mfree = 0;
+int mmall = 0, mfree = 0, count = 0;
+double razmisljao, potroseno_vrijeme;
+struct timeval start, end;
+move  pick[20];
 
 
 void resetboard(board *arg)
@@ -1858,44 +1868,6 @@ void square(int index, char *sq)
 	
 }
 
-int eval( board *b)
-{	
-	int w_score = 0, b_score = 0;
-	
-	w_score += __builtin_popcountll( b->w.Q );
-	w_score += __builtin_popcountll( b->w.R );
-	w_score += __builtin_popcountll( b->w.B );
-	w_score += __builtin_popcountll( b->w.N );
-	w_score += __builtin_popcountll( b->w.P );
-
-	b_score += __builtin_popcountll( b->b.Q );
-	b_score += __builtin_popcountll( b->b.R );
-	b_score += __builtin_popcountll( b->b.B );
-	b_score += __builtin_popcountll( b->b.N );
-	b_score += __builtin_popcountll( b->b.P );
-
-}
-
-void print_state(board arg)
-{
-	printBits(8, &arg.w.K);
-	printBits(8, &arg.w.Q);
-	printBits(8, &arg.w.R);
-	printBits(8, &arg.w.B);
-	printBits(8, &arg.w.N);
-	printBits(8, &arg.w.P);
-	printBits(8, &arg.b.K);
-	printBits(8, &arg.b.Q);
-	printBits(8, &arg.b.R);
-	printBits(8, &arg.b.B);
-	printBits(8, &arg.b.N);
-	printBits(8, &arg.b.P);
-	printBits(8, &arg.all_p);
-	printBits(8, &arg.w.atack);
-	printBits(8, &arg.b.atack);
-	printBits(8, &arg.w.pieces);
-	printBits(8, &arg.b.pieces);
-}
 
 void printmove(move *m_l)
 {
@@ -1942,6 +1914,176 @@ void printmoves(move *m_l)
 	}
 	printf("moves count: %d	\n", count);
 }
+
+void printmoves_c( int depth)
+{
+	int count = 0;
+	int it;
+	  int piece_type;
+	  char promotion, fr[3], dst[3];
+	for ( it = depth; it; it--)
+	{
+		printf("#%d ", it);
+		piece_type = __builtin_ffsll( pick[ it].info)-1;
+		square( __builtin_ffsll( pick[ it].dest)-1, dst);
+		square( __builtin_ffsll( pick[ it].from)-1, fr);
+		if (piece_type == 13 || piece_type == 14) 	printf("%s ", piece(piece_type));
+		else	printf("%s%s%s ", piece(piece_type), fr, dst);
+		count ++;
+	}
+	printf("\nmoves count: %d	\n", count);
+}
+
+int eval( board *b)
+{	
+	int w_score = 0, b_score = 0;
+
+	w_score += 9 * __builtin_popcountll( b->w.Q );
+	w_score += 5 * __builtin_popcountll( b->w.R );
+	w_score += 3 * __builtin_popcountll( b->w.B );
+	w_score += 3 * __builtin_popcountll( b->w.N );
+	w_score +=     __builtin_popcountll( b->w.P );
+
+	b_score -= 9 * __builtin_popcountll( b->b.Q );
+	b_score -= 5 * __builtin_popcountll( b->b.R );
+	b_score -= 3 * __builtin_popcountll( b->b.B );
+	b_score -= 3 * __builtin_popcountll( b->b.N );
+	b_score -=     __builtin_popcountll( b->b.P );
+
+	count++;
+	return w_score + b_score;
+}
+//node **arg, int dubina, int alfa, int beta, atom *igracset, atom *protivnikset, pozicija **pz, int player, int *izbor
+int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+{
+	int best, val;
+	move *list, *it;
+	line nline;
+	
+	if ( !depth ) 
+  	{
+    		pline->cmove = 0;
+	  return color * eval( pos);
+  	}
+  	
+	best = -WIN;
+	list = generate_moves( *pos);
+	
+	for (it = list; it; it = it->next )
+    	{
+
+        	do_move(pos, it);
+	        val = -negamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+        	undo_move(pos, it);
+        	
+        	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
+		best = best ^ (( best ^ val ) & -( best < val ));
+		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
+		/*if (alpha >= beta)
+			break;*/
+			
+		if ( val >= beta)
+		{
+    			delete_movelist( list);
+			return val; //fail-soft*/
+		}
+			
+		if ( val > best)
+		{
+			best = val;
+			if ( val > alpha )
+			{
+				alpha = val;
+        			 pline->argmove[0] = *it;
+       				  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
+       				  pline->cmove = nline.cmove +1;
+
+				/*pick[ depth ] = *it;
+				printf(" %d ", depth);
+				printmove( &pick[depth] );*/
+	 		}
+		}
+		
+	}
+	delete_movelist( list);
+	return best;
+}
+
+int rootnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+{
+	int best, val;
+	move *list, *it;
+	line nline;
+	
+	if ( !depth ) return 0;
+
+	best = -WIN;
+	list = generate_moves( *pos);
+	
+	for (it = list; it; it = it->next )
+    	{
+
+        	do_move(pos, it);
+	        val = -negamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+        	undo_move(pos, it);
+        	
+        	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
+		best = best ^ (( best ^ val ) & -( best < val ));
+		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
+		/*if (alpha >= beta)
+			break;*/
+			
+		if ( val >= beta)
+		{
+    			delete_movelist( list);
+			return val; //fail-soft
+		}
+			
+		if ( val > best)
+		{
+			best = val;
+			if ( val > alpha )
+			{
+				/*pick[ depth ] = *it;
+				*fstpick = *it;
+//				pick[ depth ] = *it;
+				printf( "*\n");
+				printmove( fstpick);
+				printf( "***best %d\n", best);*/
+				alpha = val;
+         			pline->argmove[0] = *it;
+         			memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
+         			pline->cmove = nline.cmove +1;
+			}
+		}
+		
+	}
+	delete_movelist( list);
+	//printmoves_c( depth);
+	return best;
+}
+
+void print_state(board arg)
+{
+	printBits(8, &arg.w.K);
+	printBits(8, &arg.w.Q);
+	printBits(8, &arg.w.R);
+	printBits(8, &arg.w.B);
+	printBits(8, &arg.w.N);
+	printBits(8, &arg.w.P);
+	printBits(8, &arg.b.K);
+	printBits(8, &arg.b.Q);
+	printBits(8, &arg.b.R);
+	printBits(8, &arg.b.B);
+	printBits(8, &arg.b.N);
+	printBits(8, &arg.b.P);
+	printBits(8, &arg.all_p);
+	printBits(8, &arg.w.atack);
+	printBits(8, &arg.b.atack);
+	printBits(8, &arg.w.pieces);
+	printBits(8, &arg.b.pieces);
+}
+
 
 move *find_move_by_index( move *l, int in)
 {
@@ -2065,6 +2207,18 @@ move *izbaci_move( move **pocetak)
 	*pocetak = (*pocetak)->next;
 }
 
+void printline( line pline)
+{
+    int it;
+    for (it = 0; pline.cmove > it; it++)
+    {
+      printf(" #%d ", it);
+      printmove( &pline.argmove[it]);
+    }
+    printf("\n");
+}
+
+line pline;
 
 
 int main ( int argc, char *argv[])
@@ -2098,16 +2252,17 @@ int main ( int argc, char *argv[])
 //char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/6P1/4P3/8 b - - 0 1";
 
 char starting_position[100] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";//pos 1 ply 8 84,998,978,956
-//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2 ply 5 193.690.690
+//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2 ply 6 8031647685
 //char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";// pos 3 ply 7 178.633.661
 //pos 4 ply 6 706.045.033
 //char starting_position[100] = "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6";//pos 5 ply 3 53.392, 4 OK u usporedbi sa roce 
 //pos 6 ply 6 6,923,051,137
 
 
-int n = 0;
+int n = 0, score, color;
 board cb;
-move *list, *domove = NULL, *temp;
+move *fst_pick, *list, *domove = NULL, *temp;
+
 char FEN[100];
 
 	generateOccupancyVariations(1);
@@ -2159,10 +2314,32 @@ while (1)
 	
 	scanf("%s",w);
 
+	if (strstr(w,"search") != NULL) 
+	{	
+		scanf("%d", &n);
+		printboard(cb);		
+		color = -1 + ((cb.info & 1ULL) << 1 );
+		//printBits( 8, &cb.info);
+		count = 0;
+
+		gettimeofday(&start, NULL);	
+		score = rootnegamax( &cb, &pline, -WIN, +WIN, color, n);
+		gettimeofday(&end, NULL);	
+		
+		printline( pline);
+		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+ 		fprintf(stderr, "==%d  time=%.2f v=%.2f c=%d\n", score, razmisljao, count/razmisljao,  count); 
+
+		//printf("score: %d d%d c%d moves%d", score, n, color, count);
+		//printmove( fst_pick);
+	}
+	else
 	if (strstr(w,"divide") != NULL) 
 	{	
 		scanf("%d", &n);
+		gettimeofday(&start, NULL);	
 		divide_perft(n, &cb);
+		gettimeofday(&end, NULL);	
 	}
 	else
 	if ( strcmp(w,"legal") == 0 )	

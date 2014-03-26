@@ -71,8 +71,6 @@ void resetboard(board *arg);
 char *exportFEN(board arg);
 move *generate_moves(board arg);
 
-int mmall = 0, mfree = 0;
-
 
 void resetboard(board *arg)
 {
@@ -103,18 +101,18 @@ board importFEN(char *fen)
 	for (n = 0; n <= strlen(b); n++ )
 	switch (b[n])
 	{
-		case 'p' : chessb.b.P |= m >> (n + s); break;
-		case 'r' : chessb.b.R |= m >> (n + s); break; 
-		case 'n' : chessb.b.N |= m >> (n + s); break; 
-		case 'b' : chessb.b.B |= m >> (n + s); break; 
-		case 'q' : chessb.b.Q |= m >> (n + s); break; 
-		case 'k' : chessb.b.K |= m >> (n + s); break; 
-		case 'P' : chessb.w.P |= m >> (n + s); break; 
-		case 'R' : chessb.w.R |= m >> (n + s); break; 
-		case 'N' : chessb.w.N |= m >> (n + s); break; 
-		case 'B' : chessb.w.B |= m >> (n + s); break; 
-		case 'Q' : chessb.w.Q |= m >> (n + s); break; 
-		case 'K' : chessb.w.K |= m >> (n + s); break; 
+		case 'p' : chessb.b.P |= (m >> n + s); break;
+		case 'r' : chessb.b.R |= (m >> n + s); break; 
+		case 'n' : chessb.b.N |= (m >> n + s); break; 
+		case 'b' : chessb.b.B |= (m >> n + s); break; 
+		case 'q' : chessb.b.Q |= (m >> n + s); break; 
+		case 'k' : chessb.b.K |= (m >> n + s); break; 
+		case 'P' : chessb.w.P |= (m >> n + s); break; 
+		case 'R' : chessb.w.R |= (m >> n + s); break; 
+		case 'N' : chessb.w.N |= (m >> n + s); break; 
+		case 'B' : chessb.w.B |= (m >> n + s); break; 
+		case 'Q' : chessb.w.Q |= (m >> n + s); break; 
+		case 'K' : chessb.w.K |= (m >> n + s); break; 
 		case '/' : s--; break; 
 		case '1' : break; 
 		case '2' : s++; break; 
@@ -199,9 +197,6 @@ char *exportFEN(board arg)
 		 	strcat(f, "/");
 		}
 	}
-	sprintf(e_, "%d", e);
-	if (e)	strcat(f, e_);
-	
 	strcat(f, 1LL & arg.info ? " w " : " b ");
 	strcat(f, 1LL << 1 & arg.info ? "K" : "");
 	strcat(f, 1LL << 2 & arg.info ? "Q" : "");
@@ -237,7 +232,7 @@ void printboard(board arg)
 {
 	unsigned i, fm;
 	unsigned short hm;
-	char stm, castle[4] = "", enp[2] = "";
+	char stm;
 	U64 m = 0x8000000000000000;
 //	U64 m = 0x0000000000000001;
 
@@ -256,36 +251,15 @@ void printboard(board arg)
 		else if (arg.b.Q & (m >> i)) printf( "q"); 
 		else if (arg.b.K & (m >> i)) printf( "k"); 
 		else if (~arg.all_p & (m >> i)) printf( "¤");
-		printf(" ");
 		//m >>=1;
 		if ((i+1)%8 == 0) printf("\n");
 	}
+	//printf("\n");
+	//printBits(8, &arg.info);
 	hm = arg.info >> 16;
 	fm = arg.info >> 32;
 	stm = (arg.info & 1LL) ? 119 : 98;
-
-	strcat(castle, 1LL << 1 & arg.info ? "K" : "");
-	strcat(castle, 1LL << 2 & arg.info ? "Q" : "");
-	strcat(castle, 1LL << 3 & arg.info ? "k" : "");
-	strcat(castle, 1LL << 4 & arg.info ? "q" : "");
-	if (!(0xFFLL << 8 & arg.info))    strcat(enp, " - ");
-	else 
-	{
-		if (arg.info & (1LL << 8) ) strcat(enp, "h"); 
-		else if (arg.info & (1LL << 9) ) strcat(enp, "g"); 
-		else if (arg.info & (1LL << 10) ) strcat(enp, "f"); 
-		else if (arg.info & (1LL << 11) ) strcat(enp, "e"); 
-		else if (arg.info & (1LL << 12) ) strcat(enp, "d"); 
-		else if (arg.info & (1LL << 13) ) strcat(enp, "c"); 
-		else if (arg.info & (1LL << 14) ) strcat(enp, "b"); 
-		else if (arg.info & (1LL << 15) ) strcat(enp, "a"); 
-		strcat(enp, 1LL & arg.info ? "6" : "3");
-	}
-
-
 	printf("stm: %c hm: %d	fm: %d\n", stm, hm, fm);
-	printf("cast_fl: %s enp_square: %s\n", castle, enp);
-	//printBits(8, &arg.info);
 	
 }
 
@@ -421,14 +395,14 @@ void generatemovesNight()
 		movesNight[b] = 0;
 		f = b%8;
 		r = b/8;
-		if (f<7 && r<6) movesNight[b] |= 1LL << (b+17); //NNW
-		if (f<6 && r<7) movesNight[b] |= 1LL << (b+10); //Ww.N
-		if (f<6 && r>0) movesNight[b] |= 1LL << (b-6); //WWS
-		if (f<7 && r>1) movesNight[b] |= 1LL << (b-15); //SSW
-		if (f>0 && r>1) movesNight[b] |= 1LL << (b-17); //SSE
-		if (f>1 && r>0) movesNight[b] |= 1LL << (b-10); //EES
-		if (f>1 && r<7) movesNight[b] |= 1LL << (b+6); //EEN
-		if (f>0 && r<6) movesNight[b] |= 1LL << (b+15); //NNE
+		if (f<7 && r<6) movesNight[b] |= 1LL << b+17; //NNW
+		if (f<6 && r<7) movesNight[b] |= 1LL << b+10; //Ww.N
+		if (f<6 && r>0) movesNight[b] |= 1LL << b-6; //WWS
+		if (f<7 && r>1) movesNight[b] |= 1LL << b-15; //SSW
+		if (f>0 && r>1) movesNight[b] |= 1LL << b-17; //SSE
+		if (f>1 && r>0) movesNight[b] |= 1LL << b-10; //EES
+		if (f>1 && r<7) movesNight[b] |= 1LL << b+6; //EEN
+		if (f>0 && r<6) movesNight[b] |= 1LL << b+15; //NNE
 	}
 }
 
@@ -440,14 +414,14 @@ void generatemovesKing()
 		movesKing[b] = 0;
 		f = b%8;
 		r = b/8;
-		if (r<7) 	movesKing[b] |= 1LL << (b+8); //N
-		if (f<7 && r<7) movesKing[b] |= 1LL << (b+9); //w.N
-		if (f<7) 	movesKing[b] |= 1LL << (b+1); //W
-		if (f<7 && r>0) movesKing[b] |= 1LL << (b-7); //WS
-		if (r>0) 	movesKing[b] |= 1LL << (b-8); //S
-		if (f>0 && r>0) movesKing[b] |= 1LL << (b-9); //ES
-		if (f>0) 	movesKing[b] |= 1LL << (b-1); //E
-		if (f>0 && r<7) movesKing[b] |= 1LL << (b+7); //EN
+		if (r<7) 	movesKing[b] |= 1LL << b+8; //N
+		if (f<7 && r<7) movesKing[b] |= 1LL << b+9; //w.N
+		if (f<7) 	movesKing[b] |= 1LL << b+1; //W
+		if (f<7 && r>0) movesKing[b] |= 1LL << b-7; //WS
+		if (r>0) 	movesKing[b] |= 1LL << b-8; //S
+		if (f>0 && r>0) movesKing[b] |= 1LL << b-9; //ES
+		if (f>0) 	movesKing[b] |= 1LL << b-1; //E
+		if (f>0 && r<7) movesKing[b] |= 1LL << b+7; //EN
 	}
 }
 
@@ -474,8 +448,6 @@ U64 gen_ho_atack(board arg)
 	at |= (ho->P & 0x7F7F7F7F7F7F7F7F) << 9;
 //		printf("black move\n");
 	}
-	//gledati napadnuta polja bez kralja zbog šahova
-	arg.all_p ^= fr->K;  
 	//NIGHT
 	while (__builtin_popcountll(ho->N))
 	{
@@ -526,7 +498,7 @@ move *generate_moves(board arg)
 	U64 in_N, in_B, in_R, in_Q, in_K, in;
 	U64 mN_q, mN_c, mB_q, mB_c, mR_q, mR_c, mQ_q, mQ_c, mK_q, mK_c;
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
-	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
+	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion;
 	U64 f, mask;
 	piece_set *fr, *ho; 
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
@@ -549,8 +521,6 @@ move *generate_moves(board arg)
 		PE = 7;
 		PW = 9;
 		enp = (arg.info & 0x000000000000FF00) << 32;
-		enp_P = enp >> 8;
-		ENProw = 0x000000FF00000000;
 	}
 	else
 	{
@@ -568,8 +538,6 @@ move *generate_moves(board arg)
 		PE = -9;
 		PW = -7;
 		enp = (arg.info & 0x000000000000FF00) << 8;
-		enp_P = enp << 8;
-		ENProw = 0x00000000FF000000;
 	}
 
 	king = __builtin_ffsll(fr->K)-1;
@@ -577,7 +545,6 @@ move *generate_moves(board arg)
 	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
 	fr->pieces = fr->P ^ fr->N ^ fr->R ^ fr->B ^ fr->K ^ fr->Q;
 	ho->pieces = ho->P ^ ho->N ^ ho->R ^ ho->B ^ ho->K ^ ho->Q;
-	arg.all_p = fr->pieces ^ ho->pieces;
 	ho->atack = gen_ho_atack(arg);
 	
 	// provjeri jel šah
@@ -685,9 +652,8 @@ move *generate_moves(board arg)
 			bb = arg.all_p & ~ (1LL << pp);
 			in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 			in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
-			mpb &= check_grid;
-
+			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] & ~ ppb ^ (1LL << at) & check_grid;
+			
 			if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) // vjerovatno ne treba popcount
 			{
 				//printf("mpb\n");
@@ -791,7 +757,7 @@ move *generate_moves(board arg)
 							m_list->next = m;
 							m_list->from = ppb;
 							m_list->dest = (1LL << (mpp-1));
-							m_list->info = (1LL << 5) ^ (1LL << 6) ^ (1LL << 15) ^ it_prom ^ stm;
+							m_list->info ^= (1LL << 5) ^ (1LL << 6) ^ (1LL << 15) ^ it_prom ^ stm;
 		//odredi captured piece
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
@@ -888,8 +854,7 @@ move *generate_moves(board arg)
 			bb = arg.all_p & ~ (1LL << pp);
 			in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 			in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-			mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
-			mpr &= check_grid;
+			mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] & ~ ppr ^ (1LL << at) & check_grid;
 			//printf("mpr\n");
 			//printBits(8, &mpr);
 			
@@ -962,19 +927,14 @@ move *generate_moves(board arg)
 					m_list->next = m;
 					m_list->from = ppr;
 					m_list->dest = (1LL << (mpp-1));
-					m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + (mpp-1)%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
-					//printf("m-info 16 mpp %d mpp%8 %d\n", mpp, (16 + mpp%8));
-					//printBits(8, &m_list->info);
-
+					m_list->info ^= (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + mpp%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					
 					mpb &= ~m_list->dest; 
 				}
 				//else 
 				{
-					mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid
-							: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;// za  jedan 
+					mpp = __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid;// za  jedan 
 					if (mpp)
 					{
 						//promotion nije kad je en'passan
@@ -985,7 +945,7 @@ move *generate_moves(board arg)
 						m_list->next = m;
 						m_list->from = ppr;
 						m_list->dest = (1LL << (mpp-1));
-						m_list->info = (1LL << 5) ^ (1LL << 15) ^ stm;
+						m_list->info ^= (1LL << 5) ^ (1LL << 15) ^ stm;
 						//check fali, zapisi kao const osim stm
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
@@ -1011,7 +971,6 @@ move *generate_moves(board arg)
 	mPE = (fr->P & 0xFEFEFEFEFEFEFEFE) << 7 & ho->pieces & check_grid;
 	mPW = (fr->P & 0x7F7F7F7F7F7F7F7F) << 9 & ho->pieces & check_grid;
 	mENP = (enp & 0xFEFEFEFEFEFEFEFE & check_grid) >> 9 & fr->P ^ (enp & 0x7F7F7F7F7F7F7F7F & check_grid) >> 7 & fr->P;
-	mENP |= (enp_P & 0xFEFEFEFEFEFEFEFE & check_grid) >> 1 & fr->P ^ (enp_P & 0x7F7F7F7F7F7F7F7F & check_grid) << 1 & fr->P;
 	mP1_prom = mP1 & promotion;
 	mPE_prom = mPE & promotion;
 	mPW_prom = mPW & promotion;
@@ -1025,9 +984,8 @@ move *generate_moves(board arg)
 	mP1 = fr->P >> 8 & ~arg.all_p & check_grid;
 	mPE = (fr->P & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->pieces & check_grid;
 	mPW = (fr->P & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->pieces & check_grid;
-	mENP = (enp & 0x7F7F7F7F7F7F7F7F & check_grid) << 9 & fr->P ^ (enp & 0xFEFEFEFEFEFEFEFE & check_grid) << 7 & fr->P;
-	mENP |= (enp_P & 0x7F7F7F7F7F7F7F7F & check_grid) << 1 & fr->P ^ (enp_P & 0xFEFEFEFEFEFEFEFE & check_grid) >> 1 & fr->P;
-	//mENP = 0LL;
+	//mENP = (enp & 0xFEFEFEFEFEFEFEFE & check_grid) << 9 & fr->P ^ (enp & 0x7F7F7F7F7F7F7F7F & check_grid) << 7 & fr->P;
+	mENP=0LL;
 	mP1_prom = mP1 & promotion;
 	mPE_prom = mPE & promotion;
 	mPW_prom = mPW & promotion;
@@ -1044,7 +1002,7 @@ move *generate_moves(board arg)
 		m_list->next = m;
 		m_list->from = 1LL << (in - P2 );
 		m_list->dest = 1LL << in;
-		m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + in%8)) ^ stm;
+		m_list->info ^= (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + in%8)) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check fali, zapisi kao const osim stm
@@ -1058,7 +1016,7 @@ move *generate_moves(board arg)
 		m_list->next = m;
 		m_list->from = 1LL << (in - P1 );
 		m_list->dest = 1LL << in;
-		m_list->info = (1LL << 5) ^ (1LL << 15) ^ stm;
+		m_list->info ^= (1LL << 5) ^ (1LL << 15) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check fali, zapisi kao const osim stm
@@ -1126,12 +1084,11 @@ move *generate_moves(board arg)
 	}
 	while (__builtin_popcountll(mENP))
 	{
-		
 		in = __builtin_ffsll(mENP)-1;
-		//enp check for 4-5 row pin
-		bb = ~(1LL << in | ((enp << 8) >> (16*(stm >> 24)))) & arg.all_p & occupancyMaskRook[king];
+		//enp check for 5 row pin
+		bb = ~(1LL << in | (enp << 8) >> (stm >> 20)) & arg.all_p & occupancyMaskRook[king];
 		in_K = (bb * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mR_q = magicMovesRook[king][in_K] & (ho->Q | ho-> R) & ENProw;
+		mR_q = magicMovesRook[king][in_K] & (ho->Q | ho-> R) & 0x00000000FF000000 << 8*(stm >> 24);
 		
 		if (!(mR_q))
 		{
@@ -1140,7 +1097,7 @@ move *generate_moves(board arg)
 		m_list->next = m;
 		m_list->from = 1LL << in;
 		m_list->dest = enp;
-		m_list->info = (1LL << 5) ^ (1LL << 12) ^ stm;
+		m_list->info ^= (1LL << 5) ^ (1LL << 12) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check fali, zapisi kao const osim stm
@@ -1250,7 +1207,7 @@ move *generate_moves(board arg)
 			m_list->next = m;
 			m_list->from = (1LL << in_N);
 			m_list->dest = (1LL << in);
-			m_list->info = (1LL << 4) ^ stm;
+			m_list->info ^= (1LL << 4) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check fali, zapisi kao const osim stm
@@ -1307,7 +1264,7 @@ move *generate_moves(board arg)
 			m_list->next = m;
 			m_list->from = (1LL << in_B);
 			m_list->dest = (1LL << in);
-			m_list->info = (1LL << 3) ^ stm;
+			m_list->info ^= (1LL << 3) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check fali, zapisi kao const osim stm
@@ -1364,7 +1321,7 @@ move *generate_moves(board arg)
 			m_list->next = m;
 			m_list->from = (1LL << in_R);
 			m_list->dest = (1LL << in);
-			m_list->info = (1LL << 2) ^ stm;
+			m_list->info ^= (1LL << 2) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check fali, zapisi kao const osim stm
@@ -1422,7 +1379,7 @@ move *generate_moves(board arg)
 			m_list->next = m;
 			m_list->from = (1LL << in_Q);
 			m_list->dest = (1LL << in);
-			m_list->info = (1LL << 1) ^ stm;
+			m_list->info ^= (1LL << 1) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check fali, zapisi kao const osim stm
@@ -1477,7 +1434,7 @@ move *generate_moves(board arg)
 			m_list->next = m;
 			m_list->from = (1LL << in_K);
 			m_list->dest = (1LL << in);
-			m_list->info = 1LL  ^ stm;
+			m_list->info ^= 1LL  ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check fali, zapisi kao const osim stm
@@ -1518,11 +1475,10 @@ move *generate_moves(board arg)
 	//CASTLE
 	if ( arg.info & cas_bit_K && !(ho->atack & cas_at_K) && !(arg.all_p & cas_occ_K) )
 	{
-			
 			m = m_list;
 			m_list = malloc(sizeof(move));
 			m_list->next = m;
-			m_list->info = 1LL << 13 ^ stm;
+			m_list->info ^= 1LL << 13 ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 	}
@@ -1531,11 +1487,11 @@ move *generate_moves(board arg)
 			m = m_list;
 			m_list = malloc(sizeof(move));
 			m_list->next = m;
-			m_list->info = 1LL << 14 ^ stm;
+			m_list->info ^= 1LL << 14 ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 	}
-	//potrebno je odrolati pinned pieces 
+	
 	
 	
 	/*printf("ho.atackmap\n");
@@ -1549,23 +1505,18 @@ move *generate_moves(board arg)
 
 void do_move(board *b, move *m)
 {
-	U64 *p, *capt_p, *prom_p, stm, castle, hm, fm, m_cas, f_cas, empty = 0ULL, CK, CQ, KS, KR, QR, hKR, hQR, t;
+	U64 *p, *capt_p, stm, castle, hm, fm, m_cas, f_cas, empty = 0LL, CK, CQ, KS, KR, QR;
 	piece_set *fr, *ho; 
 	
-	stm = b->info & 0x0000000000000001;
+	stm = b->info & 1LL;
 	fr = stm ? &b->w : &b->b;
 	ho = stm ? &b->b : &b->w;
-	KR = 0x0100000000000000 >> (stm*56);
-	QR = 0x8000000000000000 >> (stm*56);
-	hKR = 0x0000000000000001ULL << (stm*56);//stavi ULL da izbjegnes left shift warning
-	hQR = 0x0000000000000080ULL << (stm*56);
-	//castle = 0x000000000000001E;
-	castle = 0LL;
+	KR = 0x0100000000000000 >> stm*56;
+	QR = 0x8000000000000000 >> stm*56;
 	
 	if (!(m->info & 0x0000000000007000))
 	{
 
-	
 	p = m->info & 1LL      ? &fr->K : p;
 	p = m->info & 1LL << 1 ? &fr->Q : p;
 	p = m->info & 1LL << 2 ? &fr->R : p;
@@ -1574,36 +1525,17 @@ void do_move(board *b, move *m)
 	p = m->info & 1LL << 5 ? &fr->P : p;
 
 	//castle
-	/*t = (m->dest & hQR);
-	printf("hqr-dest\n");
-	printBits(8, &hQR);
-	 0;t = ( m->info & 1LL << 26 );
-	printf("hkr\n");
-	printBits(8, &hKR);*/
-	//provjera da li igra kralj ili je rokada fr gubi oba castla
-	m_cas = 0x000000000000018 >> (stm<<1);
+
+	castle = empty;
+	m_cas = 0x000000000000018 >> stm*2;
 	f_cas = (m->info & 1LL) | (m->info & 0x000000000006000) >> 13;
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//provjera da li je top igrao fr gubi castle
-	m_cas = 0x000000000000008 >> (stm<<1);
-	f_cas = (m->info & 1LL << 2) && ( m->from & KR); 
+	m_cas = 0x000000000000008 >> stm*2;
+	f_cas = (m->info & 1LL << 2) && ( m->from & KR);
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	m_cas = 0x000000000000010 >> (stm<<1);
+	m_cas = 0x000000000000010 >> stm*2;
 	f_cas = (m->info & 1LL << 2) && ( m->from & QR);
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//provjera da li je top pojeden ho gubi castle 
-//nije provjereno jel je mask na vecoj mjeri od uvjeta
-	m_cas = 0x000000000000002 << (stm<<1);
-	f_cas = (m->dest & hKR) && ( m->info & 1LL << 26 );
-	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//printf("fcasK\n");
-	//printBits(8, &f_cas);
-	 
-	m_cas = 0x000000000000004 << (stm<<1);
-	f_cas = (m->dest & hQR) && ( m->info & 1LL << 26 );
-	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//printf("fcasQ\n");
-	//printBits(8, &f_cas);
 
 
 
@@ -1625,15 +1557,6 @@ void do_move(board *b, move *m)
 	capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 	capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
 	*capt_p &= ~m->dest;	
-
-	//promotion
-	prom_p = &empty;
-	prom_p = m->info & 1LL << 8 ? &fr->Q : prom_p;
-	prom_p = m->info & 1LL << 9 ? &fr->R : prom_p;
-	prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
-	prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
-	*prom_p ^= m->dest;
-	fr->P ^= m->info & 0x0000000000000F00 ? m->dest : 0ULL; 
 	
 	//update all_p
 	b->all_p &= ~m->from;
@@ -1645,7 +1568,7 @@ void do_move(board *b, move *m)
 	//printf("enpuvjet\n");
 	//printBits(8, &hm);
 
-		//castle = 0x000000000000001E;
+		castle = ~empty;
 		fr->P &= ~m->from;
 		fr->P |= m->dest;
 		ho->P &= stm ? ~m->dest >> 8 : ~m->dest << 8;	
@@ -1665,7 +1588,7 @@ void do_move(board *b, move *m)
 		CQ = 0x2000000000000000 >> stm*56;
 		KS = 0x0800000000000000 >> stm*56;
 
-		castle = 0x000000000000018 >> (stm*2);
+		castle = 0x000000000000018 >> stm*2;
 		fr->K &= ~KS;
 		fr->K |= CK;
 		fr->R &= ~KR;
@@ -1687,7 +1610,7 @@ void do_move(board *b, move *m)
 		CQ = 0x2000000000000000 >> stm*56;
 		KS = 0x0800000000000000 >> stm*56;
 
-		castle = 0x000000000000018 >> (stm*2);
+		castle = 0x000000000000018 >> stm*2;
 		fr->K &= ~KS;
 		fr->K |= CQ;
 		fr->R &= ~QR;
@@ -1705,26 +1628,20 @@ void do_move(board *b, move *m)
 	hm = m->info & 0x000000003E008000 ? -(b->info & 0x0000000000FF0000) : (1LL << 16);
 
 	// b_info = stm ^ castle ^ doublepawnpush ^ halfmove ^ fullmove
-	
-	/*printf("b-dpp\n");
-	t = b->info & 0x000000000000FF00;
-	printBits(8, &t);
-	printf("m-dpp\n");
-	t = m->info & 0x0000000000FF0000;
-	printBits(8, &t);*/
+
 	b->info &= ~castle; 
-	b->info ^= 0x0000000000000001;
-	b->info ^= (b->info & 0x000000000000FF00) ^ ( m->info & 0x0000000000FF0000) >> 8;
+	b->info ^= 1LL;
 	b->info += hm;
+	b->info ^= (b->info & 0x000000000000FF00) ^ ( m->info & 0x0000000000FF0000) >> 8;
 	b->info += (~ stm & 1LL) << 32;
 }
 
 void undo_move(board *b, move *m)
 {
-	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR;
+	U64 *p, *capt_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR;
 	piece_set *fr, *ho; 
 	
-	stm = m->info >> 24 & 0x0000000000000001 ;
+	stm = m->info >> 24 & 1LL ;
 	//stm = !(b->info & 1LL) ;
 	fr = stm ? &b->w : &b->b;
 	ho = stm ? &b->b : &b->w;
@@ -1751,15 +1668,6 @@ void undo_move(board *b, move *m)
 	capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 	capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
 	*capt_p |= m->dest;	
-
-	//promotion
-	prom_p = &empty;
-	prom_p = m->info & 1LL << 8 ? &fr->Q : prom_p;
-	prom_p = m->info & 1LL << 9 ? &fr->R : prom_p;
-	prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
-	prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
-	*prom_p ^= m->dest;
-	fr->P |= m->info & 0x0000000000000F00 ? m->from : 0ULL; 
 
 	//update all_p
 	b->all_p &= m->info & 0x000000003E000000 ? ~0LL : ~m->dest;
@@ -1807,7 +1715,7 @@ void undo_move(board *b, move *m)
 	printf("casQ\n");
 	printBits(8, &hm);*/
 
-		KR = 0x0100000000000000 >> stm*56;//mozda && ili ?
+		KR = 0x0100000000000000 >> stm*56;
 		QR = 0x8000000000000000 >> stm*56;
 		CK = 0x0200000000000000 >> stm*56;
 		CQ = 0x2000000000000000 >> stm*56;
@@ -1826,7 +1734,7 @@ void undo_move(board *b, move *m)
 	}
 	
 	b->info -= (b->info & 1LL) << 32;
-	b->info ^= 0x0000000000000001;
+	b->info ^= 1LL;
 	// b_info = old_castle old_enp old_hm | b_fm; 
 	b->info = (m->info & 0x00FFFF1E00000000) >> 32 | (b->info & 0x000000FF00000001);
 }
@@ -1858,54 +1766,14 @@ void square(int index, char *sq)
 	
 }
 
-int eval( board *b)
-{	
-	int w_score = 0, b_score = 0;
-	
-	w_score += __builtin_popcountll( b->w.Q );
-	w_score += __builtin_popcountll( b->w.R );
-	w_score += __builtin_popcountll( b->w.B );
-	w_score += __builtin_popcountll( b->w.N );
-	w_score += __builtin_popcountll( b->w.P );
-
-	b_score += __builtin_popcountll( b->b.Q );
-	b_score += __builtin_popcountll( b->b.R );
-	b_score += __builtin_popcountll( b->b.B );
-	b_score += __builtin_popcountll( b->b.N );
-	b_score += __builtin_popcountll( b->b.P );
-
-}
-
-void print_state(board arg)
-{
-	printBits(8, &arg.w.K);
-	printBits(8, &arg.w.Q);
-	printBits(8, &arg.w.R);
-	printBits(8, &arg.w.B);
-	printBits(8, &arg.w.N);
-	printBits(8, &arg.w.P);
-	printBits(8, &arg.b.K);
-	printBits(8, &arg.b.Q);
-	printBits(8, &arg.b.R);
-	printBits(8, &arg.b.B);
-	printBits(8, &arg.b.N);
-	printBits(8, &arg.b.P);
-	printBits(8, &arg.all_p);
-	printBits(8, &arg.w.atack);
-	printBits(8, &arg.b.atack);
-	printBits(8, &arg.w.pieces);
-	printBits(8, &arg.b.pieces);
-}
-
 void printmove(move *m_l)
 {
-	//int stm, capture, check, enp, castle, pawn_adv, dest, from, ;
-	int piece_type, count = 0;
+	int stm, piece_type, capture, check, enp, castle, pawn_adv, dest, from, count = 0;
 	short d_pa;
 	char promotion, fr[3], dst[3];
 
 		piece_type = __builtin_ffsll(m_l->info)-1;
-		/*capture = m_l->info >> 6 & 1LL;
+		capture = m_l->info >> 6 & 1LL;
 		check = m_l->info >> 7 & 1LL;
 		promotion = (m_l->info & 0x0000000000000F00) >> 8;
 		enp = m_l->info >> 12 & 1LL;
@@ -1913,16 +1781,16 @@ void printmove(move *m_l)
 		castle += m_l->info >> 14 & 1LL ? 2 : 0;
 		pawn_adv = m_l->info >> 15 & 1LL;
 		d_pa = (m_l->info & 0x0000000000FF0000) >> 16;
-		stm = (m_l->info & 0x0000000001000000) >> 24;;*/
+		stm = (m_l->info & 0x0000000001000000) >> 24;;
 		//dest = __builtin_ffsll(m_l->dest)-1;
 		//from = __builtin_ffsll(m_l->from)-1;
 		square( __builtin_ffsll(m_l->dest)-1, dst);
 		square( __builtin_ffsll(m_l->from)-1, fr);
-
+		
 		//printf("%s%s%s capt%d enp%d castle%d pawn_adv%d check%d", 
 		//	piece(piece_type), fr, dst, capture,enp,castle,pawn_adv,check);
-		if (piece_type == 13 || piece_type == 14) 	printf("%s ", piece(piece_type));
-		else	printf("%s%s%s ", piece(piece_type), fr, dst);
+		printf("%s%s%s ", 
+			piece(piece_type), fr, dst);
 		//printBits(1, &d_pa);
 		//printBits(1, &promotion);
 		//printBits(8, &m_l->info);
@@ -1930,7 +1798,9 @@ void printmove(move *m_l)
 
 void printmoves(move *m_l)
 {
-	int count = 0;
+	int stm, piece_type, capture, check, enp, castle, pawn_adv, dest, from, count = 0;
+	short d_pa;
+	char promotion;
 	while ( m_l)
 	{
 		printf("%d  ", count);
@@ -1965,51 +1835,33 @@ int countmoves(move *m_l)
 	return count;
 }
 
-int delete_movelist(move *arg)
-{
-	move *d; 
-	int c = 0;
-	while (arg != NULL)
-	{
-		d = arg;
-		arg = (arg)->next;
-		free(d);
-		c++;
-	}
-	mfree += c;
-	return c;
-}
-
 U64 Perft(int depth, board *arg)
 {
-    move *move_list, *it;
+    move *move_list;
+    int n_moves, i;
     U64 nodes = 0;
  
-    if (depth == 1) return delete_movelist( generate_moves( *arg));
+    if (depth == 0) return 1;
  
     move_list = generate_moves( *arg);
-    for (it = move_list; it; it = it->next)
+    while (move_list) 
     {
-        do_move(arg, it);
+        do_move(arg, move_list);
         nodes += Perft(depth - 1, arg);
-        undo_move(arg, it);
+        undo_move(arg, move_list);
+	move_list = move_list->next;
     }
-    //
-    delete_movelist( move_list);
-    //printf("obr %d\n", i);
-    
     return nodes;
 }
 
 U64 divide_perft(int depth, board *arg)
 {
-    move *move_list, *it;
+    move *move_list;
+    int n_moves, i;
     U64 childs, nodes = 0;
-    
-    mfree = 0;
  
     if (depth == 0) return 1;
-    /*if (depth > 1)
+    if (depth > 1)
     {
     	printboard(*arg);
 	printf("wk\n");
@@ -2020,24 +1872,24 @@ U64 divide_perft(int depth, board *arg)
 	printBits(8, &arg->w.P);
 	printf("bp\n");
 	printBits(8, &arg->b.P);
-    } */
+    } 
     move_list = generate_moves( *arg);
-    for (it = move_list; it; it = it->next )
+    printmoves(move_list);
+    while (move_list) 
     {
     	childs = 0;
-	printmove(it);
-        do_move(arg, it);
+	printmove(move_list);
+        do_move(arg, move_list);
 		//printBits(1, &arg->B);
 		//printBits(8, &arg->b.K);
         
-        childs += depth > 10 ? divide_perft(depth - 1, arg) : Perft(depth - 1, arg);
-        undo_move(arg, it);
-	//fr = it;
-	printf(" %llu\n", childs);
+        childs += depth > 2 ? divide_perft(depth - 1, arg) : Perft(depth - 1, arg);
+        undo_move(arg, move_list);
+	move_list = move_list->next;
+	printf(" %llu\n", childs);		
 	nodes += childs;
     }
-    delete_movelist(move_list);
-    printf("count %llu obr %d\n ", nodes, mfree);
+    printf("count %llu\n", nodes);
     return nodes;
 }
 
@@ -2066,9 +1918,9 @@ move *izbaci_move( move **pocetak)
 }
 
 
-
 int main ( int argc, char *argv[])
 {
+char starting_position[100] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 //char starting_position[100] = "rnbqkbnr/pp2pppp/3p4/2p5/3PP3/8/PPP2PPP/RNBQKBNR b KQkq c6 0 3";
 //char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w 0 1";
 //char starting_position[100] = "r1b.Qkb.Nr/1ppp1ppp/p1n5/4p3/B3P3/5N2/PPPP1PPP/RNb.QK2R b KQkq - 1 4";
@@ -2097,15 +1949,19 @@ int main ( int argc, char *argv[])
 //char starting_position[100] = "8/2p5/3p4/1P5r/KR3p1k/8/4P1P1/8 b - - 0 1";
 //char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/6P1/4P3/8 b - - 0 1";
 
-char starting_position[100] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";//pos 1 ply 8 84,998,978,956
-//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2 ply 5 193.690.690
-//char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";// pos 3 ply 7 178.633.661
-//pos 4 ply 6 706.045.033
-//char starting_position[100] = "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6";//pos 5 ply 3 53.392, 4 OK u usporedbi sa roce 
-//pos 6 ply 6 6,923,051,137
+//char starting_position[100] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";//pos 2
+//char starting_position[100] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";// pos 3
+//char starting_position[100] = "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6";//pos 5
 
 
+U64 blockers;
+U64 friendly = 0x6a96810026;
+U64 allpieces = 0x71290a7e92810026;
+U64 blank = 0LL;
+U64 _friendly;
+U64 movesR, movesB, movesQ, movesN, movesK;
 int n = 0;
+U64 index;
 board cb;
 move *list, *domove = NULL, *temp;
 char FEN[100];
@@ -2161,6 +2017,7 @@ while (1)
 
 	if (strstr(w,"divide") != NULL) 
 	{	
+		printf("?: ");
 		scanf("%d", &n);
 		divide_perft(n, &cb);
 	}
@@ -2173,12 +2030,14 @@ while (1)
 	} 
 	if ( strstr(w,"set") != NULL )	
 	{	
+		printf("?: ");
 		scanf("%[^\n]", FEN);
 		cb = importFEN(FEN);		
 	} 
 	else
 	if ( strstr(w,"do_move") != NULL )	
 	{	
+		printf("?: ");
 		scanf("%d", &n);
 		list = generate_moves(cb);
 		
@@ -2195,10 +2054,6 @@ while (1)
 		printboard(cb);		
 
 	}
-	else if ( strstr(w,"state") != NULL )
-	{
-		print_state(cb);
-	}
 	else if ( strstr(w,"disp") != NULL )
 	{
 		printboard(cb);		
@@ -2207,15 +2062,6 @@ while (1)
 	{
 		cb.info ^= 1LL;
 		printboard(cb);		
-	}
-	else if ( strstr(w,"new") != NULL )
-	{
-		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");		
-	}
-	
-	else if ( strstr(w,"fen") != NULL )
-	{
-		printf("%s\n", exportFEN(cb));
 	}
 	else if ( strstr(w,"quit") != NULL )
 	{
