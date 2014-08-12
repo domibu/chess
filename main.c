@@ -55,7 +55,7 @@ char FEN[100];
 	printf(" TTentry size: %d\n", sizeof(TTentry));
 	printf(" prim: %llu\n", count_TT);
 	printf(" Nmove size: %d\n", sizeof(Nmove));
-	
+	printf(" U64 size: %d\n", sizeof(U64));
 	NML = malloc( sizeof(Nmovelist)*15);
 
 
@@ -81,7 +81,7 @@ while (1)
 		//printline( pline);
 		TTextractPV( cb, n);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%d, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+ 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
@@ -101,7 +101,7 @@ while (1)
 		
 		printline( pline);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%d\n", score, razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
@@ -125,7 +125,7 @@ while (1)
 		//printline( pline);
 		TTextractPV( cb, n);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%d, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+ 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
@@ -147,7 +147,7 @@ while (1)
 		
 		printNline( Npline);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%d\n", score, razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
@@ -169,7 +169,7 @@ while (1)
 		
 		printline( pline);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%d\n", score, razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
@@ -182,7 +182,7 @@ while (1)
 		count = mdivide_perft(n, &cb);
 		gettimeofday(&end, NULL);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "time=%.2f v=%.3e c=%d\n", razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
 	
 	}
 	else 
@@ -195,7 +195,7 @@ while (1)
 		//free( NML);
 		gettimeofday(&end, NULL);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "time=%.2f v=%.3e c=%d\n", razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
 	
 	}
 
@@ -208,7 +208,7 @@ while (1)
 		free( marray);
 		gettimeofday(&end, NULL);
 		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "time=%.2f v=%.3e c=%d\n", razmisljao, count/razmisljao,  count); 
+ 		fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
 	
 	}
 	else

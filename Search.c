@@ -52,7 +52,7 @@ int eval( board *b)
 
 int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
-	int best, val, movecount, it;
+	int best, val, movecount, it, limes;
 	unsigned char quiet, capt;
 	move *list;
 	Nline nline;
@@ -67,46 +67,36 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
         movecount = generate_movesN(&NML[depth] , *pos);
         quiet = NML[depth].quietcount;
         capt = NML[depth].captcount;
-        for (it = 255; it > capt; it--)
-   	{
-        	Ndo_move(pos, NML[depth].mdata[it]);
-	        val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-        	Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
-        	
-		if ( val >= beta)       return val; //fail-soft
+	it = 255;
+	
+forpetlja: 
+	for (it = (it > quiet ) ? 255 : 0; it > quiet ? it > capt : it < quiet; it > quiet ? it-- : it++  )
+        {
+		Ndo_move(pos, NML[depth].mdata[it]);
+                val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+                Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+                
+                if ( val >= beta)       return val; //fail-soft
 
-		if ( val > best)
-		{
-			best = val;
-			if ( val > alpha )
-			{
-				alpha = val;
-        			 pline->argmove[0] = NML[depth].mdata[it];
-       				  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-       				  pline->cmove = nline.cmove +1;
-	 		}
-		}
-	}
-        for (it = 0; it < quiet; it++)
-   	{
-        	Ndo_move(pos, NML[depth].mdata[it]);
-	        val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-        	Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
-        	
-		if ( val >= beta)       return val; //fail-soft
+                if ( val > best)
+                {
+                        best = val;
+                        if ( val > alpha )
+                        {
+                                alpha = val;
+                                 pline->argmove[0] = NML[depth].mdata[it];
+                                  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+                                  pline->cmove = nline.cmove +1;
+                        }
+                }	
+        }
 
-		if ( val > best)
-		{
-			best = val;
-			if ( val > alpha )
-			{
-				alpha = val;
-        			 pline->argmove[0] = NML[depth].mdata[it];
-       				  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-       				  pline->cmove = nline.cmove +1;
-	 		}
-		}
+	if (it == (capt ))
+	{
+		it = 0;
+		goto forpetlja;
 	}
+	
 	return best;
 }
 
@@ -568,7 +558,7 @@ U64 mdivide_perft(int depth, board *arg)
 	nodes += childs;
     }
     delete_movelist(move_list);
-    printf("count %llu obr %d\n ", nodes, mfree);
+    printf("count %llu obr %llun ", nodes, mfree);
     return nodes;
 }
 
@@ -618,7 +608,7 @@ U64 divide_perft(int depth, board *arg)
 	printf(" %llu\n", childs);
 	nodes += childs;
     }
-    printf("count %llu obr %d\n ", nodes, mfree);
+    printf("count %llu obr %llu\n ", nodes, mfree);
     return nodes;
 }
 
@@ -770,7 +760,7 @@ U64 Ndivide_perft(int depth, Nboard *arg, Nmovelist *ml)
 	        }*/
 	nodes += childs;
     }
-    printf("count %llu obr %d\n ", nodes, mfree);
+    printf("count %llu obr %llu\n ", nodes, mfree);
     return nodes;
 }
 

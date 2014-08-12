@@ -150,8 +150,8 @@ typedef struct Nline {
 
 int stop;
 move *marray;
-int mfree;
-extern int count;
+U64 mfree;
+extern U64 count;
 
 int delete_movelist(move *arg);
 
