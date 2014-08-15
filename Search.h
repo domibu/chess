@@ -161,7 +161,8 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
-int TTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
+int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
+int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
 
 
 U64 NPerft(int depth, Nboard *arg, Nmovelist *ml);

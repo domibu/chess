@@ -48,12 +48,14 @@ char FEN[100];
         InitializeMoveDatabase();
 	initZobrist();
 	count_TT = setTT( n);
+	count_nTT= setnTT( n);
 
 	Ncb = NimportFEN(setposition[1]);
 	cb = importFEN(setposition[1]);
 	setZobrist( &cb);
+	nsetZobrist( &Ncb);
 	printf(" TTentry size: %d\n", sizeof(TTentry));
-	printf(" prim: %llu\n", count_TT);
+	printf(" prim: %llu nprim %llu\n", count_TT, count_nTT);
 	printf(" Nmove size: %d\n", sizeof(Nmove));
 	printf(" U64 size: %d\n", sizeof(U64));
 	NML = malloc( sizeof(Nmovelist)*15);
@@ -115,10 +117,11 @@ while (1)
 		//printBits( 8, &cb.info);
 		count = 0;
 		TThit = 0;
+		TTwr = 0;
 
 		gettimeofday(&start, NULL);	
 		marray = malloc( sizeof(move)*216*(n+1) );
-		score = TTnegamax( &cb, &pline, -WIN, +WIN, color, n);
+		score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
 		free( marray);
 		gettimeofday(&end, NULL);	
 		
@@ -130,6 +133,34 @@ while (1)
 		//printf("score: %d d%d c%d moves%d", score, n, color, count);
 		//printmove( fst_pick);
 	}
+        else
+        if (strstr(w,"nTT") != NULL)
+        {
+                scanf("%d", &n);
+                printNboard(Ncb);
+                color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+                //printBits( 8, &cb.info);
+                count = 0;
+                TThit = 0;
+		TTowr = 0;
+		TTwr = 0;
+
+                gettimeofday(&start, NULL);
+                //marray = malloc( sizeof(move)*216*(n+1) );
+                score = nTTnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
+                //free( marray);
+                gettimeofday(&end, NULL);
+
+                //printline( pline);
+		Nboard *PV_end;
+		PV_end = nTTextractPV( Ncb, n);
+		//!!!!!!!!! print na stderror PV_end !!!!!!!!!!!!!!!!
+                razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+                fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
+
+                //printf("score: %d d%d c%d moves%d", score, n, color, count);
+                //printmove( fst_pick);
+        }
 	else
 	if (strstr(w,"nsearch") != NULL) 
 	{	
@@ -163,7 +194,7 @@ while (1)
 
 		gettimeofday(&start, NULL);	
 		marray = malloc( sizeof(move)*216*(n+1) );
-		score = negamax( &cb, &pline, -WIN, +WIN, color, n);
+		score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
 		free( marray);
 		gettimeofday(&end, NULL);	
 		
@@ -364,6 +395,7 @@ while (1)
 		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
 		Ncb = NimportFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
 		setZobrist( &cb);	
+		nsetZobrist( &Ncb);
 	}
 	/*
 	else if ( strstr(w,"fen") != NULL )

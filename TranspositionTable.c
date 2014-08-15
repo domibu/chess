@@ -97,12 +97,12 @@ void setZobrist( board *b)
 		else if (b->b.B & (m << it)) b->zobrist ^= zobrist[ 3*64 + it];
 		else if (b->b.N & (m << it)) b->zobrist ^= zobrist[ 4*64 + it];
 		else if (b->b.P & (m << it)) b->zobrist ^= zobrist[ 5*64 + it];
-		else if (b->b.K & (m << it)) b->zobrist ^= zobrist[ 6*64 + it];
-		else if (b->b.Q & (m << it)) b->zobrist ^= zobrist[ 7*64 + it];
-		else if (b->b.R & (m << it)) b->zobrist ^= zobrist[ 8*64 + it];
-		else if (b->b.B & (m << it)) b->zobrist ^= zobrist[ 9*64 + it];
-		else if (b->b.N & (m << it)) b->zobrist ^= zobrist[ 10*64 + it];
-		else if (b->b.P & (m << it)) b->zobrist ^= zobrist[ 11*64 + it];
+		else if (b->w.K & (m << it)) b->zobrist ^= zobrist[ 6*64 + it];
+		else if (b->w.Q & (m << it)) b->zobrist ^= zobrist[ 7*64 + it];
+		else if (b->w.R & (m << it)) b->zobrist ^= zobrist[ 8*64 + it];
+		else if (b->w.B & (m << it)) b->zobrist ^= zobrist[ 9*64 + it];
+		else if (b->w.N & (m << it)) b->zobrist ^= zobrist[ 10*64 + it];
+		else if (b->w.P & (m << it)) b->zobrist ^= zobrist[ 11*64 + it];
 	}
 	b->zobrist ^= (b->info & 0x0000000000000002) ? zobrist[ 778] : 0ULL;
 	b->zobrist ^= (b->info & 0x0000000000000004) ? zobrist[ 779] : 0ULL;
@@ -115,6 +115,41 @@ void setZobrist( board *b)
 	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL; 
 
 }
+
+void nsetZobrist( Nboard *b)
+{
+        int it, enp;
+        U64 m = 1ULL;
+
+        b->zobrist = 0ULL;
+
+        for ( it = 0; it < 64; it++)
+        {
+                if (b->pieceset[8] & (m << it) )  b->zobrist ^= zobrist[ it];
+                else if (b->pieceset[9] & (m << it)) b->zobrist ^= zobrist[ 64 + it];
+                else if (b->pieceset[10] & (m << it)) b->zobrist ^= zobrist[ 2*64 + it];
+                else if (b->pieceset[11] & (m << it)) b->zobrist ^= zobrist[ 3*64 + it];
+                else if (b->pieceset[12] & (m << it)) b->zobrist ^= zobrist[ 4*64 + it];
+                else if (b->pieceset[13] & (m << it)) b->zobrist ^= zobrist[ 5*64 + it];
+                else if (b->pieceset[0] & (m << it)) b->zobrist ^= zobrist[ 6*64 + it];
+                else if (b->pieceset[1] & (m << it)) b->zobrist ^= zobrist[ 7*64 + it];
+                else if (b->pieceset[2] & (m << it)) b->zobrist ^= zobrist[ 8*64 + it];
+                else if (b->pieceset[3] & (m << it)) b->zobrist ^= zobrist[ 9*64 + it];
+                else if (b->pieceset[4] & (m << it)) b->zobrist ^= zobrist[ 10*64 + it];
+                else if (b->pieceset[5] & (m << it)) b->zobrist ^= zobrist[ 11*64 + it];
+        }
+        b->zobrist ^= (b->info >> 4 & 1ULL) ? zobrist[ 778] : 0ULL;
+        b->zobrist ^= (b->info >> 5 & 1ULL) ? zobrist[ 779] : 0ULL;
+        b->zobrist ^= (b->info >> 6 & 1ULL) ? zobrist[ 780] : 0ULL;
+        b->zobrist ^= (b->info >> 7 & 1ULL) ? zobrist[ 781] : 0ULL;
+
+        enp = b->info >> 1 & 0x0000000000000007;
+        b->zobrist ^= b->info & 1ULL ? zobrist[ 768 + enp] : 0ULL;
+
+        b->zobrist ^= (b->info >> 14) & 1ULL ? zobrist[ 777] : 0ULL;
+
+}
+
 
 /* Calculate the largest (odd) prime number not greater than n.
  * I know this is a dumb way of doing it, but it's easily fast enough 
@@ -144,6 +179,19 @@ U64 setTT( U64 n)
 	return count;
 }
 
+U64 setnTT( U64 n)
+{
+        U64 count;
+        n *= 1024*1024;
+
+        count = LargestPrime( n / sizeof(nTTentry) );
+
+        nTT = calloc( sizeof( TTentry), count);
+
+        return count;
+}
+
+
 TTentry *TTlookup(U64 key)
 {
 	unsigned ind = key % count_TT;
@@ -153,6 +201,17 @@ TTentry *TTlookup(U64 key)
 	TThit++;
 	return &TT[ ind];
 }
+
+nTTentry *nTTlookup(U64 key)
+{
+        unsigned ind = key % count_nTT;
+	//printf("*\n");
+        if (nTT[ ind].zobrist != key) return NULL;
+	//printf("h\n");
+        TThit++;
+        return &nTT[ ind];
+}
+
 
 void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
 {
@@ -179,6 +238,42 @@ void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
 	TT[ ind].flag = flag;
 	
 }
+
+void nTTstore( U64 zobrist, U64 data)
+{
+	//always replace strategy
+	unsigned ind = zobrist % count_nTT;
+	
+	if (nTT[ind].zobrist)
+	{
+		TTowr++;
+		//if (nTT[ ind].data & (1UL << 24))
+			return;
+	}
+
+	TTwr++;
+	nTT[ ind].zobrist = zobrist;
+	nTT[ ind].data = data;
+
+                /*unsigned d, flag;
+                int score;
+		Nmove pick;
+
+                d = data & 0x000000000000FF;
+                flag = data >> 24 & 0x00000000003;
+                score = data >> 8 & 0x00000000FFFF;
+		pick = (data >> 26) & 0x00000001FFFFF;
+
+                //printmoveN( pick);
+
+                printmovedetailsN( &pick);
+                printBits( sizeof(U64), &data);
+                printf("*nTTstore* flag %d score %d depth %d\n", flag, score, d);
+                printf("zobrist: %llu\n", zobrist);*/
+
+	//printf("s\n");
+}
+
 
 void printline( line pline)
 {
@@ -213,7 +308,7 @@ move *TTextractPV( board pos, char n)
 		entry = TTlookup( pos.zobrist);
 		if (!entry)	break;
 		dodaj_move( &PV, &entry->pick);
-	
+			
 		//print FM
 		if (pos.info & 1ULL)	printf(" #%llu ", pos.info >> 32);
 		printmove( &entry->pick);
@@ -222,6 +317,52 @@ move *TTextractPV( board pos, char n)
 	}
 	printf("\n");
 	return PV;
+}
+
+void print_TTentry( nTTentry *arg, Nboard pos)
+{
+	
+}
+
+Nboard *nTTextractPV( Nboard pos, char n)
+{
+        char i;
+        nTTentry *entry;
+        Nmove *PV = NULL, pick;
+        for ( i = 0; i < n; i++)
+        {
+                entry = nTTlookup( pos.zobrist);
+                if (!entry)   
+		{
+			printf("pvN: %d\n", i);
+			return NULL;
+
+		}
+                //dodaj_move( &PV, &entry->pick);
+		TThit--;
+                //print FM
+                if ((pos.info >> 14) & 1ULL)    printf(" #%llu ", pos.info >> 15);
+		pick = (((U64)entry->data) >> 26) & 0x001FFFFF;
+
+		/*unsigned flag, depth;
+		int score;
+		depth = entry->data & 0x000000000000FF;
+		flag = entry->data >> 24 & 0x00000000003;
+		score = entry->data >> 8 & 0x00000000FFFF;*/
+
+		
+                printmoveN( &pick);
+
+		/*printmovedetailsN( &pick);
+		printBits( sizeof(Nmove), &pick);
+		printf("flag %d score %d depth %d\n", flag, score, depth);
+		printf("zobrist: %llu\n", entry->zobrist);
+		printNboard( pos);*/
+	
+                Ndo_move( &pos, pick);
+        }
+        printf("\n");
+        return NULL;
 }
 
 void dodaj_move( move **pocetak, move *ind )

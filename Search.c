@@ -67,10 +67,12 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
         movecount = generate_movesN(&NML[depth] , *pos);
         quiet = NML[depth].quietcount;
         capt = NML[depth].captcount;
-	it = 255;
+	
+	it = (capt > 218) ? 218 : 0;
+	limes = (capt > 218) ? capt : quiet;
 	
 forpetlja: 
-	for (it = (it > quiet ) ? 255 : 0; it > quiet ? it > capt : it < quiet; it > quiet ? it-- : it++  )
+	for (; it < limes ; it++  )
         {
 		Ndo_move(pos, NML[depth].mdata[it]);
                 val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
@@ -94,6 +96,7 @@ forpetlja:
 	if (it == (capt ))
 	{
 		it = 0;
+		limes = quiet;
 		goto forpetlja;
 	}
 	
@@ -158,7 +161,7 @@ int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	return best;
 }
 
-int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, movecount, it;
 	move *list;
@@ -176,7 +179,7 @@ int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
    	{
 
         	do_move(pos, &marray[it]);
-	        val = -negamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+	        val = -anegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
         	undo_move(pos, &marray[it]);
         	
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
@@ -208,6 +211,137 @@ int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 		}
 		
 	}
+	return best;
+}
+
+int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
+{
+	int best, val, old_alpha, movecount, it, limes;
+	Nmove *pick;
+	unsigned char quiet, capt, flag;
+	Nline nline;
+	nTTentry *entry;
+
+        entry = nTTlookup( pos->zobrist);
+        if (entry)
+        if ((entry->data & 0x0000000000FF) >= depth)
+        {
+                //hash move
+                //TTmove = &entry->pick;
+                val = entry->data >> 8  & 0x7FFF; //>> 2;
+ 		flag = entry->data >> 24 & 0x03;
+               //if (entry->pick.info) dodaj_move( &TTmove, &entry->pick);
+
+
+		//!!!!!!!ovdje mozda vracati i putanju uz val !!!!!!!
+                //exact
+                if //(entry->score & 0x0001)
+                (flag == 1)      return val;
+                //lowerbound
+                if //(entry->score & 0x0002)    
+                (flag == 2)
+                {
+                        if ( val >= beta ) return val;
+                        if ( val > alpha ) alpha = val;
+                }
+                //higherbound
+                if //(!(entry->score & 0x0003))
+                (flag == 3)
+                {
+                        if ( val <= alpha ) return val;
+                        if ( val < beta ) beta = val;
+                }
+        }
+
+	if ( !depth ) 
+  	{
+    		//pline->cmove = 0;
+	  return color * neval( pos);
+  	}
+	  	
+	old_alpha = alpha;
+	best = -WIN;
+        movecount = generate_movesN(&NML[depth] , *pos);
+        quiet = NML[depth].quietcount;
+        capt = NML[depth].captcount;
+	
+	it = (capt > 218) ? 218 : 0;
+	limes = (capt > 218) ? capt : quiet;
+	
+forpetlja: 
+	for (; it < limes ; it++  )
+        {
+		Ndo_move(pos, NML[depth].mdata[it]);
+		val = -nTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+                Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+                
+                if ( val >= beta)       
+		{	
+			U64 data = 0ULL;
+			data ^= depth ^ (val << 8) ^ (2 << 24) ^ (NML[depth].mdata[it] << 26);	
+
+			nTTstore( pos->zobrist, data);
+
+			return val; //fail-soft
+		}
+
+                if ( val > best)
+                {
+                        best = val;
+                        if ( val > alpha )
+                        {
+                                alpha = val;
+				pick = &NML[depth].mdata[it];
+                                 /*pline->argmove[0] = NML[depth].mdata[it];
+                                  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+                                  pline->cmove = nline.cmove +1;*/
+                        }
+                }	
+        }
+
+	if (it == (capt ))
+	{
+		it = 0;
+		limes = quiet;
+		goto forpetlja;
+	}
+
+        if (best > old_alpha)
+        {
+                        U64 data = 0ULL;
+ 			data ^= depth ^ (best << 8) ^ (((U64)*pick) << 26) ^ (1UL << 24);
+
+               //printBits( sizeof(U64), &data);
+               //printNboard( pos);
+
+
+
+			nTTstore( pos->zobrist, data);
+                        /*entry->zobrist = pos->zobrist;
+                        //entry->pick = pline->argmove[0];
+                        entry->score = 0ULL | 1 | val << 2;
+                        entry->depth = depth;*/
+
+                        //TTstore( pos->zobrist, /*NULL,*/ depth, (0x0001 | (val << 2)));
+                        //TTstore( pos->zobrist, pick, depth, best, 1);
+
+        }
+        // fail low implies upperbound
+        if (best <= old_alpha)
+        {
+                        U64 data = 0ULL;
+                        data ^= depth ^ (best << 8) ^ (1UL << 24);
+			nTTstore( pos->zobrist, data);
+                        /*entry->zobrist = pos->zobrist;
+                        //entry->pick = pline->argmove[0];
+                        entry->score = 0ULL | val << 2;
+                        entry->depth = depth;*/
+
+                        //TTstore( pos->zobrist, /*NULL,*/ depth, (0ULL | (val << 2)));
+                        //TTstore( pos->zobrist, NULL, depth, best, 3);
+        }
+	
+
 	return best;
 }
 
@@ -334,7 +468,7 @@ int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
-int TTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, movecount, it;
 	move *list, *TTmove = NULL, *pick = NULL, *bm = NULL ;
@@ -387,7 +521,7 @@ int TTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dept
     	{
 
         	do_move(pos, &marray[it]);
-	        val = -TTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+	        val = -aTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
         	undo_move(pos, &marray[it]);
         	
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
@@ -472,7 +606,7 @@ int rootnegamax( board *pos, line *pline, int alpha, int beta, int color, int de
     	{
 
         	do_move(pos, it);
-	        val = -negamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+	        val = -anegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
         	undo_move(pos, it);
         	
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)

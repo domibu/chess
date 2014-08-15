@@ -83,7 +83,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 	U64 f, mask;
 	U64 *fr, *ho; 
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
-	unsigned char quietcount = 0,  tmp, piecetype, captcount = 255, enp_sq;
+	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 	//move *m_list = NULL, *m;
 	//if arg.info  
         	/*printf("Squiet count: %d	\n", quietcount);
@@ -296,7 +296,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
 					mpb &= ~(1LL << (mpp)); 
-					(tmp == captcount) ? captcount-- : quietcount++;
+					(tmp == captcount) ? captcount++ : quietcount++;
 				}
 			}
 			//provjera za pješaka
@@ -332,7 +332,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
 					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
-					captcount--;
+					captcount++;
 				}
 				else 
 				{
@@ -367,7 +367,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                                         		mask += 8;
                                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
         
-		                			captcount--;
+		                			captcount++;
 						}
 						//check fali, zapisi kao const osim stm
         					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
@@ -401,7 +401,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
         
                 					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
-		                			captcount--;
+		                			captcount++;
 						}
 					}
 				}
@@ -468,7 +468,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
 					mpr &= ~(1LL << (mpp)); 
-					(tmp == captcount) ? captcount-- : quietcount++;;
+					(tmp == captcount) ? captcount++ : quietcount++;;
         			}
 			}
 			//ppb &= ~ (1LL << pp);
@@ -600,7 +600,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
 		mPW &= ~(1LL << in); 
-		captcount--;
+		captcount++;
 	}
 	while (__builtin_popcountll(mPE))
 	{
@@ -628,7 +628,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
 		mPE &= ~(1LL << in); 
-		captcount--;
+		captcount++;
 	}
 	while (__builtin_popcountll(mENP))
 	{
@@ -646,7 +646,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 	ZZZ->mdata[captcount] ^= in << 6; //source
         		ZZZ->mdata[captcount] ^= enp_sq << 12; //destination
         
-                        captcount--;
+                        captcount++;
 		}
 		mENP &= ~(1LL << in); 
 	}
@@ -693,7 +693,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 f = (ho[5] >> in) & 1LL;
                 mask += 8;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-      			captcount--;
+      			captcount++;
 		}
 		//check fali, zapisi kao const osim stm
 		mPW_prom &= ~(1LL << in); 
@@ -726,7 +726,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 f = (ho[5] >> in) & 1LL;
                 mask += 8;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-      			captcount--;
+      			captcount++;
 		}
 		//check fali, zapisi kao const osim stm
 		mPE_prom &= ~(1LL << in); 
@@ -779,7 +779,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
         		mN_c &= ~(1LL << in); 
-        		captcount--;
+        		captcount++;
 		}
 		fr[4] &= ~(1LL << in_N); 
 	}
@@ -830,7 +830,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
         		mB_c &= ~(1LL << in); 
-        		captcount--;
+        		captcount++;
 		}
 		fr[3] &= ~(1LL << in_B); 
 	}
@@ -882,7 +882,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
  
         		mR_c &= ~(1LL << in); 
-        		captcount--;
+        		captcount++;
 		}
 		fr[2] &= ~1LL << in_R; 
 	}
@@ -934,7 +934,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
         		mQ_c &= ~(1LL << in); 
-        		captcount--;
+        		captcount++;
 
 		}
 		fr[1] &= ~1LL << in_Q; 
@@ -994,7 +994,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
                 
         		mK_c &= ~(1LL << in); 
-        		captcount--;
+        		captcount++;
         		
 		}
 		//fr[0] &= ~1LL << in_K; 
@@ -1029,7 +1029,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         ZZZ->quietcount = quietcount;
         ZZZ->captcount = captcount;
 
-	return quietcount + 255 - captcount;
+	return quietcount + captcount - 218;
 }
 
 int Ndo_move(Nboard *b, Nmove m)
