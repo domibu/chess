@@ -122,6 +122,7 @@ U64 gen_ho_atackN(Nboard arg);
 move *generate_movesALLOC(board arg);
 char generate_moves(board arg, move *movearray);
 char generate_movesN(Nmovelist *ZZZ, Nboard arg);
+char generate_movesN_test(Nmovelist *ZZZ, Nboard arg);
 
 int Ndo_move(Nboard *b, Nmove m);
 int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m);

@@ -105,7 +105,7 @@ source          6-11
 dest            12-17
 promo           18-20
 enp square      21-25
-
+MVV-LSA		26-30
 
 undo board data:
 old_enp         0-3
@@ -151,15 +151,24 @@ typedef struct Nline {
 int stop;
 move *marray;
 U64 mfree;
+Nline PV;
+
 extern U64 count;
 
 int delete_movelist(move *arg);
 
+void sortmoves(Nmovelist *m_list, Nmove PV_move);
+
 int eval( board *b);
 
 int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
+int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft);
+int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
+
+
+int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
 int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
-int negamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
+int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);

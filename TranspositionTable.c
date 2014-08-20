@@ -242,36 +242,39 @@ void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
 void nTTstore( U64 zobrist, U64 data)
 {
 	//always replace strategy
-	unsigned ind = zobrist % count_nTT;
+	U64 ind = zobrist % count_nTT;
 	
-	if (nTT[ind].zobrist)
+	/*if (nTT[ind].zobrist)
 	{
 		TTowr++;
-		//if (nTT[ ind].data & (1UL << 24))
+		if (((nTT[ ind].data >> 40) & 0x0000000000000003) == 1)
 			return;
-	}
+	}*/
 
 	TTwr++;
 	nTT[ ind].zobrist = zobrist;
 	nTT[ ind].data = data;
 
-                /*unsigned d, flag;
+/*                unsigned d, flag;
                 int score;
 		Nmove pick;
 
                 d = data & 0x000000000000FF;
-                flag = data >> 24 & 0x00000000003;
-                score = data >> 8 & 0x00000000FFFF;
-		pick = (data >> 26) & 0x00000001FFFFF;
-
-                //printmoveN( pick);
+                flag = (data >> 24) & 0x00000000003;
+                score = (data >> 8) & 0x00000000FFFF;
+		pick = (data >> 26) & 0x00000001FFFFF;*/
+		
+		//if (flag != 1) return;
+	
+		/*printf("-----------\n");	
+                printmoveN( &pick);
 
                 printmovedetailsN( &pick);
                 printBits( sizeof(U64), &data);
                 printf("*nTTstore* flag %d score %d depth %d\n", flag, score, d);
-                printf("zobrist: %llu\n", zobrist);*/
+                printf("zobrist: %llu\n", zobrist);
 
-	//printf("s\n");
+	printf("---------------------------\n");*/
 }
 
 
@@ -329,7 +332,8 @@ Nboard *nTTextractPV( Nboard pos, char n)
         char i;
         nTTentry *entry;
         Nmove *PV = NULL, pick;
-        for ( i = 0; i < n; i++)
+
+	for ( i = 0; i < n; i++)
         {
                 entry = nTTlookup( pos.zobrist);
                 if (!entry)   
@@ -342,25 +346,36 @@ Nboard *nTTextractPV( Nboard pos, char n)
 		TThit--;
                 //print FM
                 if ((pos.info >> 14) & 1ULL)    printf(" #%llu ", pos.info >> 15);
-		pick = (((U64)entry->data) >> 26) & 0x001FFFFF;
-
-		/*unsigned flag, depth;
-		int score;
-		depth = entry->data & 0x000000000000FF;
-		flag = entry->data >> 24 & 0x00000000003;
-		score = entry->data >> 8 & 0x00000000FFFF;*/
-
+		pick = (entry->data >> 0) & 0x00000003FFFFFF;
 		
-                printmoveN( &pick);
+			unsigned flag, depth;
+			int score;
+			depth = (entry->data >> 32) & 0x000000000000FF;
+			flag = (entry->data >> 40) & 0x00000000003;
+			score = (short)(entry->data >> 48) ;
+		int log = 0;
 
-		/*printmovedetailsN( &pick);
-		printBits( sizeof(Nmove), &pick);
+		/*if (log == 0)	{
+	               	printmovedetailsN( &pick);
+			//printmovedetailsN( &pick);
+		printBits( sizeof(U64), &entry->data);
+                printf("flag %d score %d depth %d\n", flag, score, depth);
+                printf("zobrist: %llu\n", entry->zobrist);
+                //printNboard( pos);
 		printf("flag %d score %d depth %d\n", flag, score, depth);
 		printf("zobrist: %llu\n", entry->zobrist);
-		printNboard( pos);*/
-	
+		//printNboard( pos);
+
+		printf("\n");
+
+		}
+		else	{*/
+			printmoveN( &pick);
+		//}
+		
                 Ndo_move( &pos, pick);
-        }
+
+	        }
         printf("\n");
         return NULL;
 }

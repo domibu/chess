@@ -3,6 +3,970 @@
 #include "MoveGeneration.h"
 #include "BitBoardMagic.h"
 
+char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
+{
+//if (stop) return 0;
+	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
+	U64 check_pieces, check_grid = ~0LL;
+	U64 in_N, in_B, in_R, in_Q, in_K, in;
+	U64 mN_q, mN_c, mB_q, mB_c, mR_q, mR_c, mQ_q, mQ_c, mK_q, mK_c;
+	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
+	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
+	U64 f, mask;
+	U64 *fr, *ho; 
+	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
+	unsigned char quietcount = 0,  tmp, piecetype, enp_sq;
+	//move *m_list = NULL, *m;
+	//if arg.info  
+        	/*printf("Squiet count: %d	\n", quietcount);
+        	printf("Scapt count: %d	\n", captcount);
+        	printf("Smoves count: %d	\n", quietcount + 255 - captcount);*/
+
+	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	if (stm )
+	{
+		fr = &arg.pieceset[0];
+		ho = &arg.pieceset[8];
+		cas_bit_K = 0x0000000000000010;
+		cas_bit_Q = 0x0000000000000020;
+		cas_at_K =  0x000000000000000E;
+		cas_at_Q =  0x0000000000000038;
+		cas_occ_K = 0x0000000000000006;
+		cas_occ_Q = 0x0000000000000070;
+		promotion = 0xFF00000000000000;
+		P1 = 8;
+		P2 = 16;
+		PE = 7;
+		PW = 9;
+		enp_sq = (arg.info >> 1 & 0x0000000000000007) + 40;
+		enp = (1LL << enp_sq)*(arg.info & 1LL);
+		enp_P = enp >> 8;
+		ENProw = 0x000000FF00000000;
+	}
+	else
+	{
+		fr = &arg.pieceset[8];
+		ho = &arg.pieceset[0];
+		cas_bit_K = 0x0000000000000040;
+		cas_bit_Q = 0x0000000000000080;
+		cas_at_K =  0x0E00000000000000;
+		cas_at_Q =  0x3800000000000000;
+		cas_occ_K = 0x0600000000000000;
+		cas_occ_Q = 0x7000000000000000;
+		promotion = 0x00000000000000FF;
+		P1 = -8;
+		P2 = -16;
+		PE = -9;
+		PW = -7;
+		enp_sq = (arg.info >> 1 & 0x0000000000000007) + 16;
+		enp = (1LL << enp_sq)*(arg.info & 1LL);
+		enp_P = enp << 8;
+		ENProw = 0x00000000FF000000;
+	}
+	/*printf("enp\n");
+	printBits(8, &enp);*/
+
+	king = __builtin_ffsll(fr[0])-1;
+        
+	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
+	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
+	arg.pieceset[16] = fr[6] ^ ho[6];
+	ho[7] = gen_ho_atackN(arg);
+	
+	//print_state(arg);
+				/*printf("frK\n");
+				printBits(8, &fr[0]);
+				printf("hoK\n");
+				printBits(8, &ho[0]);
+				printf("fr[6]\n");
+				printBits(8, &fr[6]);*/
+	
+	ZZZ->undo = arg.info; //spremaj old: enp, cast, hm i stm - za undo
+	ZZZ->old_zobrist = arg.zobrist;
+	// provjeri jel šah
+	if (fr[0] & ho[7])
+	{
+		//printf("is_check\n");
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		mpb = magicMovesBishop[king][in_at_b];		
+
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		
+		in_N = movesNight[king] & ho[4];
+		
+		check_pieces = in_K | in_N | at_b | at_r;
+
+		if (__builtin_popcountll(check_pieces) < 2) 
+		{		
+			if (__builtin_popcountll(at_b))
+			{
+				
+				at = __builtin_ffsll(at_b)-1;
+				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+			}
+			else if (__builtin_popcountll(at_r))
+			{
+				at = __builtin_ffsll(at_r)-1;
+				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
+		//index kralja moze i izvan while	
+				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
+				
+			}
+			else if (__builtin_popcountll(in_N))
+			{
+				check_grid = in_N;
+			}
+			else if (__builtin_popcountll(in_K))
+			{
+				check_grid = in_K;
+			}
+
+		}
+		else check_grid = 0LL;
+
+		/*in_K = __builtin_ffsll(fr[0])-1;
+		mK_q = movesKing[in_K] & ~fr[6] & ~ho[7];
+		mK_c = mK_q & ho[6];
+		mK_q &= ~ ho[6];
+		while (__builtin_popcountll(mK_q))
+		{
+			in = __builtin_ffsll(mK_q)-1;
+			m = m_list;
+			m_list = malloc(sizeof(move));
+			movearray[movecount].next = m;
+			movearray[movecount].from = (1LL << in_K);
+			movearray[movecount].dest = (1LL << in);
+			ZZZ->mdata[movecount] ^= 1LL  ^ stm;
+			//check fali, zapisi kao const osim stm
+			mK_q &= ~movearray[movecount].dest; 
+		}
+		while (__builtin_popcountll(mK_c))
+		{
+			in = __builtin_ffsll(mK_c)-1;
+			m = m_list;
+			m_list = malloc(sizeof(move));
+			movearray[movecount].next = m;
+			movearray[movecount].from = (1LL << in_K);
+			movearray[movecount].dest = (1LL << in);
+			ZZZ->mdata[movecount] ^= 1LL ^ (1LL << 6) ^ stm;
+			//check fali, zapisi kao const osim stm
+			mK_c &= ~movearray[movecount].dest; 
+		}*/
+	}
+	
+
+
+	all_pp = 0LL;
+	ppb = 0LL;
+	ppr = 0LL;
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//bb = blank & occupancyMaskBishop[king];
+	//printf("gen_m\n");
+
+	// tražim vezane figure po dijagonali
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	//printBits(8, &at_b);
+	while (__builtin_popcountll(at_b) )
+	{
+		at = __builtin_ffsll(at_b)-1;
+		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
+		//index kralja moze i izvan while	
+		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
+		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
+		//ppb = magicMovesBishop[king][in_k] ;
+		all_pp ^= ppb;
+		//while (__builtin_popcountll(ppb))
+		{
+			pp = __builtin_ffsll(ppb)-1;
+			bb = arg.pieceset[16] & ~ (1LL << pp);
+			in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
+			in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
+			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+			mpb &= check_grid;
+
+			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+			{
+				//printf("mpb\n");
+				//printBits(8, &mpb);
+				while ( __builtin_popcountll(mpb))
+				{
+					mpp = __builtin_ffsll(mpb)-1;
+					if (fr[3] & ppb)	piecetype = 3;
+					else piecetype = 1;
+				
+					//provjera check?
+					//tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+					tmp = quietcount;					
+
+					//novi potez pp na mpp
+					ZZZ->mdata[tmp] &= 0LL;
+					ZZZ->mdata[tmp] ^= piecetype; //piecetype
+					ZZZ->mdata[tmp] ^= pp << 6; //source
+					ZZZ->mdata[tmp] ^= mpp << 12; //destination
+                        		//odredi captured piece
+                        		f = (ho[1] >> mpp) & 1LL;
+                        		mask = 0x0000000000000008;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[2] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[3] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[4] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[5] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+
+					mpb &= ~(1LL << (mpp)); 
+					quietcount++;
+				}
+			}
+			//provjera za pješaka
+			if ( fr[5] & ppb)
+			{
+				pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
+				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
+				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+			
+				if (mpp)
+				{
+					// bez PROMOTION
+					ZZZ->mdata[quietcount] &= 0LL;
+					ZZZ->mdata[quietcount] ^= 5; //piecetype
+					ZZZ->mdata[quietcount] ^= pp << 6; //source
+					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+                        		//odredi captured piece
+                        		f = (ho[1] >> (mpp-1)) & 1LL;
+                        		mask = 0x0000000000000008;
+                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        		f = (ho[2] >> (mpp-1)) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        		f = (ho[3] >> (mpp-1)) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        		f = (ho[4] >> (mpp-1)) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        		f = (ho[5] >> (mpp-1)) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+
+					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					quietcount++;
+				}
+				else 
+				{
+				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
+					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
+					if (mpp)
+					{
+						//promotion 
+						for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
+						{
+					                ZZZ->mdata[quietcount] &= 0LL;
+                					ZZZ->mdata[quietcount] ^= 5; //piecetype
+		                			ZZZ->mdata[quietcount] ^= pp << 6; //source
+		                			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+		                			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
+		                			
+                                        		//odredi captured piece
+                                        		f = (ho[1] >> (mpp-1)) & 1LL;
+                                        		mask = 0x0000000000000008;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[2] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[3] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[4] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[5] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+        
+		                			quietcount++;
+						}
+						//check fali, zapisi kao const osim stm
+        					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					}
+					else
+					{
+						if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & (ho[6]^enp) & check_grid);
+						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
+						if (mpp)
+						{
+							//promotion nije kad je en'passan
+					                ZZZ->mdata[quietcount] &= 0LL;
+                					ZZZ->mdata[quietcount] ^= 7; //piecetype
+		                			ZZZ->mdata[quietcount] ^= pp << 6; //source
+		                			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+                                        		//odredi captured piece
+                                        		f = (ho[1] >> (mpp-1)) & 1LL;
+                                        		mask = 0x0000000000000008;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[2] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[3] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[4] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                                        		f = (ho[5] >> (mpp-1)) & 1LL;
+                                        		mask += 8;
+                                        		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+        
+                					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+		                			quietcount++;
+						}
+					}
+				}
+			}
+		}
+		at_b &= ~(1LL << at); 
+	}
+
+	// tražim vezane figure po liniji i redu
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	//printBits(8, &at_r);
+	while (__builtin_popcountll(at_r) )
+	{
+		at = __builtin_ffsll(at_r)-1;
+		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
+		//index kralja moze i izvan while	
+		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
+		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
+		//ppb = magicMovesBishop[king][in_k] ;
+		all_pp ^= ppr;
+		//while (__builtin_popcountll(ppb))
+		{
+			pp = __builtin_ffsll(ppr)-1;
+			bb = arg.pieceset[16] & ~ (1LL << pp);
+			in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
+			in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
+			mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+			mpr &= check_grid;
+			//printf("mpr\n");
+			//printBits(8, &mpr);
+			
+			if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+			{
+				while ( __builtin_popcountll(mpr))
+				{
+					mpp = __builtin_ffsll(mpr)-1;
+					if (fr[2] & ppr)	piecetype = 2;
+					else piecetype = 1;
+					//provjera check?
+					//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
+					tmp = quietcount;					
+					
+					//novi potez pp na mpp
+					ZZZ->mdata[tmp] &= 0LL;
+					ZZZ->mdata[tmp] ^= piecetype; //piecetype
+					ZZZ->mdata[tmp] ^= pp << 6; //source
+					ZZZ->mdata[tmp] ^= mpp << 12; //destination
+                        		//odredi captured piece
+                        		f = (ho[1] >> mpp) & 1LL;
+                        		mask = 0x0000000000000008;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[2] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[3] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[4] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+                        		f = (ho[5] >> mpp) & 1LL;
+                        		mask += 8;
+                        		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+
+					mpr &= ~(1LL << (mpp)); 
+					quietcount++;
+        			}
+			}
+			//ppb &= ~ (1LL << pp);
+		}
+			//provjera za pješaka
+			if ( fr[5] & ppr)
+			{
+				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
+                                //PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
+				// bez PROMOTION
+				if (mpp)
+				{
+					ZZZ->mdata[quietcount] &= 0LL;
+					ZZZ->mdata[quietcount] ^= 5; //piecetype
+					ZZZ->mdata[quietcount] ^= pp << 6; //source
+					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+					ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
+
+					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					quietcount++;
+				}
+				//else 
+				mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
+						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+				if (mpp)
+				{
+					ZZZ->mdata[quietcount] &= 0LL;
+					ZZZ->mdata[quietcount] ^= 5; //piecetype
+					ZZZ->mdata[quietcount] ^= pp << 6; //source
+					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+
+					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					quietcount++;
+				}
+				
+			}
+		at_r &= ~(1LL << at); 
+	}
+	//ppb =  magicMovesBishop[at][in_at];
+	//printf("all_pp\n");
+	//printBits(8, &all_pp);
+	
+	//legalnipotezi
+	
+	//PAWN
+	fr[5] &= ~ all_pp;
+	if (stm)
+	{
+	mP2 = ((fr[5] & 0x000000000000FF00) << 8 & ~arg.pieceset[16]) << 8 & ~arg.pieceset[16] & check_grid;
+	mP1 = fr[5] << 8 & ~arg.pieceset[16] & check_grid;
+	mPE = (fr[5] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[6] & check_grid;
+	mPW = (fr[5] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[6] & check_grid;
+	mENP = (enp & 0xFEFEFEFEFEFEFEFE & check_grid) >> 9 & fr[5] ^ (enp & 0x7F7F7F7F7F7F7F7F & check_grid) >> 7 & fr[5];
+	mENP |= (enp_P & 0xFEFEFEFEFEFEFEFE & check_grid) >> 1 & fr[5] ^ (enp_P & 0x7F7F7F7F7F7F7F7F & check_grid) << 1 & fr[5];
+	//mENP = 0LL;
+	mP1_prom = mP1 & promotion;
+	mPE_prom = mPE & promotion;
+	mPW_prom = mPW & promotion;
+	mP1 &= ~promotion;
+	mPE &= ~promotion;
+	mPW &= ~promotion;
+	}
+	else 
+	{
+	mP2 = ((fr[5] & 0x00FF000000000000) >> 8 & ~arg.pieceset[16]) >> 8 & ~arg.pieceset[16] & check_grid;
+	mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
+	mPE = (fr[5] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[6] & check_grid;
+	mPW = (fr[5] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[6] & check_grid;
+	mENP = (enp & 0x7F7F7F7F7F7F7F7F & check_grid) << 9 & fr[5] ^ (enp & 0xFEFEFEFEFEFEFEFE & check_grid) << 7 & fr[5];
+	mENP |= (enp_P & 0x7F7F7F7F7F7F7F7F & check_grid) << 1 & fr[5] ^ (enp_P & 0xFEFEFEFEFEFEFEFE & check_grid) >> 1 & fr[5];
+	//mENP = 0LL;
+	mP1_prom = mP1 & promotion;
+	mPE_prom = mPE & promotion;
+	mPW_prom = mPW & promotion;
+	mP1 &= ~promotion;
+	mPE &= ~promotion;
+	mPW &= ~promotion;
+	//printf("P1\n");
+	//printBits(8, &mP1_prom);
+	}
+
+	while (__builtin_popcountll(mP2))
+	{
+		in = __builtin_ffsll(mP2)-1;
+		ZZZ->mdata[quietcount] &= 0LL;
+		ZZZ->mdata[quietcount] ^= 5; //piecetype
+		ZZZ->mdata[quietcount] ^= (in - P2) << 6; //source
+		ZZZ->mdata[quietcount] ^= in << 12; //destination
+		ZZZ->mdata[quietcount] ^= ((in % 8) << 22) ^ (1LL << 21); //enp_file
+		mP2 &= ~(1LL << in); //pitanje jel potrebno
+		quietcount++;
+
+	}
+	while (__builtin_popcountll(mP1))
+	{
+		in = __builtin_ffsll(mP1)-1;
+		ZZZ->mdata[quietcount] &= 0LL;
+		ZZZ->mdata[quietcount] ^= 5; //piecetype
+		ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
+		ZZZ->mdata[quietcount] ^= in << 12; //destination
+		mP1 &= ~(1LL << in); //pitanje jel potrebno
+		quietcount++;
+	}
+	while (__builtin_popcountll(mPW))
+	{
+		// bez PROMOTION
+		in = __builtin_ffsll(mPW)-1;
+		ZZZ->mdata[quietcount] &= 0LL;
+		ZZZ->mdata[quietcount] ^= 5; //piecetype
+		ZZZ->mdata[quietcount] ^= (in - PW) << 6; //source
+		ZZZ->mdata[quietcount] ^= in << 12; //destination
+      		//odredi captured piece
+      		f = (ho[1] >> in) & 1LL;
+      		mask = 0x0000000000000008;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[2] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[3] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[4] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[5] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+		mPW &= ~(1LL << in); 
+		quietcount++;
+	}
+	while (__builtin_popcountll(mPE))
+	{
+		// bez PROMOTION
+		in = __builtin_ffsll(mPE)-1;
+		ZZZ->mdata[quietcount] &= 0LL;
+		ZZZ->mdata[quietcount] ^= 5; //piecetype
+		ZZZ->mdata[quietcount] ^= (in - PE) << 6; //source
+		ZZZ->mdata[quietcount] ^= in << 12; //destination
+      		//odredi captured piece
+      		f = (ho[1] >> in) & 1LL;
+      		mask = 0x0000000000000008;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[2] >> in) & 1LL;
+                 mask += 8;
+                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[3] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                 f = (ho[4] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                 f = (ho[5] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+		mPE &= ~(1LL << in); 
+		quietcount++;
+	}
+	while (__builtin_popcountll(mENP))
+	{
+		in = __builtin_ffsll(mENP)-1;
+		//enp check for 4-5 row pin
+		bb = ~(1LL << in | (enp_P)) & arg.pieceset[16] & occupancyMaskRook[king];
+		in_K = (bb * magicNumberRook[king]) >> magicNumberShiftsRook[king];
+		mR_q = magicMovesRook[king][in_K] & (ho[1] | ho[2]) & ENProw;
+		
+		if (!(mR_q))
+		{
+        		//promotion nije kad je en'passan
+                        ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 7; //piecetype
+                	ZZZ->mdata[quietcount] ^= in << 6; //source
+        		ZZZ->mdata[quietcount] ^= enp_sq << 12; //destination
+        
+                        quietcount++;
+		}
+		mENP &= ~(1LL << in); 
+	}
+	while (__builtin_popcountll(mP1_prom))
+	{
+		in = __builtin_ffsll(mP1_prom)-1;
+                for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
+                {
+	                ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 5; //piecetype
+      			ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
+      			ZZZ->mdata[quietcount] ^= in << 12; //destination
+       			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
+           			
+      			quietcount++;
+		}
+		//check fali, zapisi kao const osim stm
+        	mP1_prom &= ~(1LL << in); //pitanje jel potrebno
+	}
+	while (__builtin_popcountll(mPW_prom))
+	{
+		in = __builtin_ffsll(mPW_prom)-1;
+                for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
+		{
+	                ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 5; //piecetype
+      			ZZZ->mdata[quietcount] ^= (in - PW) << 6; //source
+      			ZZZ->mdata[quietcount] ^= in << 12; //destination
+       			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
+           			
+      		//odredi captured piece
+      		f = (ho[1] >> in) & 1LL;
+      		mask = 0x0000000000000008;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[2] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[3] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[4] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[5] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+      			quietcount++;
+		}
+		//check fali, zapisi kao const osim stm
+		mPW_prom &= ~(1LL << in); 
+	}
+	while (__builtin_popcountll(mPE_prom))
+	{
+
+		in = __builtin_ffsll(mPE_prom)-1;
+                for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
+		{
+	                ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 5; //piecetype
+      			ZZZ->mdata[quietcount] ^= (in - PE) << 6; //source
+      			ZZZ->mdata[quietcount] ^= in << 12; //destination
+       			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
+           			
+      		//odredi captured piece
+      		f = (ho[1] >> in) & 1LL;
+      		mask = 0x0000000000000008;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[2] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[3] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[4] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                f = (ho[5] >> in) & 1LL;
+                mask += 8;
+                ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+      			quietcount++;
+		}
+		//check fali, zapisi kao const osim stm
+		mPE_prom &= ~(1LL << in); 
+	}
+	
+	
+	
+	
+	//NIGHT
+	fr[4] &= ~ all_pp;
+	while (__builtin_popcountll(fr[4]))
+	{
+		in_N = __builtin_ffsll(fr[4])-1;
+		mN_q = movesNight[in_N] & ~arg.pieceset[16] & check_grid;
+		mN_c = movesNight[in_N] & ho[6] & check_grid;
+		
+		while (__builtin_popcountll(mN_q))
+		{
+                	in = __builtin_ffsll(mN_q)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 4; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_N << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+
+        		mN_q &= ~(1LL << in);
+        		quietcount++;
+		}
+		while (__builtin_popcountll(mN_c))
+		{
+        		in = __builtin_ffsll(mN_c)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 4; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_N << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+              		//odredi captured piece
+              		f = (ho[1] >> in) & 1LL;
+              		mask = 0x0000000000000008;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[2] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[3] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[4] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[5] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+        		mN_c &= ~(1LL << in); 
+        		quietcount++;
+		}
+		fr[4] &= ~(1LL << in_N); 
+	}
+
+	//BISHOP
+	fr[3] &= ~ all_pp;
+	while (__builtin_popcountll(fr[3]))
+	{
+		in_B = __builtin_ffsll(fr[3])-1;
+		in = ((arg.pieceset[16] & occupancyMaskBishop[in_B]) * magicNumberBishop[in_B]) >> magicNumberShiftsBishop[in_B];
+		mB_q = magicMovesBishop[in_B][in] & ~ fr[6];
+		mB_c = mB_q & ho[6] & check_grid;
+		mB_q &= ~ ho[6] & check_grid;
+	
+		while (__builtin_popcountll(mB_q))
+		{
+                	in = __builtin_ffsll(mB_q)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 3; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_B << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+
+        		mB_q &= ~(1LL << in);
+        		quietcount++;
+		}
+		while (__builtin_popcountll(mB_c))
+		{
+        		in = __builtin_ffsll(mB_c)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 3; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_B << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+              		//odredi captured piece
+              		f = (ho[1] >> in) & 1LL;
+              		mask = 0x0000000000000008;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[2] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[3] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[4] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[5] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+        		mB_c &= ~(1LL << in); 
+        		quietcount++;
+		}
+		fr[3] &= ~(1LL << in_B); 
+	}
+
+	//ROOK
+	fr[2] &= ~ all_pp;
+	while (__builtin_popcountll(fr[2]))
+	{
+		in_R = __builtin_ffsll(fr[2])-1;
+		in = ((arg.pieceset[16] & occupancyMaskRook[in_R]) * magicNumberRook[in_R]) >> magicNumberShiftsRook[in_R];
+		mR_q = magicMovesRook[in_R][in] & ~ fr[6];
+		mR_c = mR_q & ho[6] & check_grid;
+		mR_q &= ~ ho[6] & check_grid;
+	
+		while (__builtin_popcountll(mR_q))
+		{
+                	in = __builtin_ffsll(mR_q)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 2; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_R << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+
+        		mR_q &= ~(1LL << in);
+        		quietcount++;
+
+		}
+		while (__builtin_popcountll(mR_c))
+		{
+        		in = __builtin_ffsll(mR_c)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 2; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_R << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+              		//odredi captured piece
+              		f = (ho[1] >> in) & 1LL;
+              		mask = 0x0000000000000008;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[2] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[3] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[4] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[5] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+ 
+        		mR_c &= ~(1LL << in); 
+        		quietcount++;
+		}
+		fr[2] &= ~1LL << in_R; 
+	}
+	
+	//QUEEN
+	fr[1] &= ~ all_pp;
+	while (__builtin_popcountll(fr[1]))
+	{
+		in_Q = __builtin_ffsll(fr[1])-1;
+		in_R = ((arg.pieceset[16] & occupancyMaskRook[in_Q]) * magicNumberRook[in_Q]) >> magicNumberShiftsRook[in_Q];
+		in_B = ((arg.pieceset[16] & occupancyMaskBishop[in_Q]) * magicNumberBishop[in_Q]) >> magicNumberShiftsBishop[in_Q];
+		mQ_q = (magicMovesRook[in_Q][in_R] ^ magicMovesBishop[in_Q][in_B]) & ~ fr[6];
+		mQ_c = mQ_q & ho[6] & check_grid;
+		mQ_q &= ~ ho[6] & check_grid;
+	
+		while (__builtin_popcountll(mQ_q))
+		{
+                	in = __builtin_ffsll(mQ_q)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 1; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_Q << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+
+        		mQ_q &= ~(1LL << in);
+        		quietcount++;
+		}
+		while (__builtin_popcountll(mQ_c))
+		{
+        		in = __builtin_ffsll(mQ_c)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 1; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_Q << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+              		//odredi captured piece
+              		f = (ho[1] >> in) & 1LL;
+              		mask = 0x0000000000000008;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[2] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[3] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[4] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[5] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+        		mQ_c &= ~(1LL << in); 
+        		quietcount++;
+
+		}
+		fr[1] &= ~1LL << in_Q; 
+	}
+	
+	//KING
+	//while (__builtin_popcountll(fr[0]))
+	/*printf("ho7\n");
+	printBits(8, &ho[7]);
+	printf("ho5\n");
+	printBits(8, &ho[5]);*/
+	{
+		in_K = __builtin_ffsll(fr[0])-1;
+		mK_q = movesKing[in_K] & ~fr[6] & ~ho[7];
+	//printf("mk\n");
+	//printBits(8, &mK_q);
+		mK_c = mK_q & ho[6];
+		mK_q &= ~ ho[6];
+	/*printf("mkQ\n");
+	printBits(8, &mK_q);
+	printf("mkC\n");
+	printBits(8, &mK_c);*/
+		
+		while (__builtin_popcountll(mK_q))
+		{
+                	in = __builtin_ffsll(mK_q)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 0; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_K << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+
+        		mK_q &= ~(1LL << in);
+        		quietcount++;
+		}
+		while (__builtin_popcountll(mK_c))
+		{
+        		in = __builtin_ffsll(mK_c)-1;
+        		ZZZ->mdata[quietcount] &= 0LL;
+        		ZZZ->mdata[quietcount] ^= 0; //piecetype
+        		ZZZ->mdata[quietcount] ^= in_K << 6; //source
+        		ZZZ->mdata[quietcount] ^= in << 12; //destination
+              		//odredi captured piece
+              		f = (ho[1] >> in) & 1LL;
+              		mask = 0x0000000000000008;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[2] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[3] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[4] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                        f = (ho[5] >> in) & 1LL;
+                        mask += 8;
+                        ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
+                
+        		mK_c &= ~(1LL << in); 
+        		quietcount++;
+        		
+		}
+		//fr[0] &= ~1LL << in_K; 
+	}
+	//CASTLE
+	if ( arg.info & cas_bit_K && !(ho[7] & cas_at_K) && !(arg.pieceset[16] & cas_occ_K) )
+	{
+			//printf("casK	\n");
+        		ZZZ->mdata[quietcount] &= 0LL;
+			ZZZ->mdata[quietcount] ^= 6 ^ (6 << 3);
+			quietcount++;
+	}
+	if ( arg.info & cas_bit_Q && !(ho[7] & cas_at_Q) && !(arg.pieceset[16] & cas_occ_Q) )
+	{
+	//printf("casQ\n");
+        		ZZZ->mdata[quietcount] &= 0LL;
+			ZZZ->mdata[quietcount] ^= 6 ^ (7 << 3);
+			quietcount++;
+	}
+	//potrebno je odrolati pinned pieces 
+	
+	
+	/*printf("ho.atackmap\n");
+	printBits(8, &ho[7]);
+	printf("checkgrid\n");
+	printBits(8, &check_grid);*/
+	
+        	/*printf("quiet count: %d	\n", quietcount);
+        	printf("capt count: %d	\n", 255-captcount);
+        	printf("moves count: %d	\n", quietcount + 255 -captcount);*/
+
+        ZZZ->quietcount = quietcount;
+        ZZZ->captcount = 218;
+
+	return quietcount ;
+}
+
+
+
 U64 gen_ho_atackN( Nboard arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
@@ -4019,16 +4983,16 @@ void printmoveN(Nmove *m)
 void printmovedetailsN(Nmove *ff)
 {
         unsigned char p_type, capt_type, sq_from, sq_dest;
-	        printf("m\n");
-	        printBits(4, ff);
+	        printf("\n-----move_details-------\n");
+	        printmoveN(ff);
+        	printBits(4, ff);
             	p_type = *ff & 0x00000007;
               	capt_type = *ff >> 3 & 0x0000000000000007;
 	        sq_from = *ff >> 6 & 0x0000003F;
 	        sq_dest = *ff >> 12 & 0x0000003F;
-               printf("p %d capt %d\n", p_type, capt_type);
+                printf("p %d capt %d\n", p_type, capt_type);
 	        printf("fr %d dst %d \n", sq_from, sq_dest);
-                printmoveN(ff);
-	        printf("\n");
+	        printf("----------\n");
       
                
 	
