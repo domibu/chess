@@ -71,8 +71,8 @@ void printNboard(Nboard arg)
 		//m >>=1;
 		if ((i+1)%8 == 0) printf("\n");
 	}
-	hm = arg.info >> 16;
-	fm = arg.info >> 32;
+	hm = (arg.info >> 8) & 0x00000003F;
+	fm = arg.info >> 16;
 	stm = (arg.info & (1LL << 14)) ? 119 : 98;
 
 	strcat(castle, 1LL << 4 & arg.info ? "K" : "");
@@ -290,14 +290,14 @@ Nboard NimportFEN(char *fen)
 	if (strstr(castle,"q") != NULL)	chessb.info |= (1LL << 7);	else	  chessb.info &= ~(1LL << 7);
 	hm_ = strtol( hm, NULL, 10);
 	fm_ = strtol( fm, NULL, 10);
-	chessb.info ^= ((hm_) << 8) ^ ((fm_) << 15);
+	chessb.info ^= ((hm_) << 8) ^ ((fm_) << 16);
 	if (s_t_m[0] == 'w')	chessb.info |= 1LL << 14;	else	  chessb.info &= ~(1LL << 14);
-	printf("N len : %d	%s\n", strlen(b), b);
+	/*printf("N len : %d	%s\n", strlen(b), b);
 	printf("%s\n", s_t_m);
 	printf("%s\n", castle);
 	printf("%s %d\n", enpas, enp);
 	printf("%s\n", hm);
-	printf("%s\n", fm);
+	printf("%s\n", fm);*/
 	return chessb;
 }
 
