@@ -126,12 +126,8 @@ move *generate_movesALLOC(board arg);
 char generate_moves(board arg, move *movearray);
 char generate_movesN(Nmovelist *ZZZ, Nboard arg);
 char generate_movesN_test(Nmovelist *ZZZ, Nboard arg);
-<<<<<<< HEAD
 
 int evaluate( Nboard arg, int draft, int color, Nboard *rb);
-
-=======
->>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 
 int Ndo_move(Nboard *b, Nmove m);
 int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m);
