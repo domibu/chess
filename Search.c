@@ -229,10 +229,17 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 	if ( !depth ) 
 	{
 		pline->cmove = 0;
+<<<<<<< HEAD
 	  return color*evaluate( *pos, draft, color, pos);
 	}
 
 	best = -WIN-200;
+=======
+	  return color * neval( pos);
+	}
+
+	best = -WIN;
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 	movecount = generate_movesN(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
@@ -244,7 +251,11 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 	for (; it < limes ; it++  )
 	{
 		Ndo_move(pos, NML[depth].mdata[it]);
+<<<<<<< HEAD
 		val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1, draft +1);
+=======
+		val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
 		
 		if ( val >= beta)       return val; //fail-soft
@@ -258,7 +269,10 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 				 pline->argmove[0] = NML[depth].mdata[it];
 				  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
 				  pline->cmove = nline.cmove +1;
+<<<<<<< HEAD
 			//	printNline(*pline);
+=======
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 			}
 		}	
 	}
@@ -273,7 +287,11 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
+<<<<<<< HEAD
 int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+=======
+int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 {
 	int best, val, old_alpha, movecount, it, limes;
 	Nmove pick = NULL, hash_move = 0;
@@ -323,6 +341,7 @@ int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 
 	if ( !depth ) 
   	{
+<<<<<<< HEAD
     		pline->cmove = 0;
 	  //return color * neval( pos);
 	  return color*evaluate( *pos , draft, color, pos);
@@ -332,6 +351,16 @@ int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	best = -WIN-300;
         movecount = generate_movesN(&NML[depth] , *pos);
 	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
+=======
+    		//pline->cmove = 0;
+	  return color * neval( pos);
+  	}
+	  	
+	old_alpha = alpha;
+	best = -WIN;
+        movecount = generate_movesN(&NML[depth] , *pos);
+	if (hash_move > 0) sortmoves( &NML[depth], hash_move);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 
         quiet = NML[depth].quietcount;
         capt = NML[depth].captcount;
@@ -343,7 +372,11 @@ forpetlja:
 	for (; it < limes ; it++  )
         {
 		Ndo_move(pos, NML[depth].mdata[it]);
+<<<<<<< HEAD
 		val = -pvs_02( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
+=======
+		val = -nTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
                 Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
                 
                 if ( val >= beta)       
@@ -376,9 +409,15 @@ forpetlja:
 				pick = NML[depth].mdata[it];
 				/*printf("**");
 				printmoveN( &pick);*/
+<<<<<<< HEAD
                                  pline->argmove[0] = NML[depth].mdata[it];
                                   memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
                                   pline->cmove = nline.cmove +1;
+=======
+                                 /*pline->argmove[0] = NML[depth].mdata[it];
+                                  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+                                  pline->cmove = nline.cmove +1;*/
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
                         }
                 }	
         }
@@ -445,7 +484,10 @@ forpetlja:
 	return best;
 }
 
+<<<<<<< HEAD
 //IMA BUG
+=======
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 void sortmoves(Nmovelist *m_list, Nmove PV_move)
 {
 	//if (PV_move == 0)
@@ -538,7 +580,11 @@ int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	/*printf("--");
 	printf("draft %d Pv.cmove %d ", draft, PV.cmove);
 	printmoveN(&PV.argmove[draft]);*/
+<<<<<<< HEAD
 	//sortmoves(&NML[depth], (draft < PV.cmove) ? PV.argmove[draft] : 0);
+=======
+	sortmoves(&NML[depth], (draft < PV.cmove) ? PV.argmove[draft] : 0);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 

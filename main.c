@@ -162,6 +162,7 @@ char setposition[6][150] = {
 
 	InitializeMoveDatabase();
 	initZobrist();
+<<<<<<< HEAD
 	//count_TT = setTT( memory);
 	//count_nTT= setnTT( memory);
 
@@ -181,6 +182,20 @@ char setposition[6][150] = {
 	fgets(w, input_max_length, stdin);
 	
 if (strstr(w,"xboard") != NULL)	chess_engine_communication_protocol();
+=======
+	count_TT = setTT( n);
+	count_nTT= setnTT( n);
+
+	Ncb = NimportFEN(setposition[1]);
+	cb = importFEN(setposition[1]);
+	setZobrist( &cb);
+	nsetZobrist( &Ncb);
+	printf(" TTentry size: %d\n", sizeof(TTentry));
+	printf(" prim: %llu nprim %llu\n", count_TT, count_nTT);
+	printf(" Nmove size: %d\n", sizeof(Nmove));
+	printf(" U64 size: %d\n", sizeof(U64));
+	NML = malloc( sizeof(Nmovelist)*15);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 
 else
 
@@ -292,7 +307,10 @@ while (1)
                 color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
                 //printBits( 8, &cb.info);
                 
+<<<<<<< HEAD
 		count_nTT= setnTT( memory);
+=======
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 
                 int i;
                 //marray = malloc( sizeof(move)*216*(n+1) );
@@ -304,6 +322,7 @@ while (1)
 			TTwr = 0;
 	             
 			gettimeofday(&start, NULL);
+<<<<<<< HEAD
 		        score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, i, 0);
                         memcpy( &PV, &Npline, sizeof(Nline));
 	                gettimeofday(&end, NULL);
@@ -312,6 +331,17 @@ while (1)
                         nTTextractPV( Ncb, i);
 			
 			
+=======
+		        score = pvs_02( &Ncb, &Npline, -WIN, +WIN, color, i);
+                        memcpy( &PV, &Npline, sizeof(Nline));
+	                gettimeofday(&end, NULL);
+
+			printf("pvs01:%d        ", i);
+                        nTTextractPV( Ncb, n);
+                        printf("\n");
+
+
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
  	                fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
               }
@@ -337,6 +367,7 @@ while (1)
 			score = pvs_01( &Ncb, &Npline, -WIN, +WIN, color, i, 0, 0);
                         memcpy( &PV, &Npline, sizeof(Nline));
 			printf("pvs01:%d 	", i);
+<<<<<<< HEAD
 	
                 //free( marray);
                 	gettimeofday(&end, NULL);
@@ -346,6 +377,18 @@ while (1)
                 	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
 
 		}
+=======
+			printNline( PV);
+			printf("\n");
+		}
+                //free( marray);
+                gettimeofday(&end, NULL);
+
+                printNline( Npline);
+                razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+                fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
+
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
                 //printf("score: %d d%d c%d moves%d", score, n, color, count);
                 //printmove( fst_pick);
         }
@@ -534,6 +577,10 @@ nLegal_for:	for (; it < limes ; it++)
         	}*/
         	printf("capt count: %d	\n", 255-NML->captcount);
         	printf("moves count: %d	\n", NML->quietcount + NML->captcount - 218);
+<<<<<<< HEAD
+=======
+		free( NML);
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 		
 	} 
         else

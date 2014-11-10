@@ -182,6 +182,14 @@ int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
 
 
+<<<<<<< HEAD
+=======
+int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
+int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft);
+int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
+
+
+>>>>>>> c5fe04099586b198d558ab0c86d2ceecff7f01ac
 int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth);
 int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
