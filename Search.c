@@ -82,7 +82,7 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
                         	if ( val < beta ) beta = val;
 	                }
         	}
-		hash_move = entry->data;		
+		hash_move = (flag == 3) ? 0 : entry->data;		
 	}
 
 	if ( !depth ) 
@@ -133,10 +133,10 @@ forpetlja:
                         {
                                 alpha = val;
 				pick = NML[depth].mdata[it];
-                                pline->argmove[0] = NML[depth].mdata[it];
+                                /*pline->argmove[0] = NML[depth].mdata[it];
                                 memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-                                pline->cmove = nline.cmove +1;
-				//extract PV from TT
+                                pline->cmove = nline.cmove +1;*/
+				//	extract PV from TT	/////////////////
                         }
                 }
 		//if (en_state == PONDERING) printf("!");	
@@ -161,6 +161,8 @@ forpetlja:
 			
 			data ^= (1ULL << 40);
 
+			////	STROE PV node	/////
+			nTTstore( pos->zobrist, data);
         }
         // fail low implies upperbound
         if (best <= old_alpha)
@@ -377,9 +379,9 @@ forpetlja:
 				pick = NML[depth].mdata[it];
 				/*printf("**");
 				printmoveN( &pick);*/
-                                 pline->argmove[0] = NML[depth].mdata[it];
-                                  memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-                                  pline->cmove = nline.cmove +1;
+                                 //pline->argmove[0] = NML[depth].mdata[it];
+                                  //memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+                                  //pline->cmove = nline.cmove +1;
                         }
                 }	
         }

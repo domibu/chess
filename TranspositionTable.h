@@ -131,7 +131,8 @@ typedef struct nTTentry {
 
 typedef struct Nline {
   int cmove;
-  Nmove argmove[20]; // 20 je moveMAX
+	///	DEFINW Nline_argnove_MAX /////////
+  Nmove argmove[50]; // 20 je moveMAX
 } Nline;
 
 #endif
@@ -148,7 +149,7 @@ void dodaj_move( move **pocetak, move *ind );
 
 
 move *TTextractPV( board pos, char n);
-Nboard *nTTextractPV( Nboard pso, char n);
+Nmove nTTextractPV( Nboard pos, char n);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);

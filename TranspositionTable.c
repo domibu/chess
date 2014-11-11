@@ -284,7 +284,7 @@ void printline( line pline)
     for (it = 0; pline.cmove > it; it++)
     {
 		if (pline.argmove[it].info & 1ULL)	printf(" #%d ", it);
-		printmove( &pline.argmove[it]);
+			printmove( &pline.argmove[it]);
     }
     printf("\n");
 }
@@ -313,7 +313,7 @@ move *TTextractPV( board pos, char n)
 		dodaj_move( &PV, &entry->pick);
 			
 		//print FM
-		if (pos.info & 1ULL)	printf(" #%llu ", pos.info >> 32);
+		if (pos.info & 1ULL)	printf(" #%llu ", pos.info >> 14);
 		printmove( &entry->pick);
 
 		do_move( &pos, &entry->pick);
@@ -327,35 +327,40 @@ void print_TTentry( nTTentry *arg, Nboard pos)
 	
 }
 
-Nboard *nTTextractPV( Nboard pos, char n)
+Nmove nTTextractPV( Nboard pos, char n)
 {
         char i;
         nTTentry *entry;
-        Nmove *PV = NULL, pick;
+        Nmove PV = NULL, pick = NULL;
 
 	for ( i = 0; i < n; i++)
         {
                 entry = nTTlookup( pos.zobrist);
                 if (!entry)   
 		{
-			printf("pvN: %d\n", i);
-			return NULL;
+			printf("!!pvN: %d	", i);
+			printmoveN(&pick);
+			printf("\n");
+			return pick;
 
 		}
                 //dodaj_move( &PV, &entry->pick);
 		TThit--;
                 //print FM
-                if ((pos.info >> 14) & 1ULL)    printf(" #%llu ", pos.info >> 15);
-		pick = (entry->data >> 0) & 0x00000003FFFFFF;
-		
+                //if ((pos.info >> 14) & 1ULL)    printf(" #%llu ", pos.info >> 15);
+
+		PV = (entry->data >> 0) & 0x00000003FFFFFF;
+		if (i == 0) pick = PV;
+
 			unsigned flag, depth;
 			int score;
 			depth = (entry->data >> 32) & 0x000000000000FF;
 			flag = (entry->data >> 40) & 0x00000000003;
 			score = (short)(entry->data >> 48) ;
-		int log = 0;
 
-		/*if (log == 0)	{
+		/*int log = 1;
+
+		if (log == 0)	{
 	               	printmovedetailsN( &pick);
 			//printmovedetailsN( &pick);
 		printBits( sizeof(U64), &entry->data);
@@ -370,14 +375,21 @@ Nboard *nTTextractPV( Nboard pos, char n)
 
 		}
 		else	{*/
-			printmoveN( &pick);
+		if (PV == 0)
+		{
+			printf("pvN: %d		", i);
+			printmoveN(&pick);
+			printf("\n");
+			return pick;
+		}
+			printmoveN( &PV);
 		//}
 		
-                Ndo_move( &pos, pick);
+                Ndo_move( &pos, PV);
 
 	        }
         printf("\n");
-        return NULL;
+        return pick;
 }
 
 void dodaj_move( move **pocetak, move *ind )
