@@ -7,7 +7,7 @@
  draw=1
  sigint=0
  sigterm=0
- reuse=0
+ reuse=1
  analyze=0
  myname="domibuch"
  variants="normal"
@@ -17,6 +17,6 @@
  debug=1
  memory=0
  smp=0
- egt=0
+ egt=""
  nps=0
  option=""

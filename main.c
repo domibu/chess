@@ -65,6 +65,15 @@ void *Thinking(void *void_ptr )
 		TTwr = 0;
 		
 		score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, i, 0);
+
+		if (en_state == THINKING)
+		{
+			fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, razmisljao*100, count);
+			pm = nTTextractPV( Ncb, i);
+			/*printf("=%d= ", i);
+			printmoveN(&pm);
+			printf("\n"); */
+		}
 		if (en_state == THINKING)
 				;//memcpy( &PV, &Npline, sizeof(Nline));
 		gettimeofday(&end, NULL);
@@ -86,14 +95,6 @@ void *Thinking(void *void_ptr )
 			
 
 
-		if (en_state == THINKING)
-		{
-			fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, razmisljao*100, count);
-			pm = nTTextractPV( Ncb, i);
-			/*printf("=%d= ", i);
-			printmoveN(&pm);
-			printf("\n"); */
-		}
 			
 			//printNline(PV);
 
@@ -176,6 +177,7 @@ t_manager.ctrl_style = 0;
 t_manager.moves_per_ctrl = 40;
 t_manager.en_time = 5*60*100;
 t_manager.lag = 10;
+t_manager.est_moves_game = 16;
 
 InitializeMoveDatabase();
 initZobrist();
@@ -841,6 +843,7 @@ en_state_THINKING:
 		{
 			//	FISHER TIME CTRL
 			t_manager.target = (t_manager.en_time + 100*t_manager.increment*t_manager.est_moves_game) / t_manager.est_moves_game;
+			t_manager.target = (t_manager.en_time < t_manager.target) ? t_manager.en_time : t_manager.target;
 		}
 		its.it_value.tv_sec = (t_manager.target-t_manager.lag) / 100;
 		its.it_value.tv_nsec = ((t_manager.target-t_manager.lag) % 100)*10000000;
@@ -885,7 +888,7 @@ en_state_THINKING:
 		}
 		printf("t_man CTRL_STYLE %d mp_ctrl %d base %u inc %d\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment);
 	}
-	/*else
+	else
 	if (strstr(buff, "st") != NULL)
 	{
 		unsigned st;
@@ -893,7 +896,7 @@ en_state_THINKING:
 		sscanf(buff, "st %u", &st);
 		t_manager.ctrl_style = 2;
 		t_manager.target = st * 100;
-	}*/
+	}
 	else 
 	if (strstr(buff, "time") != NULL)
 	{
@@ -901,11 +904,32 @@ en_state_THINKING:
 		sscanf(buff, "time %u", &t);
 		t_manager.en_time = t;
 	}
+	else
 	if (strstr(buff, "otim") != NULL)
 	{
 		unsigned t;
 		sscanf(buff, "otim %u", &t);
 		t_manager.op_time = t;
+	}
+	else
+	if (strstr(buff, "setboard ") != NULL)
+	{
+		char fen[127];
+		sscanf(buff, "setboard %[^\n]", fen);
+		
+		printf("buff:	%s\n", buff);
+		printf("FEN:	%s\n", fen);
+
+		en_state = OBSERVING;
+
+		Ncb = NimportFEN(fen);
+		nsetZobrist( &Ncb);
+
+		//	set FM u t_manager	////////////////
+		//t_manager.fm;
+
+		printNboard(Ncb);	
+		
 	}
 	else
 	if ((strstr(buff,"usermove") != NULL) &&  ((en_state == PONDERING) || (en_state == OBSERVING)))
