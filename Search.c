@@ -12,12 +12,13 @@ line pline;
 Nline Npline;
 int stop = 0;
 
-int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int draft, int depth) {
-	
-	//Nline nline;
+int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+{
+	Nmove pick;	
+	Nline nline;
 	int score;
-    int stand_pat = evaluate(*pos, draft, color, pos);
-	//pline->cmove = 0;
+    int stand_pat = color*evaluate(*pos, draft, color, pos);
+	pline->cmove = 0;
     if( stand_pat >= beta )
         return beta;
     if( alpha < stand_pat )
@@ -30,17 +31,17 @@ int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int draf
 	for (it = 218; (it < capt_count) && (en_state == THINKING); it++)
     {
 	Ndo_move(pos, NML[draft+1].mdata[it]);
-	score = -Quiesce( pos, pline, -beta, -alpha, -color, draft+1, depth-1);
+	score = -Quiesce( pos, pline, -beta, -alpha, -color, depth-1, draft+1);
 	Nundo_move(pos, &NML[draft+1], NML[draft+1].mdata[it]);
 
         if( score >= beta )
             return beta;
         if( score > alpha )
 	{
-		//pick = NML[depth].mdata[it];
-		//pline->argmove[0] = NML[depth].mdata[it];
-		//memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-		//pline->cmove = nline.cmove +1;
+		pick = NML[draft+1].mdata[it];
+		pline->argmove[0] = pick;
+		memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+		pline->cmove = nline.cmove +1;
            alpha = score;
 	}
     }
@@ -53,7 +54,7 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	//printf("%d", en_state);
 	
 	int best, val, old_alpha, movecount, it, limes;
-	Nmove pick = NULL, hash_move = 0;
+	Nmove pick = NULL, hash_move = 0, do_move;
 	unsigned char quiet, capt, flag;
 	Nline nline;
 	nTTentry *entry;
@@ -87,10 +88,10 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 
 	if ( !depth ) 
   	{
-    		pline->cmove = 0;
+    		//pline->cmove = 0;
 		//return color * neval( pos);
 		return color*evaluate( *pos , draft, color, pos);
-		//return color*Quiesce( pos, pline, -beta, -alpha, -color, draft+1, depth-1); 
+		//return Quiesce( pos, pline, alpha, beta, color, depth, draft); 
   	}
 	  	
 	old_alpha = alpha;
@@ -107,9 +108,10 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 forpetlja: 
 	for (; (it < limes) && (en_state == THINKING); it++  )
         {
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move = NML[depth].mdata[it];
+		Ndo_move(pos, do_move);
 		val = -search( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
-                Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+                Nundo_move(pos, &NML[depth], do_move);
                 
                 if ( val >= beta)       
 		{	
@@ -117,7 +119,7 @@ forpetlja:
 
                         data ^= (short)val;
                         data <<= 48;
-                        data ^= NML[depth].mdata[it];
+                        data ^= do_move;
                         data ^= (U64)depth << 32;
                         data ^= (2ULL << 40);
 

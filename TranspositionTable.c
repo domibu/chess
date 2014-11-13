@@ -392,6 +392,22 @@ Nmove nTTextractPV( Nboard pos, char n)
         return pick;
 }
 
+Nmove TTfind_move( U64 key)
+{
+        nTTentry *entry;
+
+	entry = nTTlookup( key);
+	if (!entry)   
+	{
+		printf("!!pv_find error\n");
+		return 0;
+	}
+
+	TThit--;
+
+	return (entry->data >> 0) & 0x00000003FFFFFF;
+}
+
 void dodaj_move( move **pocetak, move *ind )
 {
 

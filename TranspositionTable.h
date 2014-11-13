@@ -150,6 +150,7 @@ void dodaj_move( move **pocetak, move *ind );
 
 move *TTextractPV( board pos, char n);
 Nmove nTTextractPV( Nboard pos, char n);
+Nmove TTfind_move( U64 key);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);

@@ -22,8 +22,10 @@ U64 /*mmall = 0,*/ count = 0, mfree = 0;
 double razmisljao/*, potroseno_vrijeme*/;
 struct timeval start, end;
 
-int n=200, memory = 270, score, color;
-int search_depth = 50;
+#define MEMORY_MAX 2048
+int n=200, memory = 64, score, color;
+#define SD_MAX 50
+int search_depth = SD_MAX;
 int post=1;
 extern int stop;
 int pondering=0;
@@ -48,11 +50,34 @@ struct t_man {
 	unsigned lag;
 } t_manager;
 
+
+/*
+history.tag:
+0-31 move_data
+32-64 undo_move_data
+*/
+#define HISTORY_MAX 1000
+struct hist {
+	U64 tag[HISTORY_MAX];
+	unsigned curr;
+} history;
+
+pthread_t threads[4];
+timer_t timer_id;
+struct itimerspec its;
+struct sigevent sev;
+struct sigaction setup_action;
+sigset_t block_mask;
+void catch_alrm();
+#define SIG_TRGT SIGRTMIN
+
 void *Thinking(void *void_ptr )
 {
 	int i;
+	struct itimerspec curr_tick;
 	Nmove pm;
 
+	printf("mem %d\n", memory);
 	
 	count_nTT = setnTT( memory);
 
@@ -60,23 +85,30 @@ void *Thinking(void *void_ptr )
 	{
 
 		count = 0;
-		TThit = 0;
+		/*TThit = 0;
 		TTowr = 0;
-		TTwr = 0;
+		TTwr = 0;*/
 		
 		score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, i, 0);
 
+
+		timer_gettime(timer_id, &curr_tick);
+		double search_time = its.it_value.tv_sec + (double)its.it_value.tv_nsec/1000000000;
+		search_time -= curr_tick.it_value.tv_sec + (double)curr_tick.it_value.tv_nsec/1000000000;
+
 		if (en_state == THINKING)
-		{
-			fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, razmisljao*100, count);
-			pm = nTTextractPV( Ncb, i);
-			/*printf("=%d= ", i);
-			printmoveN(&pm);
-			printf("\n"); */
-		}
-		if (en_state == THINKING)
-				;//memcpy( &PV, &Npline, sizeof(Nline));
-		gettimeofday(&end, NULL);
+			if (post)
+			{
+				fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, search_time*100, count);
+				pm = nTTextractPV( Ncb, i);
+				/*printf("=%d= ", i);
+				printmoveN(&pm);
+				printf("\n");*/
+				//memcpy( &PV, &Npline, sizeof(Nline));
+			}
+			else	pm = TTfind_move( Ncb.zobrist); 
+
+		//gettimeofday(&end, NULL);
 		//printNline(PV);
 		//**MAKE MOVE**
 		if ((score >= WIN) && (en_state == THINKING))
@@ -92,32 +124,32 @@ void *Thinking(void *void_ptr )
 		/////PRINTING THINKING OUTPUT/////////////
 	
 		//	CHECK post for posting thinking output	//////////////////
-			
-
-
-			
 			//printNline(PV);
-
 			//printf("\n");
-		
 		//fprintf(stdout, "==%d pvs=%d time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, i, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
 		//fflush(stdout);
-		if (en_state == PONDERING)
-		{
+	}
+	// DOING MOVE	///////////////////
+	if (en_state == PONDERING)
+	{
+		//	update history	//////////
+		history.tag[history.curr] ^= 0ULL;
+		history.tag[history.curr] = Ncb.info << 32;
+		history.tag[history.curr] = pm;
+		history.curr++;
 
-			t_manager.fm += (color == -1) ? 1 : 0;
-			//printf("STOPING - doingmove\n");
-			Ndo_move( &Ncb, pm);
-			//print_move_xboard( &PV.argmove[0]);
-			printf("move ");
+		t_manager.fm += (color == -1) ? 1 : 0;
+		//printf("STOPING - doingmove\n");
+		Ndo_move( &Ncb, pm);
+		//print_move_xboard( &PV.argmove[0]);
+		printf("move ");
 		printmoveN(&pm);
 		printf("\n");
 	}
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;		
-}
-free(nTT);
-//printf("exiting thinking thread\n");
-pthread_exit(NULL);
+	//razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;		
+	free(nTT);
+	//printf("exiting thinking thread\n");
+	pthread_exit(NULL);
 }
 
 unsigned char capt, it;
@@ -125,14 +157,7 @@ move *fst_pick, *list, *domove = NULL;
 Nmove *temp;
 unsigned char ln[10], d = 0;
 
-pthread_t threads[4];
-timer_t timer_id;
-struct itimerspec its;
-struct sigevent sev;
-struct sigaction setup_action;
-sigset_t block_mask;
-void catch_alrm();
-#define SIG_TRGT SIGRTMIN
+
 
 char FEN[100];
 char w[512]; 
@@ -194,7 +219,7 @@ fprintf(stderr, " Nmove size: %d\n", sizeof(Nmove));
 fprintf(stderr, " U64 size: %d\n", sizeof(U64));*/
 NML = malloc( sizeof(Nmovelist)*search_depth);
 
-en_state = 0;
+en_state = WAITING;
 
 
 fgets(w, input_max_length, stdin);
@@ -336,6 +361,35 @@ if (strstr(w,"pvs02") != NULL)
       }
 	//free( marray);
 
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+if (strstr(w,"quesc") != NULL)
+{
+	scanf("%d", &n);
+//                printNboard(Ncb);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+
+	gettimeofday(&start, NULL);
+	int i;
+	//marray = malloc( sizeof(move)*216*(n+1) );
+	for (i = 1; i <= n; i++)
+	{
+		score = Quiesce( &Ncb, &Npline, -WIN, +WIN, color, i, 0);
+		memcpy( &PV, &Npline, sizeof(Nline));
+		printf("quiesce: %d 	", i);
+
+	//free( marray);
+		gettimeofday(&end, NULL);
+
+		printNline( Npline);
+		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
+
+	}
 	//printf("score: %d d%d c%d moves%d", score, n, color, count);
 	//printmove( fst_pick);
 }
@@ -719,6 +773,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 	else if ( strstr(w,"new") != NULL )
 	{
 		//cb = importFEN(starting_position);
+
 		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
 		Ncb = NimportFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
 		setZobrist( &cb);	
@@ -774,7 +829,7 @@ int chess_engine_communication_protocol()
 	int protover=0;
 	if (sscanf(buff,"protover %d", &protover))
 		if (protover > 1)
-			features = fopen("/home/domagoj/Documents/chess/CECP_features","r");
+			features = fopen("/home/edita/Documents/domibu_chess/CECP_features","r");
 	//SEND XBOARD FEATURES
 	if (features)
 	{
@@ -802,6 +857,9 @@ while (1)
 	//fflush(stdin);	
 	if ( strstr(buff,"new") != NULL )
 	{
+		//	reset history	///////////
+		history.curr = 0;
+		search_depth = SD_MAX;
 		//cb = importFEN(starting_position);
 		//cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
 		Ncb = NimportFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
@@ -813,13 +871,21 @@ while (1)
 	else
 	if (strstr(buff, "force") != NULL)
 	{
-		en_state = OBSERVING;
 		////STOP CLOCKS//////
+		its.it_value.tv_sec = 0;
+		its.it_value.tv_nsec = 0;
+		its.it_interval.tv_sec = 0;
+		its.it_interval.tv_nsec = 0;
+		timer_settime(timer_id, 0, &its, NULL);
+
+		en_state = OBSERVING;
+
 	}
 	else
 	if (strstr(buff,"go") != NULL)
 	{
 		t_manager.fm = 1;
+		en_state = THINKING;
 
 en_state_THINKING:
 		//fprintf(stderr, "receive go\n");
@@ -827,8 +893,8 @@ en_state_THINKING:
                 /*int i;
 		long t;
 		*/
- 		gettimeofday(&start, NULL);
-		en_state = THINKING;
+ 		//gettimeofday(&start, NULL);
+
 		//TIME MANAGMENT ROUTINE
 		if (t_manager.ctrl_style == 0 )
 		{
@@ -852,7 +918,7 @@ en_state_THINKING:
 		timer_settime(timer_id, 0, &its, NULL);
 		pthread_create(&threads[0], NULL, Thinking, NULL);
 
-		printf("t_man CTRL_STYLE %u mp_ctrl %u base %u inc %u estmpg %u\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment, t_manager.est_moves_game);
+		//printf("t_man CTRL_STYLE %u mp_ctrl %u base %u inc %u estmpg %u\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment, t_manager.est_moves_game);
 		printf("target %u\n", t_manager.target);
 
 		//sleep(time/1000);
@@ -889,13 +955,16 @@ en_state_THINKING:
 		printf("t_man CTRL_STYLE %d mp_ctrl %d base %u inc %d\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment);
 	}
 	else
-	if (strstr(buff, "st") != NULL)
+	if (strstr(buff, "st ") != NULL)
 	{
-		unsigned st;
+		unsigned in_st=0;
 
-		sscanf(buff, "st %u", &st);
-		t_manager.ctrl_style = 2;
-		t_manager.target = st * 100;
+		sscanf(buff, "st %u", &in_st);
+		if (in_st)
+		{  
+			t_manager.ctrl_style = 2;
+			t_manager.target = in_st * 100;
+		}
 	}
 	else 
 	if (strstr(buff, "time") != NULL)
@@ -921,6 +990,9 @@ en_state_THINKING:
 		printf("FEN:	%s\n", fen);
 
 		en_state = OBSERVING;
+		
+		//	reset history	///////////
+		history.curr = 0;
 
 		Ncb = NimportFEN(fen);
 		nsetZobrist( &Ncb);
@@ -932,7 +1004,79 @@ en_state_THINKING:
 		
 	}
 	else
-	if ((strstr(buff,"usermove") != NULL) &&  ((en_state == PONDERING) || (en_state == OBSERVING)))
+	if (strstr(buff, "memory ") != NULL)
+	{
+		unsigned in_mem;
+		//	CHECK MEMORY MAX LIMIT	//////////////////
+		sscanf(buff, "memory %d", &in_mem);
+		memory = (in_mem > MEMORY_MAX) ? MEMORY_MAX : in_mem;
+	}
+	else
+	if (strstr(buff, "sd") != NULL)
+	{
+		unsigned in_sd;
+		sscanf(buff, "sd %u", &in_sd);
+		search_depth = (in_sd > SD_MAX) ? SD_MAX : in_sd; 
+	}
+	else
+	if (strstr(buff, "nopost") != NULL)
+	{
+		post = 0;
+	}
+	else
+	if (strstr(buff, "post") != NULL)
+	{
+		post = 1;
+	}
+	else
+	if (strstr(buff, "result ") != NULL)
+	{
+		en_state = OBSERVING;
+		//	TRIGER LEARNING	///////////
+	}
+	else
+	if ((strstr(buff, "undo") != NULL) && (history.curr))
+	{
+		en_state = OBSERVING;
+
+		t_manager.fm -= ((Ncb.info >> 14) & 1ULL) ? 1 : 0;
+		history.curr--;
+
+		Nmove undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+		unsigned undo_data = history.tag[history.curr] >> 32;
+		
+		Nmovelist dummy_move_list;
+		dummy_move_list.undo = undo_data;
+	
+		Nundo_move(&Ncb, &dummy_move_list, undo_move);
+	}
+	else
+	if ((strstr(buff, "remove ") != NULL) && (history.curr > 1))
+	{
+		en_state = OBSERVING;
+
+		t_manager.fm--;
+		history.curr--;
+
+		Nmove undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+		unsigned undo_data = history.tag[history.curr] >> 32;
+		
+		Nmovelist dummy_move_list;
+		dummy_move_list.undo = undo_data;
+	
+		Nundo_move(&Ncb, &dummy_move_list, undo_move);
+
+		history.curr--;
+
+		undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+		undo_data = history.tag[history.curr] >> 32;
+		
+		dummy_move_list.undo = undo_data;
+	
+		Nundo_move(&Ncb, &dummy_move_list, undo_move);
+	}
+	else
+	if ((strstr(buff,"usermove ") != NULL) &&  ((en_state == PONDERING) || (en_state == OBSERVING)))
 	{
 		char s[16];
 		int a, f, r;
@@ -1025,6 +1169,13 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
 				//printmoveN(&NML->mdata[it]);
 
 				t_manager.fm += (color == -1) ? 0 : 1;
+
+				//	update history	//////////
+				history.tag[history.curr] ^= 0ULL;
+				history.tag[history.curr] = Ncb.info << 32;
+				history.tag[history.curr] = NML->mdata[it];
+				history.curr++;
+	
 				Ndo_move(&Ncb, NML->mdata[it]);
 				if (en_state == PONDERING)
 				{
@@ -1042,6 +1193,7 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
         	        goto sxn_Legal_fo02r;
 	        }
 		////////////////////////////// REPORT ILLEGALMOVE        ///////////////////
+		printf("Illegal move: %s\n", s);
 end_user_move: ;		
 	}
 	else if ( strstr(buff,"nLegal") != NULL )	

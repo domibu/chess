@@ -153,7 +153,7 @@ typedef struct Nline {
 #define EN_STATE
 
 #define OBSERVING 0
-#define WATING 1
+#define WAITING 1
 #define THINKING 2
 #define PONDERING 3
 #define PONDERING_COMPLETE 4
@@ -176,6 +176,7 @@ void sortmoves(Nmovelist *m_list, Nmove PV_move);
 
 int eval( board *b);
 int search(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
+int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
 
 int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
 int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft);
