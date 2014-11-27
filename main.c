@@ -99,6 +99,7 @@ void *Thinking(void *void_ptr )
 		if (en_state == THINKING)
 			if (post)
 			{
+				/////PRINTING THINKING OUTPUT/////////////
 				fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, search_time*100, count);
 				pm = nTTextractPV( Ncb, i);
 				/*printf("=%d= ", i);
@@ -111,17 +112,13 @@ void *Thinking(void *void_ptr )
 		//gettimeofday(&end, NULL);
 		//printNline(PV);
 		//**MAKE MOVE**
-		if ((score >= WIN) && (en_state == THINKING))
+		if (((score  <= -WIN) || (score >= WIN)) && (en_state == THINKING))
 		{
 			en_state = PONDERING;
 			//printf(printf("***domibu WINS***"););
 		}
-		if ((score <= -WIN) && (en_state == THINKING))
-		{
-			en_state = PONDERING; 
-		}
 		//printNline(PV);
-		/////PRINTING THINKING OUTPUT/////////////
+
 	
 		//	CHECK post for posting thinking output	//////////////////
 			//printNline(PV);
@@ -226,588 +223,9 @@ fgets(w, input_max_length, stdin);
 
 if (strstr(w,"xboard") != NULL)	chess_engine_communication_protocol();
 
-else
+else	chess_engine_testing( argc, argv);
 
-while (1)
-{
 
-scanf("%s",w);
-
-if (strstr(w,"mTT") != NULL) 
-{	
-	scanf("%d", &n);
-	printboard(cb);		
-	color = -1 + ((cb.info & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-	TThit = 0;
-
-	gettimeofday(&start, NULL);	
-	score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
-	gettimeofday(&end, NULL);	
-	
-	//printline( pline);
-	TTextractPV( cb, n);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"msearch") != NULL) 
-{	
-	scanf("%d", &n);
-	printboard(cb);		
-	color = -1 + ((cb.info & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);	
-	score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
-	gettimeofday(&end, NULL);	
-	
-	printline( pline);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"aTT") != NULL) 
-{	
-	scanf("%d", &n);
-	printboard(cb);		
-	color = -1 + ((cb.info & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-	TThit = 0;
-	TTwr = 0;
-
-	gettimeofday(&start, NULL);	
-	marray = malloc( sizeof(move)*216*(n+1) );
-	score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
-	free( marray);
-	gettimeofday(&end, NULL);	
-	
-	//printline( pline);
-	TTextractPV( cb, n);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"nTT") != NULL)
-{
-	scanf("%d", &n);
-	printNboard(Ncb);
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-	TThit = 0;
-	TTowr = 0;
-	TTwr = 0;
-
-	gettimeofday(&start, NULL);
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	score = nTTnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
-	//free( marray);
-	gettimeofday(&end, NULL);
-
-	//printline( pline);
-	//Nmove PV_move;
-	int log = strstr(w,"-log") ? 100 : 0;
-	nTTextractPV( Ncb, n);
-	//!!!!!!!!! print na stderror PV_end !!!!!!!!!!!!!!!!
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"pvs02") != NULL)
-{
-	scanf("%d", &n);
-//                printNboard(Ncb);
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	
-	count_nTT= setnTT( memory);
-
-	int i;
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	for (i = 1; i <= n; i++)
-	{
-		count = 0;
-		TThit = 0;
-		TTowr = 0;
-		TTwr = 0;
-	     
-		gettimeofday(&start, NULL);
-		score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, i, 0);
-		//memcpy( &PV, &Npline, sizeof(Nline));
-		gettimeofday(&end, NULL);
-
-		printf("pvs02:%d        ", i);
-		nTTextractPV( Ncb, i);
-		
-		
-		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
-      }
-	//free( marray);
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"quesc") != NULL)
-{
-	scanf("%d", &n);
-//                printNboard(Ncb);
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);
-	int i;
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	for (i = 1; i <= n; i++)
-	{
-		score = Quiesce( &Ncb, &Npline, -WIN, +WIN, color, i, 0);
-		memcpy( &PV, &Npline, sizeof(Nline));
-		printf("quiesce: %d 	", i);
-
-	//free( marray);
-		gettimeofday(&end, NULL);
-
-		printNline( Npline);
-		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
-
-	}
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"pvs01") != NULL)
-{
-	scanf("%d", &n);
-//                printNboard(Ncb);
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);
-	int i;
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	for (i = 1; i <= n; i++)
-	{
-		score = pvs_01( &Ncb, &Npline, -WIN, +WIN, color, i, 0, 0);
-		memcpy( &PV, &Npline, sizeof(Nline));
-		printf("pvs01:%d 	", i);
-
-	//free( marray);
-		gettimeofday(&end, NULL);
-
-		printNline( Npline);
-		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
-
-	}
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"nsearch") != NULL) 
-{	
-	scanf("%d", &n);
-	printNboard(Ncb);		
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);	
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	score = nnegamax( &Ncb, &Npline, -WIN-300, +WIN+300, color, n, 0);
-	//free( marray);
-	gettimeofday(&end, NULL);	
-	
-	printNline( Npline);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"ntestsearch") != NULL)
-{
-	scanf("%d", &n);
-	printNboard(Ncb);
-	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);
-	//marray = malloc( sizeof(move)*216*(n+1) );
-	score = ntestnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
-	//free( marray);
-	gettimeofday(&end, NULL);
-
-	printNline( Npline);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"asearch") != NULL) 
-{	
-	scanf("%d", &n);
-	printboard(cb);		
-	color = -1 + ((cb.info & 1ULL) << 1 );
-	//printBits( 8, &cb.info);
-	count = 0;
-
-	gettimeofday(&start, NULL);	
-	marray = malloc( sizeof(move)*216*(n+1) );
-	score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
-	free( marray);
-	gettimeofday(&end, NULL);	
-	
-	printline( pline);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
-
-	//printf("score: %d d%d c%d moves%d", score, n, color, count);
-	//printmove( fst_pick);
-}
-else
-if (strstr(w,"mdivide") != NULL) 
-{	
-	scanf("%d", &n);
-	gettimeofday(&start, NULL);	
-	count = mdivide_perft(n, &cb);
-	gettimeofday(&end, NULL);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
-
-}
-else 
-if (strstr(w,"ndivide") != NULL) 
-{	
-	scanf("%d", &n);
-	gettimeofday(&start, NULL);
-	//NML = malloc( sizeof(Nmovelist)*(n+1) );
-	count = Ndivide_perft(n, &Ncb, NML);
-	//free( NML);
-	gettimeofday(&end, NULL);
-	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-	fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
-	
-	}
-
-	if (strstr(w,"adivide") != NULL) 
-	{	
-		scanf("%d", &n);
-		gettimeofday(&start, NULL);
-		marray = malloc( sizeof(move)*216*(n+1) );
-		count = divide_perft(n, &cb);
-		free( marray);
-		gettimeofday(&end, NULL);
-		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
- 		fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
-	
-	}
-        else
-        if ( strcmp(w,"sortmoves") == 0 )
-        {
-                //objtoarr( &cb, &Ncb);
-                NML = malloc( sizeof(Nmovelist)*(n+1) );
-                score = generate_movesN(NML, Ncb);
-		sortmoves(NML, 0);
-                capt = NML->captcount;
-                //printf("Bcapt : %d    \n", capt);
-                int limes;
-                it = (capt > 218) ? 218 : 0;
-                limes = (capt > 218) ? capt : NML->quietcount;
-
-                //printf("Acapt : %d    \n", capt);
-sortnLegal_for:     for (; it < limes ; it++)
-                {
-                        printf("%d  ", it);
-                        printmoveN( &NML->mdata[it]);
-                        printf("\n");
-
-                }
-
-                if (it == (capt ))
-                {
-                        it = 0;
-                        limes = NML->quietcount;
-                        goto sortnLegal_for;
-                }
-
-                printf("quiet count: %d \n", NML->quietcount);
-
-                /*for (n = 255; n > (NML->captcount); n--)     
-                {
-                        printf("%d  ", 255-n);
-                        printmoveN( &NML->mdata[n]);
-                        printf("\n");
-                                
-                }*/
-                printf("capt count: %d  \n", NML->captcount-218);
-                printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
-                free( NML);
-
-        }
-	else
-	if ( strcmp(w,"nLegal") == 0 )	
-	{	
-	        //objtoarr( &cb, &Ncb);
-
-		score = generate_movesN(NML, Ncb);
-		capt = NML->captcount;
-        	//printf("Bcapt : %d	\n", capt);
-		int limes;
-	        it = (capt > 218) ? 218 : 0;
-        	limes = (capt > 218) ? capt : NML->quietcount;
-
-        	//printf("Acapt : %d	\n", capt);
-nLegal_for:	for (; it < limes ; it++)
-		{
-        		printf("%d  ", it);
-		        printmoveN( &NML->mdata[it]);
-        		printf("\n");
-				
-        	}
-
-	        if (it == (capt ))
-        	{
-                	it = 0;
-	                limes = NML->quietcount;
-        	        goto nLegal_for;
-	        }
-		
-        	printf("quiet count: %d	\n", NML->quietcount);
-        	
-		/*for (n = 255; n > (NML->captcount); n--)     
-		{
-        		printf("%d  ", 255-n);
-		        printmoveN( &NML->mdata[n]);
-        		printf("\n");
-				
-        	}*/
-        	printf("capt count: %d	\n", 255-NML->captcount);
-        	printf("moves count: %d	\n", NML->quietcount + NML->captcount - 218);
-		
-	} 
-        else
-        if ( strcmp(w,"ntestLegal") == 0 )
-        {
-                //objtoarr( &cb, &Ncb);
-                NML = malloc( sizeof(Nmovelist)*(n+1) );
-                score = generate_movesN_test(NML, Ncb);
-                capt = NML->captcount;
-                //printf("Bcapt : %d    \n", capt);
-                int limes;
-                it = (capt > 218) ? 218 : 0;
-                limes = (capt > 218) ? capt : NML->quietcount;
-
-                //printf("Acapt : %d    \n", capt);
-ntestLegal_for:     for (; it < limes ; it++)
-                {
-                        printf("%d  ", it);
-                        printmoveN( &NML->mdata[it]);
-                        printf("\n");
-
-                }
-
-                if (it == (capt ))
-                {
-                        it = 0;
-                        limes = NML->quietcount;
-                        goto ntestLegal_for;
-                }
-
-                printf("quiet count: %d \n", NML->quietcount);
-
-                /*for (n = 255; n > (NML->captcount); n--)     
-                {
-                        printf("%d  ", 255-n);
-                        printmoveN( &NML->mdata[n]);
-                        printf("\n");
-                                
-                }*/
-                printf("capt count: %d  \n", 255-NML->captcount);
-                printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
-                free( NML);
-
-        }
-	else
-	if ( strcmp(w,"legal") == 0 )	
-	{	
-		marray = malloc( sizeof(move)*256);
-		score = generate_moves(cb, marray);
-		for (n = 0; n < score; n++)     
-		{
-        		printf("%d  ", n+1);
-		        printmove( &marray[n]);
-        		printf("\n");
-				
-        	}
-        	printf("moves count: %d	\n", score);
-                free(marray);		
-	} 
-	else
-	if ( strstr(w,"setpred") != NULL )	
-	{	
-		scanf("%d", &n);
-		cb = importFEN(setposition[n]);		
-		Ncb = NimportFEN(setposition[n]);
-		setZobrist( &cb);	
-		nsetZobrist( &Ncb);
-	} 
-	else 
-	if ( strstr(w,"set") != NULL )	
-	{	
-		scanf("%[^\n]", FEN);
-		cb = importFEN(FEN);		
-		Ncb = NimportFEN(FEN);
-//    print_state( Ncb);
-		setZobrist( &cb);	
-		nsetZobrist( &Ncb);
-
-		printNboard(Ncb);	
-//    objtoarr( &cb, &Ncb);
- 	} 
-	else
-	if ( strstr(w,"do_move") != NULL )	
-	{	
-		scanf("%d", &n);
-		ln[d] = n;
-		score = generate_movesN(&NML[d], Ncb);
-		
-		        //printmoveN( &NML->mdata[n]);
-                printf("m\n");
-                //temp = &NML->mdata[n];
-        	printBits(8, &NML[d].mdata[n]);
-		Ndo_move( &Ncb, NML[d].mdata[n]);
-		//dodaj_move( &domove, temp);
-		printNboard(Ncb);
-		d++;		
-		
-	}
-	else if ( strstr(w,"undomove") != NULL )
-	{
-		d--;
-		/*capt = NML[d].captcount;
-		capt++;
-                for (it = capt; (it < NML[d].quietcount) || (it > (NML[d].captcount)); it++)
-		{
-        		printf("%d  ", it);
-		        printmoveN( &NML[d].mdata[it]);
-        		printf("\n");
-				
-        	}
-        	printf("quiet count: %d	\n", NML[d].quietcount);
-        	printf("capt count: %d	\n", 255-NML[d].captcount);
-        	printf("moves count: %d	\n", NML[d].quietcount + 255-NML[d].captcount);*/
-		
-		Nundo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
-		//izbaci_move( &domove);
-		printNboard(Ncb);		
-
-	}/*
-	else if ( strstr(w,"NML") != NULL )
-	{
-		for (n = 0; n < NML->quietcount; n++)     
-		{
-        		printf("%d  ", n);
-		        printmoveN( &NML->mdata[n]);
-        		printf("\n");
-				
-        	}
-        	printf("quiet count: %d	\n", NML->quietcount);
-        	
-		for (n = 255; n > (NML->captcount); n--)     
-		{
-        		printf("%d  ", 255-n);
-		        printmoveN( &NML->mdata[n]);
-        		printf("\n");
-				
-        	}
-        	printf("capt count: %d	\n", 255-NML->captcount);
-        	printf("moves count: %d	\n", NML->quietcount + 255-NML->captcount);
-	}*/
-	else if ( strstr(w,"state") != NULL )
-	{
-//		print_state(cb);
-                print_state( Ncb);
-	}
-	else if ( strstr(w,"Ndisp") != NULL )
-	{
-		printNboard(Ncb);	
-    //print_state( Ncb);
-			
-	}
-	else if ( strstr(w,"disp") != NULL )
-	{
-		printboard(cb);		
-	}
-	
-	else if ( strstr(w,"change_stm") != NULL )
-	{
-		cb.info ^= 1LL;
-		Ncb.info ^= 1LL << 14;
-		setZobrist( &cb);
-		printboard(cb);		
-	}
-	else if ( strstr(w,"new") != NULL )
-	{
-		//cb = importFEN(starting_position);
-
-		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
-		Ncb = NimportFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
-		setZobrist( &cb);	
-		nsetZobrist( &Ncb);
-	}
-	/*
-	else if ( strstr(w,"fen") != NULL )
-	{
-		printf("%s\n", exportFEN(cb));
-	}
-	else if ( strstr(w,"zob") != NULL )
-	{
-
-		initZobrist();
-	}
-	else if ( strstr(w,"printz") != NULL )
-	{
-		int i;
-		for (i = 0; i < 782; i++) printf("%d. %llu\n", i, zobrist[ i]);
-	}
-	else if ( strstr(w,"order") != NULL )
-	{
-		scanf("%d", &n);
-		temp = find_move_by_index(list, n);
-		order_moves( &list, temp);
-		printmoves( list);
-				
-	}*/
-	else if ( strstr(w,"quit") != NULL )
-	{
-	        //free(NML);
-		break;	
-	}
-}	
 
 	return 0;
 }
@@ -829,7 +247,7 @@ int chess_engine_communication_protocol()
 	int protover=0;
 	if (sscanf(buff,"protover %d", &protover))
 		if (protover > 1)
-			features = fopen("/home/edita/Documents/domibu_chess/CECP_features","r");
+			features = fopen("/home/domagoj/Documents/chess/CECP_features","r");
 	//SEND XBOARD FEATURES
 	if (features)
 	{
@@ -1243,4 +661,573 @@ xn_Legal_for:	for (; it < limes ; it++)
 
 return 1;
 
+}
+
+int chess_engine_testing(int argc, char *argv)
+{
+	count_nTT = setnTT( memory);
+	
+while (1)
+{
+
+scanf("%s",w);
+
+
+
+
+if (strstr(w, "resetnTT") != NULL)
+{
+	free(nTT);
+	count_nTT= setnTT( memory);
+	
+}
+else
+if (strstr(w,"pvs03") != NULL)
+{
+	scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	//count_nTT= setnTT( memory);
+	count = 0;
+	TThit = 0;
+	TTowr = 0;
+	TTwr = 0;
+     
+	gettimeofday(&start, NULL);
+	score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
+	gettimeofday(&end, NULL);
+
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	printf( "~~pvs03   	%d	%.2f	%llu	", n, razmisljao, count); 
+	nTTextractPV( Ncb, n);
+}
+else
+if (strstr(w,"pvs02") != NULL)
+{
+	scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	//count_nTT= setnTT( memory);
+	count = 0;
+	TThit = 0;
+	TTowr = 0;
+	TTwr = 0;
+     
+	gettimeofday(&start, NULL);
+	score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
+	gettimeofday(&end, NULL);
+
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	printf( "~~pvs02   	%d	%.2f	%llu	", n, razmisljao, count); 
+	nTTextractPV( Ncb, n);
+}
+else
+if (strstr(w,"nTT") != NULL)
+{
+	scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	count = 0;
+	TThit = 0;
+	TTowr = 0;
+	TTwr = 0;
+
+	gettimeofday(&start, NULL);
+	//marray = malloc( sizeof(move)*216*(n+1) );
+	score = nTTnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
+	//free( marray);
+	gettimeofday(&end, NULL);
+
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	//fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d  writes %d overwrites %d\n", score, razmisljao, count/razmisljao,  count, TThit, TTwr, TTowr);
+	printf( "~~nTT    	%d	%.2f	%llu	", n, razmisljao, count); 
+
+	nTTextractPV( Ncb, n);
+}
+else
+if (strstr(w,"pvs01") != NULL)
+{
+	scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	count = 0;
+
+	gettimeofday(&start, NULL);
+
+	score = pvs_01( &Ncb, &Npline, -WIN, +WIN, color, n, 0, 0);
+
+	gettimeofday(&end, NULL);
+
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	printf( "~~pvs01   	%d	%.2f	%llu	", n, razmisljao, count); 
+	printNline( Npline);
+}
+
+else
+if (strstr(w,"nsearch") != NULL) 
+{	
+	scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	count = 0;
+
+	gettimeofday(&start, NULL);	
+	//marray = malloc( sizeof(move)*216*(n+1) );
+	score = nnegamax( &Ncb, &Npline, -WIN-300, +WIN+300, color, n, 0);
+	//free( marray);
+	gettimeofday(&end, NULL);	
+	
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	printf( "~~nsearch	%d	%.2f	%llu	", n, razmisljao, count); 
+
+	printNline( Npline);
+}
+else
+if (strstr(w,"ndivide") != NULL) 
+{	
+	scanf("%d", &n);
+	gettimeofday(&start, NULL);
+	//NML = malloc( sizeof(Nmovelist)*(n+1) );
+	count = Ndivide_perft(n, &Ncb, NML);
+	//free( NML);
+	gettimeofday(&end, NULL);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	printf( "~~ndivide	%d	%.2f	%llu\n", n, razmisljao, count); 
+}
+else 
+if (strstr(w,"mTT") != NULL) 
+{	
+	scanf("%d", &n);
+	printboard(cb);		
+	color = -1 + ((cb.info & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+	TThit = 0;
+
+	gettimeofday(&start, NULL);	
+	score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
+	gettimeofday(&end, NULL);	
+	
+	//printline( pline);
+	TTextractPV( cb, n);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+if (strstr(w,"msearch") != NULL) 
+{	
+	scanf("%d", &n);
+	printboard(cb);		
+	color = -1 + ((cb.info & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+
+	gettimeofday(&start, NULL);	
+	score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
+	gettimeofday(&end, NULL);	
+	
+	printline( pline);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
+
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+if (strstr(w,"aTT") != NULL) 
+{	
+	scanf("%d", &n);
+	printboard(cb);		
+	color = -1 + ((cb.info & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+	TThit = 0;
+	TTwr = 0;
+
+	gettimeofday(&start, NULL);	
+	marray = malloc( sizeof(move)*216*(n+1) );
+	score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
+	free( marray);
+	gettimeofday(&end, NULL);	
+	
+	//printline( pline);
+	TTextractPV( cb, n);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+
+
+if (strstr(w,"quesc") != NULL)
+{
+	//scanf("%d", &n);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	count = 0;
+	
+	int i;
+	printf("quesctest\n");
+	en_state = THINKING;
+		score = Quiesce( &Ncb, &Npline, -WIN, +WIN, color, 0, 0);
+	en_state = OBSERVING;
+		//memcpy( &PV, &Npline, sizeof(Nline));
+		printf("q_result:	%d", score);
+
+		printNline( Npline);
+		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+		fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
+	printf("\n");
+}
+else
+
+if (strstr(w,"ntestsearch") != NULL)
+{
+	scanf("%d", &n);
+	printNboard(Ncb);
+	color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+
+	gettimeofday(&start, NULL);
+	//marray = malloc( sizeof(move)*216*(n+1) );
+	score = ntestnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
+	//free( marray);
+	gettimeofday(&end, NULL);
+
+	printNline( Npline);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
+
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+if (strstr(w,"asearch") != NULL) 
+{	
+	scanf("%d", &n);
+	printboard(cb);		
+	color = -1 + ((cb.info & 1ULL) << 1 );
+	//printBits( 8, &cb.info);
+	count = 0;
+
+	gettimeofday(&start, NULL);	
+	marray = malloc( sizeof(move)*216*(n+1) );
+	score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
+	free( marray);
+	gettimeofday(&end, NULL);	
+	
+	printline( pline);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
+
+	//printf("score: %d d%d c%d moves%d", score, n, color, count);
+	//printmove( fst_pick);
+}
+else
+if (strstr(w,"mdivide") != NULL) 
+{	
+	scanf("%d", &n);
+	gettimeofday(&start, NULL);	
+	count = mdivide_perft(n, &cb);
+	gettimeofday(&end, NULL);
+	razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+	fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
+
+}
+else
+if (strstr(w,"adivide") != NULL) 
+	{	
+		scanf("%d", &n);
+		gettimeofday(&start, NULL);
+		marray = malloc( sizeof(move)*216*(n+1) );
+		count = divide_perft(n, &cb);
+		free( marray);
+		gettimeofday(&end, NULL);
+		razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+ 		fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
+	
+	}
+        else
+        if ( strcmp(w,"sortmoves") == 0 )
+        {
+                //objtoarr( &cb, &Ncb);
+                NML = malloc( sizeof(Nmovelist)*(n+1) );
+                score = generate_movesN(NML, Ncb);
+		sortmoves(NML, 0);
+                capt = NML->captcount;
+                //printf("Bcapt : %d    \n", capt);
+                int limes;
+                it = (capt > 218) ? 218 : 0;
+                limes = (capt > 218) ? capt : NML->quietcount;
+
+                //printf("Acapt : %d    \n", capt);
+sortnLegal_for:     for (; it < limes ; it++)
+                {
+                        printf("%d  ", it);
+                        printmoveN( &NML->mdata[it]);
+                        printf("\n");
+
+                }
+
+                if (it == (capt ))
+                {
+                        it = 0;
+                        limes = NML->quietcount;
+                        goto sortnLegal_for;
+                }
+
+                printf("quiet count: %d \n", NML->quietcount);
+
+                /*for (n = 255; n > (NML->captcount); n--)     
+                {
+                        printf("%d  ", 255-n);
+                        printmoveN( &NML->mdata[n]);
+                        printf("\n");
+                                
+                }*/
+                printf("capt count: %d  \n", NML->captcount-218);
+                printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
+                free( NML);
+
+        }
+	else
+	if ( strcmp(w,"nLegal") == 0 )	
+	{	
+	        //objtoarr( &cb, &Ncb);
+
+		score = generate_movesN(NML, Ncb);
+		capt = NML->captcount;
+        	//printf("Bcapt : %d	\n", capt);
+		int limes;
+	        it = (capt > 218) ? 218 : 0;
+        	limes = (capt > 218) ? capt : NML->quietcount;
+
+        	//printf("Acapt : %d	\n", capt);
+nLegal_for:	for (; it < limes ; it++)
+		{
+        		printf("%d  ", it);
+		        printmoveN( &NML->mdata[it]);
+        		printf("\n");
+				
+        	}
+
+	        if (it == (capt ))
+        	{
+                	it = 0;
+	                limes = NML->quietcount;
+        	        goto nLegal_for;
+	        }
+		
+        	printf("quiet count: %d	\n", NML->quietcount);
+        	
+		/*for (n = 255; n > (NML->captcount); n--)     
+		{
+        		printf("%d  ", 255-n);
+		        printmoveN( &NML->mdata[n]);
+        		printf("\n");
+				
+        	}*/
+        	printf("capt count: %d	\n", 255-NML->captcount);
+        	printf("moves count: %d	\n", NML->quietcount + NML->captcount - 218);
+		
+	} 
+        else
+        if ( strcmp(w,"ntestLegal") == 0 )
+        {
+                //objtoarr( &cb, &Ncb);
+                NML = malloc( sizeof(Nmovelist)*(n+1) );
+                score = generate_movesN_test(NML, Ncb);
+                capt = NML->captcount;
+                //printf("Bcapt : %d    \n", capt);
+                int limes;
+                it = (capt > 218) ? 218 : 0;
+                limes = (capt > 218) ? capt : NML->quietcount;
+
+                //printf("Acapt : %d    \n", capt);
+ntestLegal_for:     for (; it < limes ; it++)
+                {
+                        printf("%d  ", it);
+                        printmoveN( &NML->mdata[it]);
+                        printf("\n");
+
+                }
+
+                if (it == (capt ))
+                {
+                        it = 0;
+                        limes = NML->quietcount;
+                        goto ntestLegal_for;
+                }
+
+                printf("quiet count: %d \n", NML->quietcount);
+
+                /*for (n = 255; n > (NML->captcount); n--)     
+                {
+                        printf("%d  ", 255-n);
+                        printmoveN( &NML->mdata[n]);
+                        printf("\n");
+                                
+                }*/
+                printf("capt count: %d  \n", 255-NML->captcount);
+                printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
+                free( NML);
+
+        }
+	else
+	if ( strcmp(w,"legal") == 0 )	
+	{	
+		marray = malloc( sizeof(move)*256);
+		score = generate_moves(cb, marray);
+		for (n = 0; n < score; n++)     
+		{
+        		printf("%d  ", n+1);
+		        printmove( &marray[n]);
+        		printf("\n");
+				
+        	}
+        	printf("moves count: %d	\n", score);
+                free(marray);		
+	} 
+	/*else
+	if ( strstr(w,"setpred") != NULL )	
+	{	
+		scanf("%d", &n);
+		cb = importFEN(setposition[n]);		
+		Ncb = NimportFEN(setposition[n]);
+		setZobrist( &cb);	
+		nsetZobrist( &Ncb);
+	} */
+	else 
+	if ( strstr(w,"set") != NULL )	
+	{	
+		scanf("%[^\n]", FEN);
+		cb = importFEN(FEN);		
+		Ncb = NimportFEN(FEN);
+//    print_state( Ncb);
+		setZobrist( &cb);	
+		nsetZobrist( &Ncb);
+
+		printNboard(Ncb);	
+//    objtoarr( &cb, &Ncb);
+ 	} 
+	else
+	if ( strstr(w,"do_move") != NULL )	
+	{	
+		scanf("%d", &n);
+		ln[d] = n;
+		score = generate_movesN(&NML[d], Ncb);
+		
+		        //printmoveN( &NML->mdata[n]);
+                printf("m\n");
+                //temp = &NML->mdata[n];
+        	printBits(8, &NML[d].mdata[n]);
+		Ndo_move( &Ncb, NML[d].mdata[n]);
+		//dodaj_move( &domove, temp);
+		printNboard(Ncb);
+		d++;		
+		
+	}
+	else if ( strstr(w,"undomove") != NULL )
+	{
+		d--;
+		/*capt = NML[d].captcount;
+		capt++;
+                for (it = capt; (it < NML[d].quietcount) || (it > (NML[d].captcount)); it++)
+		{
+        		printf("%d  ", it);
+		        printmoveN( &NML[d].mdata[it]);
+        		printf("\n");
+				
+        	}
+        	printf("quiet count: %d	\n", NML[d].quietcount);
+        	printf("capt count: %d	\n", 255-NML[d].captcount);
+        	printf("moves count: %d	\n", NML[d].quietcount + 255-NML[d].captcount);*/
+		
+		Nundo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
+		//izbaci_move( &domove);
+		printNboard(Ncb);		
+
+	}/*
+	else if ( strstr(w,"NML") != NULL )
+	{
+		for (n = 0; n < NML->quietcount; n++)     
+		{
+        		printf("%d  ", n);
+		        printmoveN( &NML->mdata[n]);
+        		printf("\n");
+				
+        	}
+        	printf("quiet count: %d	\n", NML->quietcount);
+        	
+		for (n = 255; n > (NML->captcount); n--)     
+		{
+        		printf("%d  ", 255-n);
+		        printmoveN( &NML->mdata[n]);
+        		printf("\n");
+				
+        	}
+        	printf("capt count: %d	\n", 255-NML->captcount);
+        	printf("moves count: %d	\n", NML->quietcount + 255-NML->captcount);
+	}*/
+	else if ( strstr(w,"state") != NULL )
+	{
+//		print_state(cb);
+                print_state( Ncb);
+	}
+	else if ( strstr(w,"Ndisp") != NULL )
+	{
+		printNboard(Ncb);	
+    //print_state( Ncb);
+			
+	}
+	else if ( strstr(w,"disp") != NULL )
+	{
+		printboard(cb);		
+	}
+	
+	else if ( strstr(w,"change_stm") != NULL )
+	{
+		cb.info ^= 1LL;
+		Ncb.info ^= 1LL << 14;
+		setZobrist( &cb);
+		printboard(cb);		
+	}
+	else if ( strstr(w,"new") != NULL )
+	{
+		//cb = importFEN(starting_position);
+
+		cb = importFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
+		Ncb = NimportFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");	
+		setZobrist( &cb);	
+		nsetZobrist( &Ncb);
+	}
+	/*
+	else if ( strstr(w,"fen") != NULL )
+	{
+		printf("%s\n", exportFEN(cb));
+	}
+	else if ( strstr(w,"zob") != NULL )
+	{
+
+		initZobrist();
+	}
+	else if ( strstr(w,"printz") != NULL )
+	{
+		int i;
+		for (i = 0; i < 782; i++) printf("%d. %llu\n", i, zobrist[ i]);
+	}
+	else if ( strstr(w,"order") != NULL )
+	{
+		scanf("%d", &n);
+		temp = find_move_by_index(list, n);
+		order_moves( &list, temp);
+		printmoves( list);
+				
+	}*/
+	else if ( strstr(w,"quit") != NULL )
+	{
+	        //free(NML);
+		break;	
+	}
+}	
 }

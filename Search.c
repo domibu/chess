@@ -12,40 +12,56 @@ line pline;
 Nline Npline;
 int stop = 0;
 
+#define QUIESCE_DEPTH	-38
 int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
-	Nmove pick;	
-	Nline nline;
 	int score;
-    int stand_pat = color*evaluate(*pos, draft, color, pos);
+
+	int stand_pat = color*evaluate(*pos, draft, color, pos);
+
+	//	OGRANICENJE PO DEPTH	////////////
+	if (depth < QUIESCE_DEPTH)
+	{
+		printf("***QUIESCE_DEPTH***\n");
+		return stand_pat;
+	}
+
+	if ( stand_pat >= beta)	return beta;
+	if ( alpha < stand_pat )	alpha = stand_pat;
+
 	pline->cmove = 0;
-    if( stand_pat >= beta )
-        return beta;
-    if( alpha < stand_pat )
-        alpha = stand_pat;
 
 	unsigned capt_count;
 	generate_movesN(&NML[draft+1], *pos);
 	capt_count = NML[draft+1].captcount;
 	int it;
-	for (it = 218; (it < capt_count) && (en_state == THINKING); it++)
-    {
-	Ndo_move(pos, NML[draft+1].mdata[it]);
-	score = -Quiesce( pos, pline, -beta, -alpha, -color, depth-1, draft+1);
-	Nundo_move(pos, &NML[draft+1], NML[draft+1].mdata[it]);
 
-        if( score >= beta )
-            return beta;
-        if( score > alpha )
+//	printf("* cap=%d\n", capt_count);
+
+	for (it = 218; (it < capt_count) && (en_state == THINKING); it++)
 	{
-		pick = NML[draft+1].mdata[it];
-		pline->argmove[0] = pick;
-		memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
-		pline->cmove = nline.cmove +1;
-           alpha = score;
-	}
-    }
-    return alpha;
+		Ndo_move(pos, NML[draft+1].mdata[it]);
+		score = -Quiesce( pos, pline, -beta, -alpha, -color, depth-1, draft+1);
+		Nundo_move(pos, &NML[draft+1], NML[draft+1].mdata[it]);
+
+
+		if( score >= beta )	return beta;
+
+		if( score > alpha )
+		{
+			NML[draft+1].mdata[it];
+			alpha = score;
+
+			/*printf("%d = %d	a %d b %d col %d	", depth, score, alpha, beta, color);
+			printmoveN( &NML[draft+1].mdata[it]);
+			printf("\n");*/
+
+			/*pline->argmove[0] = pick;
+			memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+			pline->cmove = nline.cmove +1;*/
+		}
+    	}
+	return alpha;
 }
 
 int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
@@ -53,7 +69,7 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	//if (en_state == PONDERING) printf("!");
 	//printf("%d", en_state);
 	
-	int best, val, old_alpha, movecount, it, limes;
+	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL, hash_move = 0, do_move;
 	unsigned char quiet, capt, flag;
 	Nline nline;
@@ -90,13 +106,13 @@ int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
   	{
     		//pline->cmove = 0;
 		//return color * neval( pos);
-		return color*evaluate( *pos , draft, color, pos);
-		//return Quiesce( pos, pline, alpha, beta, color, depth, draft); 
+		//return color*evaluate( *pos , draft, color, pos);
+		return Quiesce( pos, pline, alpha, beta, color, depth, draft); 
   	}
 	  	
 	old_alpha = alpha;
 	best = -WIN-300;
-        movecount = generate_movesN(&NML[depth] , *pos);
+        generate_movesN(&NML[depth] , *pos);
 	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 
         quiet = NML[depth].quietcount;
@@ -225,9 +241,8 @@ int eval( board *b)
 
 int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
-	int best, val, movecount, it, limes;
+	int best, val, it, limes;
 	unsigned char quiet, capt;
-	move *list;
 	Nline nline;
 
 	if ( !depth ) 
@@ -238,7 +253,7 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 
 	best = -WIN-300;
 
-	movecount = generate_movesN(&NML[depth] , *pos);
+	generate_movesN(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
@@ -280,7 +295,7 @@ int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dep
 
 int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
-	int best, val, old_alpha, movecount, it, limes;
+	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL, hash_move = 0;
 	unsigned char quiet, capt, flag;
 	Nline nline;
@@ -335,7 +350,7 @@ int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	  	
 	old_alpha = alpha;
 	best = -WIN-300;
-        movecount = generate_movesN(&NML[depth] , *pos);
+        generate_movesN(&NML[depth] , *pos);
 	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 
         quiet = NML[depth].quietcount;
@@ -527,9 +542,8 @@ void sortmoves(Nmovelist *m_list, Nmove PV_move)
 
 int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft)
 {
-	int best, val, movecount, it, limes;
+	int best, val, it, limes;
 	unsigned char quiet, capt;
-	move *list;
 	Nline nline;
 
 	if ( !depth ) 
@@ -539,7 +553,7 @@ int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 	}
 
 	best = -WIN;
-	movecount = generate_movesN(&NML[depth] , *pos);
+	generate_movesN(&NML[depth] , *pos);
 	/*printf("--");
 	printf("draft %d Pv.cmove %d ", draft, PV.cmove);
 	printmoveN(&PV.argmove[draft]);*/
@@ -584,9 +598,8 @@ int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 
 int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
-        int best, val, movecount, it, limes;
-        unsigned char quiet, capt;
-        move *list;
+        int best, val, it;
+        unsigned char quiet;
         Nline nline; 
 
         if ( !depth )
@@ -596,9 +609,9 @@ int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int
         }                
                  
         best = -WIN;
-        movecount = generate_movesN_test(&NML[depth] , *pos);
+        generate_movesN_test(&NML[depth] , *pos);
         quiet = NML[depth].quietcount;
-        capt = NML[depth].captcount;
+        //capt = NML[depth].captcount;
 
         /*it = (capt > 218) ? 218 : 0;
         limes = (capt > 218) ? capt : quiet;*/
@@ -662,7 +675,7 @@ int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
 		best = best ^ (( best ^ val ) & -( best < val ));
 		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
-		/*if (alpha >= beta)
+		if (alpha >= beta)
 			break;*/
 			
 		//fail high implies lowerbound
@@ -695,8 +708,7 @@ int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 
 int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
-	int best, val, movecount, it;
-	move *list;
+	int best, val, it;
 	line nline;
 
 	if ( !depth ) 
@@ -706,7 +718,7 @@ int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
   	}
   	
 	best = -WIN;
-        movecount = generate_moves( *pos, &marray[ 216 * depth ]);
+        unsigned movecount = generate_moves( *pos, &marray[ 216 * depth ]);
         for (it = 216*depth + movecount - 1; it >= 216*depth; it--)
    	{
 
@@ -717,7 +729,7 @@ int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
 		best = best ^ (( best ^ val ) & -( best < val ));
 		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
-		/*if (alpha >= beta)
+		if (alpha >= beta)
 			break;*/
 			
 		//fail high implies lowerbound
@@ -748,7 +760,7 @@ int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 
 int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
-	int best, val, old_alpha, movecount, it, limes;
+	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL;
 	unsigned char quiet, capt, flag;
 	Nline nline;
@@ -796,7 +808,7 @@ int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int d
 	  	
 	old_alpha = alpha;
 	best = -WIN;
-        movecount = generate_movesN(&NML[depth] , *pos);
+        generate_movesN(&NML[depth] , *pos);
         quiet = NML[depth].quietcount;
         capt = NML[depth].captcount;
 	
@@ -912,7 +924,7 @@ forpetlja:
 int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha;
-	move *list, *it, *TTmove = NULL, *pick = NULL, *bm = NULL ;
+	move *list, *it, *pick = NULL;
 	line nline;
 	TTentry *entry;
 
@@ -968,7 +980,7 @@ int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
 		best = best ^ (( best ^ val ) & -( best < val ));
 		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
-		/*if (alpha >= beta)
+		if (alpha >= beta)
 			break;*/
 			
 		//fail high implies lowerbound
@@ -986,7 +998,7 @@ int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 		if ( val > best)
 		{
 			best = val;
-			bm = it;
+			//bm = it;
 			if ( val > alpha )
 			{
 				alpha = val;
@@ -1035,7 +1047,7 @@ int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, movecount, it;
-	move *list, *TTmove = NULL, *pick = NULL, *bm = NULL ;
+	move *pick = NULL;
 	line nline;
 	TTentry *entry;
 
@@ -1091,7 +1103,7 @@ int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
 		best = best ^ (( best ^ val ) & -( best < val ));
 		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
-		/*if (alpha >= beta)
+		if (alpha >= beta)
 			break;*/
 			
 		//fail high implies lowerbound
@@ -1109,7 +1121,7 @@ int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 		if ( val > best)
 		{
 			best = val;
-			bm = &marray[it];
+			//bm = &marray[it];
 			if ( val > alpha )
 			{
 				alpha = val;
@@ -1176,7 +1188,7 @@ int rootnegamax( board *pos, line *pline, int alpha, int beta, int color, int de
         	/*//r = x ^ ((x ^ y) & -(x < y)); // max(x, y)
 		best = best ^ (( best ^ val ) & -( best < val ));
 		alpha = alpha ^ (( alpha ^ val ) & -( alpha < val ));
-		/*if (alpha >= beta)
+		if (alpha >= beta)
 			break;*/
 			
 		if ( val >= beta)
@@ -1282,7 +1294,6 @@ U64 Perft(int depth, board *arg)
 
 U64 divide_perft(int depth, board *arg)
 {
-    move *move_list;
     int it;
     char movecount;
     U64 childs, nodes = 0;
@@ -1312,14 +1323,13 @@ U64 divide_perft(int depth, board *arg)
 
 U64 NPerft(int depth, Nboard *arg, Nmovelist *ml)
 {
-    unsigned char movecount, capt, quiet, it;
-    Nmove ff;
+    unsigned char capt, quiet, it;
     U64 nodes = 0;
  
     //if (depth == 0) return 1;
     if (depth == 1) return generate_movesN( &ml[depth], *arg);
  
-    movecount = generate_movesN( &ml[depth], *arg);
+    generate_movesN( &ml[depth], *arg);
     quiet = ml[depth].quietcount;
     capt = ml[depth].captcount;
     //capt++;
@@ -1392,7 +1402,7 @@ U64 NPerft(int depth, Nboard *arg, Nmovelist *ml)
 }
 U64 Ndivide_perft(int depth, Nboard *arg, Nmovelist *ml)
 {
-    unsigned char movecount, capt, quiet, it;
+    unsigned char capt, quiet, it;
     //Nmove ff;
     U64 childs, nodes = 0;
     
@@ -1400,7 +1410,7 @@ U64 Ndivide_perft(int depth, Nboard *arg, Nmovelist *ml)
  
     //if (depth == 0) return generate_movesN( &ml[depth], *arg);
 
-    movecount = generate_movesN( &ml[depth], *arg);
+     generate_movesN( &ml[depth], *arg);
     quiet = ml[depth].quietcount;
     capt = ml[depth].captcount;
     //capt++;
@@ -1458,7 +1468,7 @@ U64 Ndivide_perft(int depth, Nboard *arg, Nmovelist *ml)
 	        }*/
 	nodes += childs;
     }
-    printf("count %llu obr %llu\n ", nodes, mfree);
+	//printf("count %llu obr %llu\n ", nodes, mfree);
     return nodes;
 }
 

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include "MoveGeneration.h"
 #include "TranspositionTable.h"
 
 #define NN 312
@@ -344,37 +346,12 @@ Nmove nTTextractPV( Nboard pos, char n)
 			return pick;
 
 		}
-                //dodaj_move( &PV, &entry->pick);
+
 		TThit--;
-                //print FM
-                //if ((pos.info >> 14) & 1ULL)    printf(" #%llu ", pos.info >> 15);
 
 		PV = (entry->data >> 0) & 0x00000003FFFFFF;
 		if (i == 0) pick = PV;
 
-			unsigned flag, depth;
-			int score;
-			depth = (entry->data >> 32) & 0x000000000000FF;
-			flag = (entry->data >> 40) & 0x00000000003;
-			score = (short)(entry->data >> 48) ;
-
-		/*int log = 1;
-
-		if (log == 0)	{
-	               	printmovedetailsN( &pick);
-			//printmovedetailsN( &pick);
-		printBits( sizeof(U64), &entry->data);
-                printf("flag %d score %d depth %d\n", flag, score, depth);
-                printf("zobrist: %llu\n", entry->zobrist);
-                //printNboard( pos);
-		printf("flag %d score %d depth %d\n", flag, score, depth);
-		printf("zobrist: %llu\n", entry->zobrist);
-		//printNboard( pos);
-
-		printf("\n");
-
-		}
-		else	{*/
 		if (PV == 0)
 		{
 			printf("pvN: %d		", i);
@@ -382,13 +359,14 @@ Nmove nTTextractPV( Nboard pos, char n)
 			printf("\n");
 			return pick;
 		}
-			printmoveN( &PV);
-		//}
+
+		printmoveN( &PV);
 		
                 Ndo_move( &pos, PV);
 
 	        }
         printf("\n");
+
         return pick;
 }
 
