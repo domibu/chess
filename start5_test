@@ -1,0 +1,299 @@
+q
+
+setboard rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+resetnTT
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+resetnTT
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+resetnTT
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+resetnTT
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+resetnTT
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+resetnTT
+pvs02 7
+
+setboard r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0
+
+ndivide 2
+adivide 2
+nsearch 2
+pvs01 2
+nTT 2
+resetnTT
+pvs02 2
+
+ndivide 3
+adivide 3
+nsearch 3
+pvs01 3
+nTT 3
+resetnTT
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+resetnTT
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+resetnTT
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+resetnTT
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+resetnTT
+pvs02 7
+
+setboard 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 0
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+setboard r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+setboard rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+setboard r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+setboard rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+setboard r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0
+
+ndivide 2
+nsearch 2
+pvs01 2
+nTT 2
+pvs02 2
+
+ndivide 3
+nsearch 3
+pvs01 3
+nTT 3
+pvs02 3
+
+ndivide 4
+nsearch 4
+pvs01 4
+nTT 4
+pvs02 4
+
+ndivide 5
+nsearch 5
+pvs01 5
+nTT 5
+pvs02 5
+
+nsearch 6
+pvs01 6
+nTT 6
+pvs02 6
+
+nsearch 7
+pvs01 7
+nTT 7
+pvs02 7
+
+quit

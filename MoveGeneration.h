@@ -26,6 +26,9 @@ char generate_moves(board arg, move *movearray);
 char generate_movesN(Nmovelist *ZZZ, Nboard arg);
 char generate_movesN_test(Nmovelist *ZZZ, Nboard arg);
 
+U64 generate_captures(Nmovelist *ZZZ, Nboard arg);
+U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg);
+
 int evaluate( Nboard arg, int draft, int color, Nboard *rb);
 
 int Ndo_move(Nboard *b, Nmove m);

@@ -571,7 +571,7 @@ int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth
 		val = -pvs_01( pos, &nline, -beta, -alpha, -color, depth - 1, is_PV, draft + 1);
 		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
 		
-		if ( val >= beta)       return val; //fail-soft
+		//if ( val >= beta)       return val; //fail-soft
 
 		if ( val > best)
 		{
