@@ -6,9 +6,14 @@
 #include <time.h>
 #include "BitBoardMagic.h"
 #include "Interface.h"
+
 #include "MoveGeneration.h"
 #include "Search.h"
 #include "TranspositionTable.h"
+// old board, move, TT structures, for backtesting
+#include "MoveGeneration-1.h"
+#include "Search-1.h"
+#include "TranspositionTable-1.h"
 
 
 extern move *marray;
@@ -144,7 +149,7 @@ void *Thinking(void *void_ptr )
 		printf("\n");
 	}
 	//razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;		
-	free(nTT);
+	freeTT();
 	//printf("exiting thinking thread\n");
 	pthread_exit(NULL);
 }
@@ -247,7 +252,7 @@ int chess_engine_communication_protocol()
 	int protover=0;
 	if (sscanf(buff,"protover %d", &protover))
 		if (protover > 1)
-			features = fopen("/home/domagoj/Documents/chess/CECP_features","r");
+			features = fopen("CECP_features","r");
 	//SEND XBOARD FEATURES
 	if (features)
 	{
@@ -677,7 +682,7 @@ scanf("%s",w);
 
 if (strstr(w, "resetnTT") != NULL)
 {
-	free(nTT);
+	freeTT();
 	count_nTT= setnTT( memory);
 	
 }

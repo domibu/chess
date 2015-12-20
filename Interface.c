@@ -328,3 +328,71 @@ void resetNboard(Nboard *arg)
 	}
 }
 
+char *piece(int index)
+{
+	switch (index) 
+	{
+	 case 0: return "K";
+	 case 1: return "Q";
+	 case 2: return "R";
+	 case 3: return "B";
+	 case 4: return "N";
+	 case 5: return "p";
+	 case 6: return "O-O";
+	 case 7: return "O-O-O";
+	 case 13: return "O-O";
+	 case 14: return "O-O-O";
+	}
+}
+
+void square(int index, char *sq)
+{	
+	//char sq[2];
+	// h -- 104; a -- 97;
+	sq[0] = 104 - index % 8;
+	// 1 -- 49; 7 -- 55;
+	sq[1] = index / 8 + 49;
+	sq[2] = 0;
+	
+}
+
+void square2(char *sq, int *index)
+{
+	*index = (sq[1]-49)*8 + (104-sq[0]);
+}
+
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i=size-1;i>=0;i--)
+    {
+        for (j=7;j>=0;j--)
+        {
+            byte = b[i] & (1<<j);
+            byte >>= j;
+            printf("%u", byte);
+        }
+    puts("");
+    }
+	printf("\n");
+}
+
+/* Calculate the largest (odd) prime number not greater than n.
+ * I know this is a dumb way of doing it, but it's easily fast enough 
+ * considering that it should only need to be done once per game. */
+long int LargestPrime(long int n) 
+{
+  int max_fact = (int)sqrt((double)n), i;
+   /* This clause should never be needed, but it's worth keeping for safety */
+  if (n<5) return 3;
+  n += (n%2) + 1;
+  do {
+    n-=2;
+    for (i=3;i<=max_fact;i+=2) if (n%i == 0) break;
+  } while (i<=max_fact);
+  return n;
+}
+

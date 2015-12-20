@@ -14,9 +14,7 @@
 
 U64 zobrist[782];
 
-TTentry *TT = NULL;
-U64 count_TT = 0ULL;
-int TThit = 0;
+nTTentry *nTT = NULL;
 
 
 /* The array for the state vector */
@@ -84,40 +82,6 @@ void initZobrist()
 	}
 }
 
-void setZobrist( board *b)
-{
-	int it, enp;
-	U64 m = 1ULL;
-	
-	b->zobrist = 0ULL;
-	
-	for ( it = 0; it < 64; it++)
-	{
-		if (b->b.K & (m << it) )  b->zobrist ^= zobrist[ it];
-		else if (b->b.Q & (m << it)) b->zobrist ^= zobrist[ 64 + it];
-		else if (b->b.R & (m << it)) b->zobrist ^= zobrist[ 2*64 + it];
-		else if (b->b.B & (m << it)) b->zobrist ^= zobrist[ 3*64 + it];
-		else if (b->b.N & (m << it)) b->zobrist ^= zobrist[ 4*64 + it];
-		else if (b->b.P & (m << it)) b->zobrist ^= zobrist[ 5*64 + it];
-		else if (b->w.K & (m << it)) b->zobrist ^= zobrist[ 6*64 + it];
-		else if (b->w.Q & (m << it)) b->zobrist ^= zobrist[ 7*64 + it];
-		else if (b->w.R & (m << it)) b->zobrist ^= zobrist[ 8*64 + it];
-		else if (b->w.B & (m << it)) b->zobrist ^= zobrist[ 9*64 + it];
-		else if (b->w.N & (m << it)) b->zobrist ^= zobrist[ 10*64 + it];
-		else if (b->w.P & (m << it)) b->zobrist ^= zobrist[ 11*64 + it];
-	}
-	b->zobrist ^= (b->info & 0x0000000000000002) ? zobrist[ 778] : 0ULL;
-	b->zobrist ^= (b->info & 0x0000000000000004) ? zobrist[ 779] : 0ULL;
-	b->zobrist ^= (b->info & 0x0000000000000008) ? zobrist[ 780] : 0ULL;
-	b->zobrist ^= (b->info & 0x0000000000000010) ? zobrist[ 781] : 0ULL;
-	
-	enp = __builtin_ffsll( b->info & 0x000000000000FF00);
-	b->zobrist ^= enp ? zobrist[ 768 + enp] : 0ULL;
-	
-	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL; 
-
-}
-
 void nsetZobrist( Nboard *b)
 {
         int it, enp;
@@ -152,35 +116,6 @@ void nsetZobrist( Nboard *b)
 
 }
 
-
-/* Calculate the largest (odd) prime number not greater than n.
- * I know this is a dumb way of doing it, but it's easily fast enough 
- * considering that it should only need to be done once per game. */
-long int LargestPrime(long int n) 
-{
-  int max_fact = (int)sqrt((double)n), i;
-   /* This clause should never be needed, but it's worth keeping for safety */
-  if (n<5) return 3;
-  n += (n%2) + 1;
-  do {
-    n-=2;
-    for (i=3;i<=max_fact;i+=2) if (n%i == 0) break;
-  } while (i<=max_fact);
-  return n;
-}
-
-U64 setTT( U64 n)
-{
-	U64 count;
-	n *= 1024*1024;
-	
-	count = LargestPrime( n / sizeof(TTentry) );
-	
-	TT = calloc( sizeof( TTentry), count);
-	
-	return count;
-}
-
 U64 setnTT( U64 n)
 {
         U64 count;
@@ -188,20 +123,9 @@ U64 setnTT( U64 n)
 
         count = LargestPrime( n / sizeof(nTTentry) );
 
-        nTT = calloc( sizeof( TTentry), count);
+        nTT = calloc( sizeof( nTTentry), count);
 
         return count;
-}
-
-
-TTentry *TTlookup(U64 key)
-{
-	unsigned ind = key % count_TT;
-	
-	if (TT[ ind].zobrist != key) return NULL;
-	
-	TThit++;
-	return &TT[ ind];
 }
 
 nTTentry *nTTlookup(U64 key)
@@ -212,33 +136,6 @@ nTTentry *nTTlookup(U64 key)
 	//printf("h\n");
         TThit++;
         return &nTT[ ind];
-}
-
-
-void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
-{
-	// always replace startegy
-	unsigned ind = zobrist % count_TT;
-	
-	TT[ ind].zobrist = zobrist;
-
-// bit ce direktno move spremljen kad bude bolje spakiran u 16 bita a prijasnji caslte i enpassa cca ce biti ionako posebno ovisno o poziciji a ne o potezu
-	if (pick)
-	{
-		TT[ ind].pick.info = pick->info;
-		TT[ ind].pick.dest = pick->dest;
-		TT[ ind].pick.from = pick->from;
-	}
-	else 	
-	{
-		TT[ ind].pick.info = 0ULL;
-		TT[ ind].pick.dest = 0ULL;
-		TT[ ind].pick.from = 0ULL;
-	}
-	TT[ ind].depth = depth;
-	TT[ ind].score = score;
-	TT[ ind].flag = flag;
-	
 }
 
 void nTTstore( U64 zobrist, U64 data)
@@ -279,18 +176,6 @@ void nTTstore( U64 zobrist, U64 data)
 	printf("---------------------------\n");*/
 }
 
-
-void printline( line pline)
-{
-    int it;
-    for (it = 0; pline.cmove > it; it++)
-    {
-		if (pline.argmove[it].info & 1ULL)	printf(" #%d ", it);
-			printmove( &pline.argmove[it]);
-    }
-    printf("\n");
-}
-
 void printNline( Nline pline)
 {
     int it;
@@ -300,28 +185,6 @@ void printNline( Nline pline)
 		printmoveN( &pline.argmove[it]);
     }
     printf("\n");
-}
-
-
-move *TTextractPV( board pos, char n)
-{
-	char i;
-	TTentry *entry;
-	move *PV = NULL;
-	for ( i = 0; i < n; i++)
-	{
-		entry = TTlookup( pos.zobrist);
-		if (!entry)	break;
-		dodaj_move( &PV, &entry->pick);
-			
-		//print FM
-		if (pos.info & 1ULL)	printf(" #%llu ", pos.info >> 14);
-		printmove( &entry->pick);
-
-		do_move( &pos, &entry->pick);
-	}
-	printf("\n");
-	return PV;
 }
 
 void print_TTentry( nTTentry *arg, Nboard pos)
@@ -386,15 +249,7 @@ Nmove TTfind_move( U64 key)
 	return (entry->data >> 0) & 0x00000003FFFFFF;
 }
 
-void dodaj_move( move **pocetak, move *ind )
+void freeTT()
 {
-
-	move *novi = *pocetak;
-	*pocetak = malloc(sizeof(move));
-	(*pocetak)->next = novi;
-	(*pocetak)->from = ind->from;
-	(*pocetak)->dest = ind->dest;
-	(*pocetak)->info = ind->info;
+	free(nTT);
 }
-
-
