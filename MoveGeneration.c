@@ -21,7 +21,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
-	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	stm = (arg.info >> 11) & 0x0000000000000008;
 	if (stm )
 	{
 		fr = &arg.pieceset[0];
@@ -65,16 +65,17 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 
 	king = __builtin_ffsll(fr[0])-1;
         
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
 	ho[7] = gen_ho_atackN(arg);
 	
-	ZZZ->undo = arg.info; //spremaj old: enp, cast, hm i stm - za undo
+//save (enp, cast, hm, stm) for undo<1$>
+	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
 
-	/////////////////////////////////////// 	provjeri jel šah	////////////////////////
+//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
 		//printf("is_check\n");
@@ -82,11 +83,11 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
 
 		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho[4];
 		
@@ -99,13 +100,13 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -126,17 +127,17 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 	ppb = 0LL;
 	ppr = 0LL;
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // TEMPORARY<1$>
 
-	//////////////////////////////////	 tražim vezane figure po dijagonali	/////////////////////////////////
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -148,7 +149,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 		mpb &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
 		{
 			//printf("mpb\n");
 			//printBits(8, &mpb);
@@ -158,15 +159,15 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				if (fr[3] & ppb)	piecetype = 3;
 				else piecetype = 1;
 			
-				//provjera check?
+//checking for check?<$1>
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 				
-				//novi potez pp na mpp
+//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
 				ZZZ->mdata[tmp] ^= pp << 6; //source
 				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> mpp) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -188,23 +189,23 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 			}
 		}
 
-		////////////////////////////////	provjera za pješaka	/////////////////////////
+//checking for pawn<1$>
 
 		if ( fr[5] & ppb)
 		{
-			pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+			pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 			if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
 			else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
-			// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 		
 			if (mpp)
 			{
-				// bez PROMOTION
+//without promotion<1$>
 				ZZZ->mdata[captcount] &= 0LL;
 				ZZZ->mdata[captcount] ^= 5; //piecetype
 				ZZZ->mdata[captcount] ^= pp << 6; //source
 				ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> (mpp-1)) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -221,12 +222,12 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				mask += 8;
 				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
 			}
 			else 
 			{
-			// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
@@ -240,7 +241,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
 						ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
 						
-						//odredi captured piece
+//determine captured piece<$1>
 						f = (ho[1] >> (mpp-1)) & 1LL;
 						mask = 0x0000000000000008;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -259,8 +260,8 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 
 						captcount++;
 					}
-					//check fali, zapisi kao const osim stm
-					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				}
 				else
 				{
@@ -268,12 +269,12 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
 					if (mpp)
 					{
-						//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 						ZZZ->mdata[captcount] &= 0LL;
 						ZZZ->mdata[captcount] ^= 7; //piecetype
 						ZZZ->mdata[captcount] ^= pp << 6; //source
 						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-						//odredi captured piece
+//determine captured piece<$1>
 						f = (ho[1] >> (mpp-1)) & 1LL;
 						mask = 0x0000000000000008;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -290,7 +291,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 						mask += 8;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-						mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+						mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 						captcount++;
 					}
 				}
@@ -299,16 +300,16 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 		at_b &= ~(1LL << at); 
 	}
 
-	/////////////////////////	 tražim vezane figure po liniji i redu	//////////////////
+//looking for pieces pinned by file or rank<1$>
 
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_r);
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -330,16 +331,16 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				mpp = __builtin_ffsll(mpr)-1;
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
-				//provjera check?
+//checking for check?<$1>
 				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 				
-				//novi potez pp na mpp
+//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
 				ZZZ->mdata[tmp] ^= pp << 6; //source
 				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> mpp) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -362,14 +363,14 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 		}
 		//ppb &= ~ (1LL << pp);
 	}
-/*		//provjera za pješaka
+//checking for pawn<1$>
 		if ( fr[5] & ppr)
 		{
-			pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-			if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
-			else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
-			//PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
-			// bez PROMOTION
+			pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+			if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+			else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+//pawn advance or pawn capture<1$>
+//without promotion<1$>
 			if (mpp)
 			{
 				ZZZ->mdata[quietcount] &= 0LL;
@@ -378,12 +379,12 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 				ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
-				mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
 			}
 			//else 
 			mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
-					: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+					: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 			if (mpp)
 			{
 				ZZZ->mdata[quietcount] &= 0LL;
@@ -391,13 +392,13 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 				ZZZ->mdata[quietcount] ^= pp << 6; //source
 				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 
-				mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
 			}
 		at_r &= ~(1LL << at); 
-	}*/
+	}
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr[5] &= ~ all_pp;
@@ -438,13 +439,13 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 
 	while (__builtin_popcountll(mPW))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -466,13 +467,13 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 	}
 	while (__builtin_popcountll(mPE))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -502,7 +503,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 		
 		if (!(mR_q))
 		{
-        		//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
                         ZZZ->mdata[captcount] &= 0LL;
         		ZZZ->mdata[captcount] ^= 7; //piecetype
                 	ZZZ->mdata[captcount] ^= in << 6; //source
@@ -525,8 +526,8 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
            			
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
-        	mP1_prom &= ~(1LL << in); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        	mP1_prom &= ~(1LL << in); //do we really need that?<1$>
 	}
 	while (__builtin_popcountll(mPW_prom))
 	{
@@ -539,7 +540,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -557,7 +558,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~(1LL << in); 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -572,7 +573,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -590,7 +591,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~(1LL << in); 
 	}
 	
@@ -612,7 +613,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 4; //piecetype
         		ZZZ->mdata[captcount] ^= in_N << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -652,7 +653,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 3; //piecetype
         		ZZZ->mdata[captcount] ^= in_B << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -692,7 +693,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 2; //piecetype
         		ZZZ->mdata[captcount] ^= in_R << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -733,7 +734,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 1; //piecetype
         		ZZZ->mdata[captcount] ^= in_Q << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -782,7 +783,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 0; //piecetype
         		ZZZ->mdata[captcount] ^= in_K << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -826,7 +827,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
-	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	stm = (arg.info >> 11) & 0x0000000000000008;
 	if (stm )
 	{
 		fr = &arg.pieceset[0];
@@ -870,16 +871,17 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 
 	king = __builtin_ffsll(fr[0])-1;
         
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
 	ho[7] = gen_ho_atackN(arg);
 	
-	ZZZ->undo = arg.info; //spremaj old: enp, cast, hm i stm - za undo
+//save (enp, cast, hm, stm) for undo<1$>
+	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
 
-	/////////////////////////////////////// 	provjeri jel šah	////////////////////////
+//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
 		//printf("is_check\n");
@@ -887,11 +889,11 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
 
 		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho[4];
 		
@@ -904,13 +906,13 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -931,17 +933,17 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 	ppb = 0LL;
 	ppr = 0LL;
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // TEMPORARY<1$>
 
-	//////////////////////////////////	 tražim vezane figure po dijagonali	/////////////////////////////////
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -953,7 +955,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 		mpb &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
 		{
 			//printf("mpb\n");
 			//printBits(8, &mpb);
@@ -963,15 +965,15 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				if (fr[3] & ppb)	piecetype = 3;
 				else piecetype = 1;
 			
-				//provjera check?
+//checking for check?<$1>
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 				
-				//novi potez pp na mpp
+//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
 				ZZZ->mdata[tmp] ^= pp << 6; //source
 				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> mpp) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -993,23 +995,23 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 			}
 		}
 
-		////////////////////////////////	provjera za pješaka	/////////////////////////
+//checking for pawn<1$>
 
 		if ( fr[5] & ppb)
 		{
-			pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+			pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 			if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
 			else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
-			// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 		
 			if (mpp)
 			{
-				// bez PROMOTION
+//without promotion<1$>
 				ZZZ->mdata[captcount] &= 0LL;
 				ZZZ->mdata[captcount] ^= 5; //piecetype
 				ZZZ->mdata[captcount] ^= pp << 6; //source
 				ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> (mpp-1)) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1026,12 +1028,12 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				mask += 8;
 				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
 			}
 			else 
 			{
-			// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
@@ -1045,7 +1047,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
 						ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
 						
-						//odredi captured piece
+//determine captured piece<$1>
 						f = (ho[1] >> (mpp-1)) & 1LL;
 						mask = 0x0000000000000008;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1064,8 +1066,8 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 
 						captcount++;
 					}
-					//check fali, zapisi kao const osim stm
-					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				}
 				else
 				{
@@ -1073,12 +1075,12 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
 					if (mpp)
 					{
-						//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 						ZZZ->mdata[captcount] &= 0LL;
 						ZZZ->mdata[captcount] ^= 7; //piecetype
 						ZZZ->mdata[captcount] ^= pp << 6; //source
 						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-						//odredi captured piece
+//determine captured piece<$1>
 						f = (ho[1] >> (mpp-1)) & 1LL;
 						mask = 0x0000000000000008;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1095,7 +1097,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 						mask += 8;
 						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-						mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+						mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 						captcount++;
 					}
 				}
@@ -1104,16 +1106,16 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 		at_b &= ~(1LL << at); 
 	}
 
-	/////////////////////////	 tražim vezane figure po liniji i redu	//////////////////
+//looking for pieces pinned by file or rank<1$>
 
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_r);
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -1135,16 +1137,16 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				mpp = __builtin_ffsll(mpr)-1;
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
-				//provjera check?
+//checking for check?<$1>
 				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 				
-				//novi potez pp na mpp
+//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
 				ZZZ->mdata[tmp] ^= pp << 6; //source
 				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//odredi captured piece
+//determine captured piece<$1>
 				f = (ho[1] >> mpp) & 1LL;
 				mask = 0x0000000000000008;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -1167,14 +1169,14 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 		}
 		//ppb &= ~ (1LL << pp);
 	}
-/*		//provjera za pješaka
+//checking for pawn<1$>
 		if ( fr[5] & ppr)
 		{
-			pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-			if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
-			else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
-			//PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
-			// bez PROMOTION
+			pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+			if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+			else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+//pawn advance or pawn capture<1$>
+//without promotion<1$>
 			if (mpp)
 			{
 				ZZZ->mdata[quietcount] &= 0LL;
@@ -1183,12 +1185,12 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 				ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
-				mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
 			}
 			//else 
 			mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
-					: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+					: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 			if (mpp)
 			{
 				ZZZ->mdata[quietcount] &= 0LL;
@@ -1196,13 +1198,13 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 				ZZZ->mdata[quietcount] ^= pp << 6; //source
 				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 
-				mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
 			}
 		at_r &= ~(1LL << at); 
-	}*/
+	}
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr[5] &= ~ all_pp;
@@ -1243,13 +1245,13 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 
 	while (__builtin_popcountll(mPW))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1271,13 +1273,13 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 	}
 	while (__builtin_popcountll(mPE))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1307,7 +1309,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
 		
 		if (!(mR_q))
 		{
-        		//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
                         ZZZ->mdata[captcount] &= 0LL;
         		ZZZ->mdata[captcount] ^= 7; //piecetype
                 	ZZZ->mdata[captcount] ^= in << 6; //source
@@ -1330,8 +1332,8 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
            			
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
-        	mP1_prom &= ~(1LL << in); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        	mP1_prom &= ~(1LL << in); //do we really need that?<1$>
 	}
 	while (__builtin_popcountll(mPW_prom))
 	{
@@ -1344,7 +1346,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1362,7 +1364,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~(1LL << in); 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -1377,7 +1379,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1395,7 +1397,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~(1LL << in); 
 	}
 	
@@ -1417,7 +1419,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 4; //piecetype
         		ZZZ->mdata[captcount] ^= in_N << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1457,7 +1459,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 3; //piecetype
         		ZZZ->mdata[captcount] ^= in_B << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1497,7 +1499,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 2; //piecetype
         		ZZZ->mdata[captcount] ^= in_R << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1538,7 +1540,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 1; //piecetype
         		ZZZ->mdata[captcount] ^= in_Q << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1587,7 +1589,7 @@ U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 0; //piecetype
         		ZZZ->mdata[captcount] ^= in_K << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -1632,7 +1634,7 @@ static inline void fill_move( Nmove *move, U64 p_type, U64 source, U64 destinati
 
 static inline void capt_type( U64 *ho, U64 in, Nmove *move, U64 f, U64 mask)
 {
-	//odredi captured piece
+//determine captured piece<$1>
 	f = (ho[1] >> in) & 1LL;
 	mask = 0x0000000000000008;
 	*move |= (*move & ~mask) | ( -f & mask);
@@ -1670,7 +1672,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         	printf("Scapt count: %d	\n", captcount);
         	printf("Smoves count: %d	\n", quietcount + 255 - captcount);*/
 
-	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	stm = (arg.info >> 11) & 0x0000000000000008;
 	if (stm )
 	{
 		fr = &arg.pieceset[0];
@@ -1716,7 +1718,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 
 	king = __builtin_ffsll(fr[0])-1;
         
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
@@ -1730,9 +1732,10 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 				printf("fr[6]\n");
 				printBits(8, &fr[6]);*/
 	
-	ZZZ->undo = arg.info; //spremaj old: enp, cast, hm i stm - za undo
+//save (enp, cast, hm, stm) for undo<1$>
+	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
-	// provjeri jel šah
+//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
 		//printf("is_check\n");
@@ -1740,11 +1743,11 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
 
 		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho[4];
 		
@@ -1757,13 +1760,13 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -1792,7 +1795,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 			movearray[movecount].from = (1LL << in_K);
 			movearray[movecount].dest = (1LL << in);
 			ZZZ->mdata[movecount] ^= 1LL  ^ stm;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_q &= ~movearray[movecount].dest; 
 		}
 		while (__builtin_popcountll(mK_c))
@@ -1804,7 +1807,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 			movearray[movecount].from = (1LL << in_K);
 			movearray[movecount].dest = (1LL << in);
 			ZZZ->mdata[movecount] ^= 1LL ^ (1LL << 6) ^ stm;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_c &= ~movearray[movecount].dest; 
 		}*/
 	}
@@ -1814,19 +1817,19 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 	all_pp = 0LL;
 	ppb = 0LL;
 	ppr = 0LL;
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // TEMPORARY<1$>
 	//bb = blank & occupancyMaskBishop[king];
 	//printf("gen_m\n");
 
-	// tražim vezane figure po dijagonali
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_b);
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -1840,7 +1843,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 			mpb &= check_grid;
 
-			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
 			{
 				//printf("mpb\n");
 				//printBits(8, &mpb);
@@ -1850,16 +1853,16 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 					if (fr[3] & ppb)	piecetype = 3;
 					else piecetype = 1;
 				
-					//provjera check?
+//checking for check?<$1>
 					//tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 					tmp = quietcount;					
 
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					ZZZ->mdata[tmp] &= 0LL;
 					ZZZ->mdata[tmp] ^= piecetype; //piecetype
 					ZZZ->mdata[tmp] ^= pp << 6; //source
 					ZZZ->mdata[tmp] ^= mpp << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> mpp) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -1880,22 +1883,22 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 					quietcount++;
 				}
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppb)
 			{
-				pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 			
 				if (mpp)
 				{
-					// bez PROMOTION
+//without promotion<1$>
 					ZZZ->mdata[quietcount] &= 0LL;
 					ZZZ->mdata[quietcount] ^= 5; //piecetype
 					ZZZ->mdata[quietcount] ^= pp << 6; //source
 					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> (mpp-1)) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -1912,12 +1915,12 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
                         		mask += 8;
                         		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					quietcount++;
 				}
 				else 
 				{
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 					if (mpp)
@@ -1931,7 +1934,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		                			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 		                			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
 		                			
-                                        		//odredi captured piece
+//determine captured piece<$1>
                                         		f = (ho[1] >> (mpp-1)) & 1LL;
                                         		mask = 0x0000000000000008;
                                         		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -1950,8 +1953,8 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         
 		                			quietcount++;
 						}
-						//check fali, zapisi kao const osim stm
-        					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					}
 					else
 					{
@@ -1959,12 +1962,12 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
 						if (mpp)
 						{
-							//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 					                ZZZ->mdata[quietcount] &= 0LL;
                 					ZZZ->mdata[quietcount] ^= 7; //piecetype
 		                			ZZZ->mdata[quietcount] ^= pp << 6; //source
 		                			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
-                                        		//odredi captured piece
+//determine captured piece<$1>
                                         		f = (ho[1] >> (mpp-1)) & 1LL;
                                         		mask = 0x0000000000000008;
                                         		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -1981,7 +1984,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
                                         		mask += 8;
                                         		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
         
-                					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+                					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 		                			quietcount++;
 						}
 					}
@@ -1991,15 +1994,15 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		at_b &= ~(1LL << at); 
 	}
 
-	// tražim vezane figure po liniji i redu
+//looking for pieces pinned by file or rank<1$>
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_r);
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -2022,16 +2025,16 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 					mpp = __builtin_ffsll(mpr)-1;
 					if (fr[2] & ppr)	piecetype = 2;
 					else piecetype = 1;
-					//provjera check?
+//checking for check?<$1>
 					//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
 					tmp = quietcount;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					ZZZ->mdata[tmp] &= 0LL;
 					ZZZ->mdata[tmp] ^= piecetype; //piecetype
 					ZZZ->mdata[tmp] ^= pp << 6; //source
 					ZZZ->mdata[tmp] ^= mpp << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> mpp) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -2054,14 +2057,14 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 			}
 			//ppb &= ~ (1LL << pp);
 		}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppr)
 			{
-				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
-				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
-                                //PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
-				// bez PROMOTION
+				pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+//pawn advance or pawn capture<1$>
+//without promotion<1$>
 				if (mpp)
 				{
 					ZZZ->mdata[quietcount] &= 0LL;
@@ -2070,12 +2073,12 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 					ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
-					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					quietcount++;
 				}
 				//else 
 				mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
-						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 				if (mpp)
 				{
 					ZZZ->mdata[quietcount] &= 0LL;
@@ -2083,7 +2086,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 					ZZZ->mdata[quietcount] ^= pp << 6; //source
 					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 
-					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					quietcount++;
 				}
 				
@@ -2094,7 +2097,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 	//printf("all_pp\n");
 	//printBits(8, &all_pp);
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr[5] &= ~ all_pp;
@@ -2141,7 +2144,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		ZZZ->mdata[quietcount] ^= (in - P2) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
 		ZZZ->mdata[quietcount] ^= ((in % 8) << 22) ^ (1LL << 21); //enp_file
-		mP2 &= ~(1LL << in); //pitanje jel potrebno
+		mP2 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
 
 	}
@@ -2152,18 +2155,18 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		ZZZ->mdata[quietcount] ^= 5; //piecetype
 		ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
-		mP1 &= ~(1LL << in); //pitanje jel potrebno
+		mP1 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
 	}
 	while (__builtin_popcountll(mPW))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
 		ZZZ->mdata[quietcount] &= 0LL;
 		ZZZ->mdata[quietcount] ^= 5; //piecetype
 		ZZZ->mdata[quietcount] ^= (in - PW) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2185,13 +2188,13 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 	}
 	while (__builtin_popcountll(mPE))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
 		ZZZ->mdata[quietcount] &= 0LL;
 		ZZZ->mdata[quietcount] ^= 5; //piecetype
 		ZZZ->mdata[quietcount] ^= (in - PE) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2221,7 +2224,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 		
 		if (!(mR_q))
 		{
-        		//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
                         ZZZ->mdata[quietcount] &= 0LL;
         		ZZZ->mdata[quietcount] ^= 7; //piecetype
                 	ZZZ->mdata[quietcount] ^= in << 6; //source
@@ -2244,8 +2247,8 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
            			
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
-        	mP1_prom &= ~(1LL << in); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        	mP1_prom &= ~(1LL << in); //do we really need that?<1$>
 	}
 	while (__builtin_popcountll(mPW_prom))
 	{
@@ -2258,7 +2261,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[quietcount] ^= in << 12; //destination
        			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2276,7 +2279,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~(1LL << in); 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -2291,7 +2294,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[quietcount] ^= in << 12; //destination
        			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2309,7 +2312,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~(1LL << in); 
 	}
 	
@@ -2342,7 +2345,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= 4; //piecetype
         		ZZZ->mdata[quietcount] ^= in_N << 6; //source
         		ZZZ->mdata[quietcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2393,7 +2396,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= 3; //piecetype
         		ZZZ->mdata[quietcount] ^= in_B << 6; //source
         		ZZZ->mdata[quietcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2445,7 +2448,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= 2; //piecetype
         		ZZZ->mdata[quietcount] ^= in_R << 6; //source
         		ZZZ->mdata[quietcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2497,7 +2500,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= 1; //piecetype
         		ZZZ->mdata[quietcount] ^= in_Q << 6; //source
         		ZZZ->mdata[quietcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2557,7 +2560,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= 0; //piecetype
         		ZZZ->mdata[quietcount] ^= in_K << 6; //source
         		ZZZ->mdata[quietcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
@@ -2595,7 +2598,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 			ZZZ->mdata[quietcount] ^= 6 ^ (7 << 3);
 			quietcount++;
 	}
-	//potrebno je odrolati pinned pieces 
+
 	
 	
 	/*printf("ho.atackmap\n");
@@ -2627,7 +2630,7 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
-	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	stm = (arg.info >> 11) & 0x0000000000000008;
 	if (stm )
 	{
 		fr = &arg.pieceset[0];
@@ -2671,7 +2674,7 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 
 	king = __builtin_ffsll(fr[0])-1;
         
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
@@ -2687,11 +2690,11 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
 
 		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho[4];
 		
@@ -2704,13 +2707,13 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -2732,14 +2735,14 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 	ppb = 0LL;
 	ppr = 0LL;
 
-	// tražim vezane figure po dijagonali
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 
@@ -2752,25 +2755,25 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 			mpb &= check_grid;
 
-			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
 			{
 				if ( __builtin_popcountll(mpb))
 					goto found_move;
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppb)
 			{
-				pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 			
-						// bez PROMOTION
+//without promotion<1$>
 				if (mpp)
 					goto found_move;
 				else 
 				{
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 						//promotion
@@ -2780,7 +2783,7 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 					{
 						if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & (ho[6]^enp) & check_grid);
 						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
-							//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 						if (mpp)
 							goto found_move;
 					}
@@ -2789,15 +2792,15 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 		at_b &= ~(1LL << at); 
 	}
 
-	// tražim vezane figure po liniji i redu
+//looking for pieces pinned by file or rank<1$>
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_r);
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -2816,19 +2819,19 @@ int evaluate( Nboard arg, int draft, int color, Nboard *rb)
 					goto found_move;
 			}
 		
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppr)
 			{
-				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
-				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
-                                //PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
-				// bez PROMOTION
+				pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+//pawn advance or pawn capture<1$>
+//without promotion<1$>
 				if (mpp)
 					goto found_move;
 				//else 
 				mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
-						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 				if (mpp)
 					goto found_move;
 				
@@ -2977,7 +2980,7 @@ U64 gen_ho_atackN( Nboard arg)
 	at |= (ho[5] & 0x7F7F7F7F7F7F7F7F) << 9;
 //		printf("black move\n");
 	}
-	//gledati napadnuta polja bez kralja zbog šahova
+//search squares without king cause of possible check<1$>
 	arg.pieceset[16] ^= fr[0];  
 	//NIGHT
 	while (__builtin_popcountll(ho[4]))
@@ -3018,7 +3021,8 @@ U64 gen_ho_atackN( Nboard arg)
 		in_K = __builtin_ffsll(ho[0])-1;
 		at |= movesKing[in_K];
 	
-	//ho[7] &= ~arg.fr[6];		//!!!!!!!!!!!!!!!!!!!! samo prazna polja
+//only empty squares<1$>
+	//ho[7] &= ~arg.fr[6];		
 	return at;
 }
 
@@ -3041,7 +3045,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         	printf("Scapt count: %d	\n", captcount);
         	printf("Smoves count: %d	\n", quietcount + 255 - captcount);*/
 
-	stm = (arg.info >> 11) & 0x0000000000000008;// 1 sa 14. mjesta na 3.
+	stm = (arg.info >> 11) & 0x0000000000000008;
 	if (stm )
 	{
 		fr = &arg.pieceset[0];
@@ -3087,7 +3091,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 
 	king = __builtin_ffsll(fr[0])-1;
         
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
@@ -3101,9 +3105,10 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 				printf("fr[6]\n");
 				printBits(8, &fr[6]);*/
 	
-	ZZZ->undo = arg.info; //spremaj old: enp, cast, hm i stm - za undo
+//save (enp, cast, hm, stm) for undo<1$>
+	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
-	// provjeri jel šah
+//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
 		//printf("is_check\n");
@@ -3111,11 +3116,11 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
 
 		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho[4];
 		
@@ -3128,13 +3133,13 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -3163,7 +3168,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 			movearray[movecount].from = (1LL << in_K);
 			movearray[movecount].dest = (1LL << in);
 			ZZZ->mdata[movecount] ^= 1LL  ^ stm;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_q &= ~movearray[movecount].dest; 
 		}
 		while (__builtin_popcountll(mK_c))
@@ -3175,7 +3180,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 			movearray[movecount].from = (1LL << in_K);
 			movearray[movecount].dest = (1LL << in);
 			ZZZ->mdata[movecount] ^= 1LL ^ (1LL << 6) ^ stm;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_c &= ~movearray[movecount].dest; 
 		}*/
 	}
@@ -3185,19 +3190,19 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 	all_pp = 0LL;
 	ppb = 0LL;
 	ppr = 0LL;
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho[7] = 0LL; // TEMPORARY<1$>
 	//bb = blank & occupancyMaskBishop[king];
 	//printf("gen_m\n");
 
-	// tražim vezane figure po dijagonali
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_b);
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -3211,7 +3216,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 			mpb &= check_grid;
 
-			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) // vjerovatno ne treba popcount
+			if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
 			{
 				//printf("mpb\n");
 				//printBits(8, &mpb);
@@ -3221,15 +3226,15 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 					if (fr[3] & ppb)	piecetype = 3;
 					else piecetype = 1;
 				
-					//provjera check?
+//checking for check?<$1>
 					tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					ZZZ->mdata[tmp] &= 0LL;
 					ZZZ->mdata[tmp] ^= piecetype; //piecetype
 					ZZZ->mdata[tmp] ^= pp << 6; //source
 					ZZZ->mdata[tmp] ^= mpp << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> mpp) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -3250,22 +3255,22 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 					(tmp == captcount) ? captcount++ : quietcount++;
 				}
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppb)
 			{
-				pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~promotion & check_grid );
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 			
 				if (mpp)
 				{
-					// bez PROMOTION
+//without promotion<1$>
 					ZZZ->mdata[captcount] &= 0LL;
 					ZZZ->mdata[captcount] ^= 5; //piecetype
 					ZZZ->mdata[captcount] ^= pp << 6; //source
 					ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> (mpp-1)) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3282,12 +3287,12 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                         		mask += 8;
                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					captcount++;
 				}
 				else 
 				{
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 					if (mpp)
@@ -3301,7 +3306,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		                			ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
 		                			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
 		                			
-                                        		//odredi captured piece
+//determine captured piece<$1>
                                         		f = (ho[1] >> (mpp-1)) & 1LL;
                                         		mask = 0x0000000000000008;
                                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3320,8 +3325,8 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         
 		                			captcount++;
 						}
-						//check fali, zapisi kao const osim stm
-        					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					}
 					else
 					{
@@ -3329,12 +3334,12 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho[6] ^ enp) & check_grid);
 						if (mpp)
 						{
-							//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 					                ZZZ->mdata[captcount] &= 0LL;
                 					ZZZ->mdata[captcount] ^= 7; //piecetype
 		                			ZZZ->mdata[captcount] ^= pp << 6; //source
 		                			ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-                                        		//odredi captured piece
+//determine captured piece<$1>
                                         		f = (ho[1] >> (mpp-1)) & 1LL;
                                         		mask = 0x0000000000000008;
                                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3351,7 +3356,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                                         		mask += 8;
                                         		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
         
-                					mpb &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+                					mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 		                			captcount++;
 						}
 					}
@@ -3361,15 +3366,15 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		at_b &= ~(1LL << at); 
 	}
 
-	// tražim vezane figure po liniji i redu
+//looking for pieces pinned by file or rank<1$>
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	//printBits(8, &at_r);
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.pieceset[16] & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -3392,16 +3397,16 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 					mpp = __builtin_ffsll(mpr)-1;
 					if (fr[2] & ppr)	piecetype = 2;
 					else piecetype = 1;
-					//provjera check?
+//checking for check?<$1>
 					//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
 					tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					ZZZ->mdata[tmp] &= 0LL;
 					ZZZ->mdata[tmp] ^= piecetype; //piecetype
 					ZZZ->mdata[tmp] ^= pp << 6; //source
 					ZZZ->mdata[tmp] ^= mpp << 12; //destination
-                        		//odredi captured piece
+//determine captured piece<$1>
                         		f = (ho[1] >> mpp) & 1LL;
                         		mask = 0x0000000000000008;
                         		ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
@@ -3424,14 +3429,14 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 			}
 			//ppb &= ~ (1LL << pp);
 		}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr[5] & ppr)
 			{
-				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);// za dva
-				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);// za dva
-                                //PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
-				// bez PROMOTION
+				pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
+//pawn advance or pawn capture<1$>
+//without promotion<1$>
 				if (mpp)
 				{
 					ZZZ->mdata[quietcount] &= 0LL;
@@ -3440,12 +3445,12 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 					ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
-					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					quietcount++;
 				}
 				//else 
 				mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
-						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;// za  jedan 
+						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 				if (mpp)
 				{
 					ZZZ->mdata[quietcount] &= 0LL;
@@ -3453,7 +3458,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 					ZZZ->mdata[quietcount] ^= pp << 6; //source
 					ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
 
-					mpr &= ~(1LL << (mpp-1)); //pitanje jel potrebno
+					mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 					quietcount++;
 				}
 				
@@ -3464,7 +3469,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 	//printf("all_pp\n");
 	//printBits(8, &all_pp);
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr[5] &= ~ all_pp;
@@ -3511,7 +3516,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		ZZZ->mdata[quietcount] ^= (in - P2) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
 		ZZZ->mdata[quietcount] ^= ((in % 8) << 22) ^ (1LL << 21); //enp_file
-		mP2 &= ~(1LL << in); //pitanje jel potrebno
+		mP2 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
 
 	}
@@ -3522,18 +3527,18 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		ZZZ->mdata[quietcount] ^= 5; //piecetype
 		ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
 		ZZZ->mdata[quietcount] ^= in << 12; //destination
-		mP1 &= ~(1LL << in); //pitanje jel potrebno
+		mP1 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
 	}
 	while (__builtin_popcountll(mPW))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3555,13 +3560,13 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 	}
 	while (__builtin_popcountll(mPE))
 	{
-		// bez PROMOTION
+//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
 		ZZZ->mdata[captcount] &= 0LL;
 		ZZZ->mdata[captcount] ^= 5; //piecetype
 		ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
 		ZZZ->mdata[captcount] ^= in << 12; //destination
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3591,7 +3596,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 		
 		if (!(mR_q))
 		{
-        		//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
                         ZZZ->mdata[captcount] &= 0LL;
         		ZZZ->mdata[captcount] ^= 7; //piecetype
                 	ZZZ->mdata[captcount] ^= in << 6; //source
@@ -3614,8 +3619,8 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
            			
       			quietcount++;
 		}
-		//check fali, zapisi kao const osim stm
-        	mP1_prom &= ~(1LL << in); //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+        	mP1_prom &= ~(1LL << in); //do we really need that?<1$>
 	}
 	while (__builtin_popcountll(mPW_prom))
 	{
@@ -3628,7 +3633,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3646,7 +3651,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~(1LL << in); 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -3661,7 +3666,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
       			ZZZ->mdata[captcount] ^= in << 12; //destination
        			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
            			
-      		//odredi captured piece
+//determine captured piece<$1>
       		f = (ho[1] >> in) & 1LL;
       		mask = 0x0000000000000008;
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3679,7 +3684,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
                 ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
       			captcount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~(1LL << in); 
 	}
 	
@@ -3712,7 +3717,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 4; //piecetype
         		ZZZ->mdata[captcount] ^= in_N << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3763,7 +3768,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 3; //piecetype
         		ZZZ->mdata[captcount] ^= in_B << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3815,7 +3820,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 2; //piecetype
         		ZZZ->mdata[captcount] ^= in_R << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3867,7 +3872,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 1; //piecetype
         		ZZZ->mdata[captcount] ^= in_Q << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3927,7 +3932,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[captcount] ^= 0; //piecetype
         		ZZZ->mdata[captcount] ^= in_K << 6; //source
         		ZZZ->mdata[captcount] ^= in << 12; //destination
-              		//odredi captured piece
+//determine captured piece<$1>
               		f = (ho[1] >> in) & 1LL;
               		mask = 0x0000000000000008;
                         ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
@@ -3973,7 +3978,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
         		ZZZ->mdata[quietcount] ^= (king+2) << 12; //destination
 			quietcount++;
 	}
-	//potrebno je odrolati pinned pieces 
+
 	
 	
 	/*printf("ho.atackmap\n");
@@ -4002,7 +4007,8 @@ int Ndo_move(Nboard *b, Nmove m)
 	
 	KR = 0x0100000000000000 >> (stm*56);
 	QR = 0x8000000000000000 >> (stm*56);
-	hKR = 0x0000000000000001ULL << (stm*56);//stavi ULL da izbjegnes left shift warning
+//ULL used to escape left shirt warning<1$>
+	hKR = 0x0000000000000001ULL << (stm*56);
 	hQR = 0x0000000000000080ULL << (stm*56);
 	//castle = 0x000000000000001E;
 	castle = 0LL;
@@ -4047,20 +4053,20 @@ int Ndo_move(Nboard *b, Nmove m)
 	 0;t = ( m->info & 1LL << 26 );
 	printf("hkr\n");
 	printBits(8, &hKR);*/
-	//provjera da li igra kralj ili je rokada fr gubi oba castla
-        	//moguća dorada uvjeta sa bitwise operator
+//loosing castle rights if king plays or castling, posible improvement with bitwise operator<1$>
+
         	m_cas = 0x0000000000000C0 >> (stm<<1);
         	f_cas = (!p_type) | (p_type == 6);
 	        castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	        //provjera da li je top igrao fr gubi castle
+//if rook plays, loosing appropriate castling rights<1$>
 	        m_cas = 0x000000000000040 >> (stm<<1);
 	        f_cas = (p_type == 2) && ( 1LL << sq_from & KR); 
 	        castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 	        m_cas = 0x000000000000080 >> (stm<<1);
 	        f_cas = (p_type == 2) && ( 1LL << sq_from & QR);
 	        castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//provjera da li je top pojeden ho gubi castle 
-//nije provjereno jel je mask na vecoj mjeri od uvjeta
+//loosing castle rights when rook is captured<1$>
+//not checked if mask is bigger than condition<1$>
 	        m_cas = 0x000000000000010 << (stm<<1);
 	        f_cas = (1LL << sq_dest & hKR) && ( capt_type == 2 );
 	        castle |= (castle & ~m_cas) | (-f_cas & m_cas);
@@ -4088,7 +4094,7 @@ int Ndo_move(Nboard *b, Nmove m)
 	
 	//printf("cap %d\n", capt_type);
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//!!!!!!!!!!!! zobrist treba biti 0 kad capt_type 0 !!!!!!!!!!!!!!!!!!!!!!!!!
+//zobrist is null when capt_type is 0<1$>
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	b->zobrist ^= capt_type ? zobrist[ !stm * 6*64 + capt_type * 64 + 64 + sq_dest] : 0ULL;
 		
@@ -4208,7 +4214,7 @@ int Ndo_move(Nboard *b, Nmove m)
 	}
 	
 	
-	//half move korak je 1 ako potez nije capture ili pawn advance
+//increase hm if not capture or pawn move<1$>
 	hm = capt_type || (p_type == 5) ? -(b->info & 0x0000000000003F00) : (1LL << 8);
 
 	// b_info = stm ^ castle ^ doublepawnpush ^ halfmove ^ fullmove
@@ -4291,7 +4297,7 @@ int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m)
 	        /*mask = 0x000000000000001;
 	        cbit = 0ULL;
 	        cbit |= (cbit & ~mask) | (-capt_type & mask);*/
-	        //!!!!!!!!!!!!!!moguće izbjkeci 2 naredne sa dodatnim capture flag bitom!!!!!!!!!!!!!!!!!!!
+//maybe possible to avoid 2 instructions with extra capt flag<1$>
         	//mask = b->pieceset[stm<<3];
         	cbit = capt_type ? 1LL : 0LL;
         	b->pieceset[capt_type + ((stm) << 3)] |= cbit << sq_dest;
@@ -4301,7 +4307,7 @@ int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m)
 	//zobrist captured piece
 	//printf("UNcap %d\n", capt_type);
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//!!!!!!!!!!!! zobrist treba biti 0 kad capt_type 0 !!!!!!!!!!!!!!!!!!!!!!!!!
+//zobrist is null when capt_type is 0<1$>
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	b->zobrist ^= capt_type ? zobrist[ !stm * 6*64 + capt_type * 64 + 64  + sq_dest] : 0ULL;
 
@@ -4395,7 +4401,8 @@ int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m)
 	printf("casQ\n");
 	printBits(8, &hm);*/
 
-		KR = 0x0100000000000000 >> stm*56;//mozda && ili ?
+//maybe possible to use && or ?<1$>
+		KR = 0x0100000000000000 >> stm*56;
 		QR = 0x8000000000000000 >> stm*56;
 		CK = 0x0200000000000000 >> stm*56;
 		CQ = 0x2000000000000000 >> stm*56;

@@ -76,11 +76,11 @@ move *generate_movesALLOC(board arg)
 		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;  		
 
 		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho->N;
 		
@@ -93,7 +93,7 @@ move *generate_movesALLOC(board arg)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.all_p & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
@@ -124,7 +124,7 @@ move *generate_movesALLOC(board arg)
 
 	// looking for pieces pinned diagonaly 
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
@@ -150,7 +150,7 @@ move *generate_movesALLOC(board arg)
 					mpp = __builtin_ffsll(mpb)-1;
 					if (fr->B & ppb)	piece_type = (1LL << 3);
 					else piece_type = (1LL << 1);
-					//check for check?
+//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
 					
 					//new move pp on mpp
@@ -218,11 +218,11 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					mpb &= ~m_list->dest; //pitanje jel potrebno
+					mpb &= ~m_list->dest; //do we really need that?<1$>
 				}
 				else 
 				{
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho->pieces & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho->pieces & promotion & check_grid );
 					if (mpp)
@@ -237,7 +237,7 @@ move *generate_movesALLOC(board arg)
 							m_list->from = ppb;
 							m_list->dest = (1LL << (mpp-1));
 							m_list->info = (1LL << 5) ^ (1LL << 6) ^ (1LL << 15) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -256,8 +256,8 @@ move *generate_movesALLOC(board arg)
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 						}
-						//check fali, zapisi kao const osim stm
-						mpb &= ~m_list->dest; //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+						mpb &= ~m_list->dest; //do we really need that?<1$>
 					}
 					else
 					{
@@ -265,7 +265,7 @@ move *generate_movesALLOC(board arg)
 						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho->pieces ^ enp) & check_grid);
 						if (mpp)
 						{
-							//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 							capture = 1LL << 6;
 						
 							m = m_list;
@@ -274,8 +274,8 @@ move *generate_movesALLOC(board arg)
 							m_list->from = ppb;
 							m_list->dest = (1LL << (mpp-1));
 							m_list->info = (1LL << 5) ^ (1LL << 6) ^ (1LL << 12) ^ stm;
-							//check fali, zapisi kao const osim stm
-		//odredi captured piece
+//check is missing, write as const except stm<1$>
+//determine captured piece<$1>
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -293,14 +293,14 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-							mpb &= ~m_list->dest; //pitanje jel potrebno
+							mpb &= ~m_list->dest; //do we really need that?<1$>
 						}
 					}
 					
 				}
 
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 
 			
 			//ppb &= ~ (1LL << pp);
@@ -308,14 +308,14 @@ move *generate_movesALLOC(board arg)
 		at_b &= ~(1LL << at); 
 	}
 
-	// tražim vezane figure po liniji i redu
+//looking for pieces pinned by file or rank<1$>
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.all_p & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -336,17 +336,17 @@ move *generate_movesALLOC(board arg)
 					mpp = __builtin_ffsll(mpr)-1;
 					if (fr->R & ppr)	piece_type = (1LL << 2);
 					else piece_type = (1LL << 1);
-					//provjera check?
+//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					m = m_list;
 					m_list = malloc(sizeof(move));
 					m_list->next = m;
 					m_list->from = ppr;
 					m_list->dest = (1LL << mpp);
 					m_list->info = piece_type ^ capture ^ stm; // check fali
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> mpp) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -373,14 +373,14 @@ move *generate_movesALLOC(board arg)
 			
 			//ppb &= ~ (1LL << pp);
 		}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr->P & ppr)
 			{
-				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.all_p) << 8) & ~arg.all_p & check_grid);//za dva
-				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.all_p) >> 8) & ~arg.all_p & check_grid);// za dva
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.all_p) >> 8) & ~arg.all_p & check_grid);//include just two rank step<1$>
 		
-//PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
+//pawn advance or pawn capture<1$>
 				if (mpp)
 				{
 					// nije uracunat PROMOTION
@@ -390,7 +390,7 @@ move *generate_movesALLOC(board arg)
 					m_list->next = m;
 					m_list->from = ppr;
 					m_list->dest = (1LL << (mpp-1));
-					m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + (mpp-1)%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
+//check is missing, write as const except stm<1$>
 
 					//prenesi old_enp_sq i old castle
 					m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
@@ -400,10 +400,10 @@ move *generate_movesALLOC(board arg)
 				//else 
 				{
 					mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid
-							: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;// za  jedan 
+							: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;//include just one rank step<1$>
 					if (mpp)
 					{
-						//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 						//capture = 1LL << 6;
 					
 						m = m_list;
@@ -412,7 +412,7 @@ move *generate_movesALLOC(board arg)
 						m_list->from = ppr;
 						m_list->dest = (1LL << (mpp-1));
 						m_list->info = (1LL << 5) ^ (1LL << 15) ^ stm;
-						//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 						mpb &= ~m_list->dest; 
@@ -423,7 +423,7 @@ move *generate_movesALLOC(board arg)
 		at_r &= ~(1LL << at); 
 	}
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr->P &= ~ all_pp;
@@ -470,7 +470,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + in%8)) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mP2 &= ~m_list->dest; 
 	}
 	while (__builtin_popcountll(mP1))
@@ -484,7 +484,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (1LL << 5) ^ (1LL << 15) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mP1 &= ~m_list->dest; 
 	}
 	while (__builtin_popcountll(mPW))
@@ -496,7 +496,7 @@ move *generate_movesALLOC(board arg)
 		m_list->from = 1LL << (in - PW);
 		m_list->dest = 1LL << in;
 		m_list->info = (1LL << 5) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -514,7 +514,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW &= ~m_list->dest; 
 	}
 	while (__builtin_popcountll(mPE))
@@ -526,7 +526,7 @@ move *generate_movesALLOC(board arg)
 		m_list->from = 1LL << (in - PE);
 		m_list->dest = 1LL << in;
 		m_list->info = (1LL << 5) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -544,7 +544,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE &= ~m_list->dest; 
 	}
 	while (__builtin_popcountll(mENP))
@@ -566,7 +566,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (1LL << 5) ^ (1LL << 12) ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		}
 		mENP &= ~(1LL << in); 
 	}
@@ -583,7 +583,7 @@ move *generate_movesALLOC(board arg)
 		m_list->info = (1LL << 5) ^ (1LL << 15) ^ it_prom ^ stm;
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		}
 		mP1_prom &= ~m_list->dest; 
 	}
@@ -598,7 +598,7 @@ move *generate_movesALLOC(board arg)
 		m_list->from = 1LL << (in - PW);
 		m_list->dest = 1LL << in;
 		m_list->info = (1LL << 5) ^ (1LL << 6) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -617,7 +617,7 @@ move *generate_movesALLOC(board arg)
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~m_list->dest; 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -631,7 +631,7 @@ move *generate_movesALLOC(board arg)
 		m_list->from = 1LL << (in - PE);
 		m_list->dest = 1LL << in;
 		m_list->info = (1LL << 5) ^ (1LL << 6) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -650,7 +650,7 @@ move *generate_movesALLOC(board arg)
 		//prenesi old_enp_sq i old castle
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~m_list->dest; 
 	}
 	
@@ -673,7 +673,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (1LL << 4) ^ stm;
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mN_q &= ~m_list->dest; 
 		}
 		while (__builtin_popcountll(mN_c))
@@ -685,7 +685,7 @@ move *generate_movesALLOC(board arg)
 			m_list->from = (1LL << in_N);
 			m_list->dest = (1LL << in);
 			m_list->info = (1LL << 4) ^ (1LL << 6) ^ stm;
-			//odredi captured piece
+//determine captured piece<$1>
 			f = (ho->Q >> in) & 1LL;
 			mask = 1LL << 25;
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -703,7 +703,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mN_c &= ~m_list->dest; 
 		}
 		fr->N &= ~1LL << in_N; 
@@ -730,7 +730,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (1LL << 3) ^ stm;
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mB_q &= ~m_list->dest; 
 		}
 		while (__builtin_popcountll(mB_c))
@@ -742,7 +742,7 @@ move *generate_movesALLOC(board arg)
 			m_list->from = (1LL << in_B);
 			m_list->dest = (1LL << in);
 			m_list->info = (1LL << 3) ^ (1LL << 6) ^ stm;
-			//odredi captured piece
+//determine captured piece<$1>
 			f = (ho->Q >> in) & 1LL;
 			mask = 1LL << 25;
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -760,7 +760,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mB_c &= ~m_list->dest; 
 		}
 		fr->B &= ~1LL << in_B; 
@@ -787,7 +787,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (1LL << 2) ^ stm;
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mR_q &= ~m_list->dest; 
 		}
 		while (__builtin_popcountll(mR_c))
@@ -799,7 +799,7 @@ move *generate_movesALLOC(board arg)
 			m_list->from = (1LL << in_R);
 			m_list->dest = (1LL << in);
 			m_list->info = (1LL << 2) ^ (1LL << 6) ^ stm;
-			//odredi captured piece
+//determine captured piece<$1>
 			f = (ho->Q >> in) & 1LL;
 			mask = 1LL << 25;
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -817,7 +817,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mR_c &= ~m_list->dest; 
 		}
 		fr->R &= ~1LL << in_R; 
@@ -845,7 +845,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (1LL << 1) ^ stm;
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mQ_q &= ~m_list->dest; 
 		}
 		while (__builtin_popcountll(mQ_c))
@@ -857,7 +857,7 @@ move *generate_movesALLOC(board arg)
 			m_list->from = (1LL << in_Q);
 			m_list->dest = (1LL << in);
 			m_list->info = (1LL << 1) ^ (1LL << 6) ^ stm;
-			//odredi captured piece
+//determine captured piece<$1>
 			f = (ho->Q >> in) & 1LL;
 			mask = 1LL << 25;
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -875,7 +875,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mQ_c &= ~m_list->dest; 
 		}
 		fr->Q &= ~1LL << in_Q; 
@@ -900,7 +900,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = 1LL  ^ stm;
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_q &= ~m_list->dest; 
 		}
 		while (__builtin_popcountll(mK_c))
@@ -912,7 +912,7 @@ move *generate_movesALLOC(board arg)
 			m_list->from = (1LL << in_K);
 			m_list->dest = (1LL << in);
 			m_list->info = 1LL ^ (1LL << 6) ^ stm;
-			//odredi captured piece
+//determine captured piece<$1>
 			f = (ho->Q >> in) & 1LL;
 			mask = 1LL << 25;
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
@@ -930,7 +930,7 @@ move *generate_movesALLOC(board arg)
 			m_list->info = (m_list->info & ~mask) | ( -f & mask);
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_c &= ~m_list->dest; 
 		}
 		//fr->K &= ~1LL << in_K; 
@@ -955,7 +955,7 @@ move *generate_movesALLOC(board arg)
 			//prenesi old_enp_sq i old castle
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 	}
-	//potrebno je odrolati pinned pieces 
+
 	
 	return m_list;
 }
@@ -1014,24 +1014,24 @@ char generate_moves(board arg, move *movearray)
 
 	king = __builtin_ffsll(fr->K)-1;
 
-	//!!!!!!!!!!!!!!! gradnja atack map, pieces, kasnije neće biti potrebno jer će se update-ati sa make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
 	fr->pieces = fr->P ^ fr->N ^ fr->R ^ fr->B ^ fr->K ^ fr->Q;
 	ho->pieces = ho->P ^ ho->N ^ ho->R ^ ho->B ^ ho->K ^ ho->Q;
 	arg.all_p = fr->pieces ^ ho->pieces;
 	ho->atack = gen_ho_atack(arg);
 	
-	// provjeri jel šah
+//check if king is in CHECK<$1>
 	if (fr->K & ho->atack)
 	{
 		if (stm)	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) << 7 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) << 9 & ho->P;  		
 		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;  		
 
 		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); // ~ frijendly pieces ??
+		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 		mpb = magicMovesBishop[king][in_at_b];		
 
 		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); // ~ frijendly pieces ??
+		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 		
 		in_N = movesNight[king] & ho->N;
 		
@@ -1044,13 +1044,13 @@ char generate_moves(board arg, move *movearray)
 				
 				at = __builtin_ffsll(at_b)-1;
 				in_at = ((arg.all_p & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); // ~ frijendly pieces ??
+				check_grid = magicMovesBishop[at][in_at] & magicMovesBishop[king][in_at_b] | (1LL << at); //friendly pieces<$1>
 			}
 			else if (__builtin_popcountll(at_r))
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.all_p & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 				
 			}
@@ -1069,17 +1069,17 @@ char generate_moves(board arg, move *movearray)
 	all_pp = 0LL;
 	ppb = 0LL;
 	ppr = 0LL;
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho->atack = 0LL; // PRIVREMENO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/	//ho->atack = 0LL; // TEMPORARY<1$>
 	//bb = blank & occupancyMaskBishop[king];
 
-	// tražim vezane figure po dijagonali
+//looking for pieces pinned diagonaly<1$>
 	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
-	at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); // ~ frijendly pieces ??
+	at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.all_p & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -1093,21 +1093,21 @@ char generate_moves(board arg, move *movearray)
 			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
 			mpb &= check_grid;
 
-			if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) // vjerovatno ne treba popcount
+			if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) //maybe popcount isn't neccessary<1$>
 			{
 				while ( __builtin_popcountll(mpb))
 				{
 					mpp = __builtin_ffsll(mpb)-1;
 					if (fr->B & ppb)	piece_type = (1LL << 3);
 					else piece_type = (1LL << 1);
-					//provjera check?
+//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					movearray[movecount].from = ppb;
 					movearray[movecount].dest = (1LL << mpp);
 					movearray[movecount].info = piece_type ^ capture ^ stm; // check fali
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> mpp) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1129,22 +1129,22 @@ char generate_moves(board arg, move *movearray)
 					movecount++;
 				}
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr->P & ppb)
 			{
-				pp = __builtin_ffsll(ppb)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
+				pp = __builtin_ffsll(ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho->pieces & ~promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho->pieces & ~promotion & check_grid );
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				
 				if (mpp)
 				{
-					// bez PROMOTION
+//without promotion<1$>
 
 					movearray[movecount].from = ppb;
 					movearray[movecount].dest = (1LL << (mpp-1));
-					movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ stm;// check fali i zapisi kao const osim stm
-		//odredi captured piece
+//check is missing, write as const except stm<1$>
+//determine captured piece<$1>
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1162,12 +1162,12 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					mpb &= ~movearray[movecount].dest; //pitanje jel potrebno
+					mpb &= ~movearray[movecount].dest; //do we really need that?<1$>
 					movecount++;
 				}
 				else 
 				{
-				// dodaj ogranicenje za a i h liniju ovisno o smjeru capture, moguće da ograničenja i nisu potrebna
+//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho->pieces & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho->pieces & promotion & check_grid );
 					if (mpp)
@@ -1179,7 +1179,7 @@ char generate_moves(board arg, move *movearray)
 							movearray[movecount].from = ppb;
 							movearray[movecount].dest = (1LL << (mpp-1));
 							movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ (1LL << 15) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1199,8 +1199,8 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
         					movecount++;
 						}
-						//check fali, zapisi kao const osim stm
-						mpb &= ~movearray[movecount-1].dest; //pitanje jel potrebno
+//check is missing, write as const except stm<1$>
+						mpb &= ~movearray[movecount-1].dest; //do we really need that?<1$>
 					}
 					else
 					{
@@ -1208,14 +1208,14 @@ char generate_moves(board arg, move *movearray)
 						else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)>>7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)>>9)) & (ho->pieces ^ enp) & check_grid);
 						if (mpp)
 						{
-							//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 							capture = 1LL << 6;
 						
 							movearray[movecount].from = ppb;
 							movearray[movecount].dest = (1LL << (mpp-1));
 							movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ (1LL << 12) ^ stm;
-							//check fali, zapisi kao const osim stm
-		//odredi captured piece
+//check is missing, write as const except stm<1$>
+//determine captured piece<$1>
 		f = (ho->Q >> (mpp-1)) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1233,7 +1233,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-							mpb &= ~movearray[movecount].dest; //pitanje jel potrebno
+							mpb &= ~movearray[movecount].dest; //do we really need that?<1$>
                 					movecount++;
 						}
 					}
@@ -1241,7 +1241,7 @@ char generate_moves(board arg, move *movearray)
 				}
 
 			}
-			//provjera za pješaka
+//checking for pawn<1$>
 
 			
 			//ppb &= ~ (1LL << pp);
@@ -1250,14 +1250,14 @@ char generate_moves(board arg, move *movearray)
 	}
 	//ppb =  magicMovesBishop[at][in_at];
 
-	// tražim vezane figure po liniji i redu
+//looking for pieces pinned by file or rank<1$>
 	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
-	at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); // ~ frijendly pieces ??
+	at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
 		at = __builtin_ffsll(at_r)-1;
 		in_at = ((arg.all_p & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-		//index kralja moze i izvan while	
+//index of king can be outside of while loop<$1>
 		in_k = ((arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
 		ppr= magicMovesRook[king][in_k] & magicMovesRook[at][in_at];
 		//ppb = magicMovesBishop[king][in_k] ;
@@ -1278,14 +1278,14 @@ char generate_moves(board arg, move *movearray)
 					mpp = __builtin_ffsll(mpr)-1;
 					if (fr->R & ppr)	piece_type = (1LL << 2);
 					else piece_type = (1LL << 1);
-					//provjera check?
+//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
 					
-					//novi potez pp na mpp
+//new move pp on mpp<$1>
 					movearray[movecount].from = ppr;
 					movearray[movecount].dest = (1LL << mpp);
 					movearray[movecount].info = piece_type ^ capture ^ stm; // check fali
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> mpp) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1313,21 +1313,21 @@ char generate_moves(board arg, move *movearray)
 			
 			//ppb &= ~ (1LL << pp);
 		}
-			//provjera za pješaka
+//checking for pawn<1$>
 			if ( fr->P & ppr)
 			{
-				pp = __builtin_ffsll(ppr)-1;  //vjerovatno moguce koristiti pp odozgora jer jedan at ima jedan pinned_p
-				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.all_p) << 8) & ~arg.all_p & check_grid);// za dva
-				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.all_p) >> 8) & ~arg.all_p & check_grid);// za dva
+				pp = __builtin_ffsll(ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+				if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & ppr) << 8) & ~arg.all_p) << 8) & ~arg.all_p & check_grid);//include just two rank step<1$>
+				else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & ppr) >> 8) & ~arg.all_p) >> 8) & ~arg.all_p & check_grid);//include just two rank step<1$>
 		
-//PITANJE DA LI PAWN ADVANCE JE QUIET ILI CAPTURE
+//pawn advance or pawn capture<1$>
 				if (mpp)
 				{
 					// nije uracunat PROMOTION
 
 					movearray[movecount].from = ppr;
 					movearray[movecount].dest = (1LL << (mpp-1));
-					movearray[movecount].info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + (mpp-1)%8)) ^ stm;// check fali i zapisi kao const osim stm, također izbjegni modulus
+//check is missing, write as const except stm<1$>
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 					
@@ -1337,16 +1337,16 @@ char generate_moves(board arg, move *movearray)
 				//else 
 				{
 					mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid
-							: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;// za  jedan 
+							: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;//include just one rank step<1$>
 					if (mpp)
 					{
-						//promotion nije kad je en'passan
+//promotion excluded when en'passan<1$>
 						//capture = 1LL << 6;
 					
 						movearray[movecount].from = ppr;
 						movearray[movecount].dest = (1LL << (mpp-1));
 						movearray[movecount].info = (1LL << 5) ^ (1LL << 15) ^ stm;
-						//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 						mpb &= ~movearray[movecount].dest; 
@@ -1359,7 +1359,7 @@ char generate_moves(board arg, move *movearray)
 	}
 	//ppb =  magicMovesBishop[at][in_at];
 	
-	//legalnipotezi
+//legal moves<1$>
 	
 	//PAWN
 	fr->P &= ~ all_pp;
@@ -1403,7 +1403,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 15) ^ (1LL << (16 + in%8)) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mP2 &= ~movearray[movecount].dest; 
 		movecount++;
 	}
@@ -1415,7 +1415,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 15) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mP1 &= ~movearray[movecount].dest; 
 		movecount++;
 	}
@@ -1425,7 +1425,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].from = 1LL << (in - PW);
 		movearray[movecount].dest = 1LL << in;
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1443,7 +1443,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW &= ~movearray[movecount].dest; 
 		movecount++;
 	}
@@ -1453,7 +1453,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].from = 1LL << (in - PE);
 		movearray[movecount].dest = 1LL << in;
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1471,7 +1471,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE &= ~movearray[movecount].dest; 
 		movecount++;
 	}
@@ -1491,7 +1491,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 12) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		movecount++;
 		}
 		mENP &= ~(1LL << in); 
@@ -1506,7 +1506,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 15) ^ it_prom ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		movecount++;
 		}
 		mP1_prom &= ~movearray[movecount-1].dest; 
@@ -1519,7 +1519,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].from = 1LL << (in - PW);
 		movearray[movecount].dest = 1LL << in;
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1539,7 +1539,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		movecount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPW_prom &= ~movearray[movecount-1].dest; 
 	}
 	while (__builtin_popcountll(mPE_prom))
@@ -1550,7 +1550,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].from = 1LL << (in - PE);
 		movearray[movecount].dest = 1LL << in;
 		movearray[movecount].info = (1LL << 5) ^ (1LL << 6) ^ it_prom ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1570,7 +1570,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		movecount++;
 		}
-		//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 		mPE_prom &= ~movearray[movecount-1].dest; 
 	}
 	
@@ -1593,7 +1593,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].info = (1LL << 4) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mN_q &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1603,7 +1603,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].from = (1LL << in_N);
 			movearray[movecount].dest = (1LL << in);
 			movearray[movecount].info = (1LL << 4) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1621,7 +1621,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mN_c &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1646,7 +1646,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].info = (1LL << 3) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mB_q &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1656,7 +1656,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].from = (1LL << in_B);
 			movearray[movecount].dest = (1LL << in);
 			movearray[movecount].info = (1LL << 3) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1674,7 +1674,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mB_c &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1699,7 +1699,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].info = (1LL << 2) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mR_q &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1709,7 +1709,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].from = (1LL << in_R);
 			movearray[movecount].dest = (1LL << in);
 			movearray[movecount].info = (1LL << 2) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1727,7 +1727,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mR_c &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1753,7 +1753,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].info = (1LL << 1) ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mQ_q &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1763,7 +1763,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].from = (1LL << in_Q);
 			movearray[movecount].dest = (1LL << in);
 			movearray[movecount].info = (1LL << 1) ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1781,7 +1781,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mQ_c &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1804,7 +1804,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].info = 1LL  ^ stm;
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_q &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1814,7 +1814,7 @@ char generate_moves(board arg, move *movearray)
 			movearray[movecount].from = (1LL << in_K);
 			movearray[movecount].dest = (1LL << in);
 			movearray[movecount].info = 1LL ^ (1LL << 6) ^ stm;
-		//odredi captured piece
+//determine captured piece<$1>
 		f = (ho->Q >> in) & 1LL;
 		mask = 1LL << 25;
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
@@ -1832,7 +1832,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 		//prenesi old_enp_sq i old castle
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-			//check fali, zapisi kao const osim stm
+//check is missing, write as const except stm<1$>
 			mK_c &= ~movearray[movecount].dest; 
 			movecount++;
 		}
@@ -1854,7 +1854,7 @@ char generate_moves(board arg, move *movearray)
 		movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			movecount++;
 	}
-	//potrebno je odrolati pinned pieces 
+
 
 	return movecount;
 	}
@@ -1881,7 +1881,7 @@ U64 gen_ho_atack(board arg)
 	at |= (ho->P & 0xFEFEFEFEFEFEFEFE) << 7;
 	at |= (ho->P & 0x7F7F7F7F7F7F7F7F) << 9;
 	}
-	//gledati napadnuta polja bez kralja zbog šahova
+//search squares without king cause of possible check<1$>
 	arg.all_p ^= fr->K;  
 	//NIGHT
 	while (__builtin_popcountll(ho->N))
@@ -1922,7 +1922,8 @@ U64 gen_ho_atack(board arg)
 		in_K = __builtin_ffsll(ho->K)-1;
 		at |= movesKing[in_K];
 	
-	//ho->atack &= ~arg.fr->pieces;		//!!!!!!!!!!!!!!!!!!!! samo prazna polja
+//only empty squares<1$>
+	//ho->atack &= ~arg.fr->pieces;		
 	return at;
 }
 
@@ -1937,7 +1938,8 @@ void do_move(board *b, move *m)
 	ho = stm ? &b->b : &b->w;
 	KR = 0x0100000000000000 >> (stm*56);
 	QR = 0x8000000000000000 >> (stm*56);
-	hKR = 0x0000000000000001ULL << (stm*56);//stavi ULL da izbjegnes left shift warning
+//ULL used to escape left shirt warning<1$>
+	hKR = 0x0000000000000001ULL << (stm*56);
 	hQR = 0x0000000000000080ULL << (stm*56);
 	//castle = 0x000000000000001E;
 	castle = 0LL;
@@ -1964,19 +1966,19 @@ void do_move(board *b, move *m)
 	b->zobrist ^= zobrist[ stm * 6*64 + p_type * 64 + sq_dest];
 	
 	//castle
-	//provjera da li igra kralj ili je rokada fr gubi oba castla
+//loosing castle rights if king plays or castling, posible improvement with bitwise operator<1$>
 	m_cas = 0x000000000000018 >> (stm<<1);
 	f_cas = (m->info & 1LL) | (m->info & 0x000000000006000) >> 13;
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//provjera da li je top igrao fr gubi castle
+//if rook plays, loosing appropriate castling rights<1$>
 	m_cas = 0x000000000000008 >> (stm<<1);
 	f_cas = (m->info & 1LL << 2) && ( m->from & KR); 
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 	m_cas = 0x000000000000010 >> (stm<<1);
 	f_cas = (m->info & 1LL << 2) && ( m->from & QR);
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
-	//provjera da li je top pojeden ho gubi castle 
-//nije provjereno jel je mask na vecoj mjeri od uvjeta
+//loosing castle rights when rook is captured<1$>
+//not checked if mask is bigger than condition<1$>
 	m_cas = 0x000000000000002 << (stm<<1);
 	f_cas = (m->dest & hKR) && ( m->info & 1LL << 26 );
 	castle |= (castle & ~m_cas) | (-f_cas & m_cas);
@@ -2096,7 +2098,7 @@ void do_move(board *b, move *m)
 	}
 	
 	
-	//half move korak je 1 ako potez nije capture ili pawn advance
+//increase hm if not capture or pawn move<1$>
 	hm = m->info & 0x000000003E008000 ? -(b->info & 0x0000000000FF0000) : (1LL << 16);
 
 	// b_info = stm ^ castle ^ doublepawnpush ^ halfmove ^ fullmove
@@ -2236,7 +2238,8 @@ void undo_move(board *b, move *m)
 	}
 	else if (m->info & 0x0000000000006000)
 	{
-		KR = 0x0100000000000000 >> stm*56;//mozda && ili ?
+//maybe possible to use && or ?<1$>
+		KR = 0x0100000000000000 >> stm*56;
 		QR = 0x8000000000000000 >> stm*56;
 		CK = 0x0200000000000000 >> stm*56;
 		CQ = 0x2000000000000000 >> stm*56;
