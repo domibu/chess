@@ -461,21 +461,22 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
 				Nmove tmp_dst = (NML->mdata[it] >> 12) & 0x000000000000003F;
 
 				if ((tmp_src == src) && (tmp_dst == dst))
-
-					t_manager.fm += (color == -1) ? 0 : 1;
-				//	update history	//////////
-				history.tag[history.curr] ^= 0ULL;
-				history.tag[history.curr] = Ncb.info << 32;
-				history.tag[history.curr] = NML->mdata[it];
-				history.curr++;
-
-				Ndo_move(&Ncb, NML->mdata[it]);
-				if (en_state == PONDERING)
 				{
-					en_state = THINKING;
-					goto en_state_THINKING;
+					t_manager.fm += (color == -1) ? 0 : 1;
+					//	update history	//////////
+					history.tag[history.curr] ^= 0ULL;
+					history.tag[history.curr] = Ncb.info << 32;
+					history.tag[history.curr] = NML->mdata[it];
+					history.curr++;
+
+					Ndo_move(&Ncb, NML->mdata[it]);
+					if (en_state == PONDERING)
+					{
+						en_state = THINKING;
+						goto en_state_THINKING;
+					}
+					else goto end_user_move;
 				}
-				else goto end_user_move;
 			}
 
 			if (it == (capt ))
