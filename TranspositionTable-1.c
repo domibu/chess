@@ -13,16 +13,15 @@
 #define LM UINT64_C(0x7FFFFFFF) /* Least significant 31 bits */
 
 U64 zobrist[782];
-
 TTentry *TT = NULL;
 
 void setZobrist( board *b)
 {
 	int it, enp;
 	U64 m = 1ULL;
-	
+
 	b->zobrist = 0ULL;
-	
+
 	for ( it = 0; it < 64; it++)
 	{
 		if (b->b.K & (m << it) )  b->zobrist ^= zobrist[ it];
@@ -42,33 +41,31 @@ void setZobrist( board *b)
 	b->zobrist ^= (b->info & 0x0000000000000004) ? zobrist[ 779] : 0ULL;
 	b->zobrist ^= (b->info & 0x0000000000000008) ? zobrist[ 780] : 0ULL;
 	b->zobrist ^= (b->info & 0x0000000000000010) ? zobrist[ 781] : 0ULL;
-	
+
 	enp = __builtin_ffsll( b->info & 0x000000000000FF00);
 	b->zobrist ^= enp ? zobrist[ 768 + enp] : 0ULL;
-	
+
 	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL; 
-
 }
-
 
 U64 setTT( U64 n)
 {
 	U64 count;
 	n *= 1024*1024;
-	
+
 	count = LargestPrime( n / sizeof(TTentry) );
-	
+
 	TT = calloc( sizeof( TTentry), count);
-	
+
 	return count;
 }
 
 TTentry *TTlookup(U64 key)
 {
 	unsigned ind = key % count_TT;
-	
+
 	if (TT[ ind].zobrist != key) return NULL;
-	
+
 	TThit++;
 	return &TT[ ind];
 }
@@ -77,10 +74,9 @@ void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
 {
 	// always replace startegy
 	unsigned ind = zobrist % count_TT;
-	
+
 	TT[ ind].zobrist = zobrist;
 
-// bit ce direktno move spremljen kad bude bolje spakiran u 16 bita a prijasnji caslte i enpassa cca ce biti ionako posebno ovisno o poziciji a ne o potezu
 	if (pick)
 	{
 		TT[ ind].pick.info = pick->info;
@@ -96,18 +92,18 @@ void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
 	TT[ ind].depth = depth;
 	TT[ ind].score = score;
 	TT[ ind].flag = flag;
-	
 }
 
 void printline( line pline)
 {
-    int it;
-    for (it = 0; pline.cmove > it; it++)
-    {
-		if (pline.argmove[it].info & 1ULL)	printf(" #%d ", it);
-			printmove( &pline.argmove[it]);
-    }
-    printf("\n");
+	int it;
+	for (it = 0; pline.cmove > it; it++)
+	{
+		if (pline.argmove[it].info & 1ULL)
+			printf(" #%d ", it);
+		printmove( &pline.argmove[it]);
+	}
+	printf("\n");
 }
 
 move *TTextractPV( board pos, char n)
@@ -120,11 +116,10 @@ move *TTextractPV( board pos, char n)
 		entry = TTlookup( pos.zobrist);
 		if (!entry)	break;
 		dodaj_move( &PV, &entry->pick);
-			
-		//print FM
-		if (pos.info & 1ULL)	printf(" #%llu ", pos.info >> 14);
-		printmove( &entry->pick);
 
+		if (pos.info & 1ULL)
+			printf(" #%llu ", pos.info >> 14);
+		printmove( &entry->pick);
 		do_move( &pos, &entry->pick);
 	}
 	printf("\n");
@@ -133,7 +128,6 @@ move *TTextractPV( board pos, char n)
 
 void dodaj_move( move **pocetak, move *ind )
 {
-
 	move *novi = *pocetak;
 	*pocetak = malloc(sizeof(move));
 	(*pocetak)->next = novi;
@@ -141,5 +135,3 @@ void dodaj_move( move **pocetak, move *ind )
 	(*pocetak)->dest = ind->dest;
 	(*pocetak)->info = ind->info;
 }
-
-
