@@ -3,12 +3,12 @@
 
 #include "data-1.h"
 
-move *marray;
+move_1 *marray;
 U64 mfree;
 
 extern U64 count;
 
-int delete_movelist(move *arg);
+int delete_movelist(move_1 *arg);
 
 int eval( board_1 *b);
 

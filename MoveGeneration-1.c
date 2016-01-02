@@ -9,7 +9,7 @@ static inline int max(int a, int b) {
 	return a > b ? a : b;
 }
 
-move *generate_movesALLOC(board_1 arg)
+move_1 *generate_movesALLOC(board_1 arg)
 {
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, piece_type, capture, stm, enp;
 	U64 check_pieces, check_grid = ~0LL;
@@ -20,7 +20,7 @@ move *generate_movesALLOC(board_1 arg)
 	U64 f, mask;
 	piece_set *fr, *ho; 
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
-	move *m_list = NULL, *m;
+	move_1 *m_list = NULL, *m;
 
 	stm = (arg.info & 1LL) << 24;
 	if (stm )
@@ -63,7 +63,7 @@ move *generate_movesALLOC(board_1 arg)
 	}
 
 	king = __builtin_ffsll(fr->K)-1;
-	//!!!!!!!!!!!!!!! building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move!!!!!!!!!!!!!!!!!!!!!!!
+	//!!!!!!!!!!!!!!! building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move_1!!!!!!!!!!!!!!!!!!!!!!!
 	fr->pieces = fr->P ^ fr->N ^ fr->R ^ fr->B ^ fr->K ^ fr->Q;
 	ho->pieces = ho->P ^ ho->N ^ ho->R ^ ho->B ^ ho->K ^ ho->Q;
 	arg.all_p = fr->pieces ^ ho->pieces;
@@ -145,9 +145,9 @@ move *generate_movesALLOC(board_1 arg)
 				else piece_type = (1LL << 1);
 				//checking for check?<$1>
 				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
-				//new move pp on mpp
+				//new move_1 pp on mpp
 				m = m_list;
-				m_list = malloc(sizeof(move));
+				m_list = malloc(sizeof(move_1));
 				m_list->next = m;
 				m_list->from = ppb;
 				m_list->dest = (1LL << mpp);
@@ -184,7 +184,7 @@ move *generate_movesALLOC(board_1 arg)
 			{
 				// without PROMOTION
 				m = m_list;
-				m_list = malloc(sizeof(move));
+				m_list = malloc(sizeof(move_1));
 				m_list->next = m;
 				m_list->from = ppb;
 				m_list->dest = (1LL << (mpp-1));
@@ -221,7 +221,7 @@ move *generate_movesALLOC(board_1 arg)
 					{
 						in = __builtin_ffsll(mPW_prom)-1;
 						m = m_list;
-						m_list = malloc(sizeof(move));
+						m_list = malloc(sizeof(move_1));
 						m_list->next = m;
 						m_list->from = ppb;
 						m_list->dest = (1LL << (mpp-1));
@@ -257,7 +257,7 @@ move *generate_movesALLOC(board_1 arg)
 						//promotion excluded when en'passan<1$>
 						capture = 1LL << 6;
 						m = m_list;
-						m_list = malloc(sizeof(move));
+						m_list = malloc(sizeof(move_1));
 						m_list->next = m;
 						m_list->from = ppb;
 						m_list->dest = (1LL << (mpp-1));
@@ -318,9 +318,9 @@ move *generate_movesALLOC(board_1 arg)
 				else piece_type = (1LL << 1);
 				//checking for check?<$1>
 				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
-				//new move pp on mpp<$1>
+				//new move_1 pp on mpp<$1>
 				m = m_list;
-				m_list = malloc(sizeof(move));
+				m_list = malloc(sizeof(move_1));
 				m_list->next = m;
 				m_list->from = ppr;
 				m_list->dest = (1LL << mpp);
@@ -356,7 +356,7 @@ move *generate_movesALLOC(board_1 arg)
 			if (mpp)
 			{
 				m = m_list;
-				m_list = malloc(sizeof(move));
+				m_list = malloc(sizeof(move_1));
 				m_list->next = m;
 				m_list->from = ppr;
 				m_list->dest = (1LL << (mpp-1));
@@ -373,7 +373,7 @@ move *generate_movesALLOC(board_1 arg)
 				{
 					//promotion excluded when en'passan<1$>
 					m = m_list;
-					m_list = malloc(sizeof(move));
+					m_list = malloc(sizeof(move_1));
 					m_list->next = m;
 					m_list->from = ppr;
 					m_list->dest = (1LL << (mpp-1));
@@ -424,7 +424,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mP2)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = 1LL << (in - P2 );
 		m_list->dest = 1LL << in;
@@ -438,7 +438,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mP1)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = 1LL << (in - P1 );
 		m_list->dest = 1LL << in;
@@ -452,7 +452,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mPW)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = 1LL << (in - PW);
 		m_list->dest = 1LL << in;
@@ -482,7 +482,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mPE)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = 1LL << (in - PE);
 		m_list->dest = 1LL << in;
@@ -519,7 +519,7 @@ move *generate_movesALLOC(board_1 arg)
 		if (!(mR_q))
 		{
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = 1LL << in;
 			m_list->dest = enp;
@@ -536,7 +536,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mP1_prom)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = 1LL << (in - P1 );
 			m_list->dest = 1LL << in;
@@ -553,7 +553,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mPW_prom)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = 1LL << (in - PW);
 			m_list->dest = 1LL << in;
@@ -586,7 +586,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mPE_prom)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = 1LL << (in - PE);
 			m_list->dest = 1LL << in;
@@ -626,7 +626,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mN_q)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_N);
 			m_list->dest = (1LL << in);
@@ -640,7 +640,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mN_c)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_N);
 			m_list->dest = (1LL << in);
@@ -682,7 +682,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mB_q)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_B);
 			m_list->dest = (1LL << in);
@@ -696,7 +696,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mB_c)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_B);
 			m_list->dest = (1LL << in);
@@ -738,7 +738,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mR_q)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_R);
 			m_list->dest = (1LL << in);
@@ -752,7 +752,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mR_c)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_R);
 			m_list->dest = (1LL << in);
@@ -795,7 +795,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mQ_q)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_Q);
 			m_list->dest = (1LL << in);
@@ -809,7 +809,7 @@ move *generate_movesALLOC(board_1 arg)
 		{
 			in = __builtin_ffsll(mQ_c)-1;
 			m = m_list;
-			m_list = malloc(sizeof(move));
+			m_list = malloc(sizeof(move_1));
 			m_list->next = m;
 			m_list->from = (1LL << in_Q);
 			m_list->dest = (1LL << in);
@@ -846,7 +846,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mK_q)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = (1LL << in_K);
 		m_list->dest = (1LL << in);
@@ -860,7 +860,7 @@ move *generate_movesALLOC(board_1 arg)
 	{
 		in = __builtin_ffsll(mK_c)-1;
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->from = (1LL << in_K);
 		m_list->dest = (1LL << in);
@@ -890,7 +890,7 @@ move *generate_movesALLOC(board_1 arg)
 	if ( arg.info & cas_bit_K && !(ho->atack & cas_at_K) && !(arg.all_p & cas_occ_K) )
 	{
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->info = 1LL << 13 ^ stm;
 		//save enp_sq, castle flags<1$>
@@ -899,7 +899,7 @@ move *generate_movesALLOC(board_1 arg)
 	if ( arg.info & cas_bit_Q && !(ho->atack & cas_at_Q) && !(arg.all_p & cas_occ_Q) )
 	{
 		m = m_list;
-		m_list = malloc(sizeof(move));
+		m_list = malloc(sizeof(move_1));
 		m_list->next = m;
 		m_list->info = 1LL << 14 ^ stm;
 		//save enp_sq, castle flags<1$>
@@ -908,7 +908,7 @@ move *generate_movesALLOC(board_1 arg)
 	return m_list;
 }
 
-char generate_moves(board_1 arg, move *movearray)
+char generate_moves(board_1 arg, move_1 *movearray)
 {
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, piece_type, capture, stm, enp;
 	U64 check_pieces, check_grid = ~0LL;
@@ -960,7 +960,7 @@ char generate_moves(board_1 arg, move *movearray)
 		ENProw = 0x00000000FF000000;
 	}
 	king = __builtin_ffsll(fr->K)-1;
-	//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move<$1>
+	//building atack map pieces, later wont be necessary becuase it will be updated incrementally by make, unmake move_1<$1>
 	fr->pieces = fr->P ^ fr->N ^ fr->R ^ fr->B ^ fr->K ^ fr->Q;
 	ho->pieces = ho->P ^ ho->N ^ ho->R ^ ho->B ^ ho->K ^ ho->Q;
 	arg.all_p = fr->pieces ^ ho->pieces;
@@ -1039,7 +1039,7 @@ char generate_moves(board_1 arg, move *movearray)
 					else piece_type = (1LL << 1);
 					//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
-					//new move pp on mpp<$1>
+					//new move_1 pp on mpp<$1>
 					movearray[movecount].from = ppb;
 					movearray[movecount].dest = (1LL << mpp);
 					movearray[movecount].info = piece_type ^ capture ^ stm; 
@@ -1204,7 +1204,7 @@ char generate_moves(board_1 arg, move *movearray)
 					else piece_type = (1LL << 1);
 					//checking for check?<$1>
 					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
-					//new move pp on mpp<$1>
+					//new move_1 pp on mpp<$1>
 					movearray[movecount].from = ppr;
 					movearray[movecount].dest = (1LL << mpp);
 					movearray[movecount].info = piece_type ^ capture ^ stm; 
@@ -1812,7 +1812,7 @@ U64 gen_ho_atack(board_1 arg)
 	return at;
 }
 
-void do_move(board_1 *b, move *m)
+void do_move(board_1 *b, move_1 *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, castle, cast_diff, hm, fm, m_cas, f_cas, empty = 0ULL, CK, CQ, KS, KR, QR, hKR, hQR, t;
 	piece_set *fr, *ho; 
@@ -1954,7 +1954,7 @@ void do_move(board_1 *b, move *m)
 		b->zobrist ^= zobrist[ stm * 6*64 + 2*64 + 63 - stm*56];
 		b->zobrist ^= zobrist[ stm * 6*64 + 2*64 + 60 - stm*56];
 	}
-	//increase hm if not capture or pawn move<1$>
+	//increase hm if not capture or pawn move_1<1$>
 	hm = m->info & 0x000000003E008000 ? -(b->info & 0x0000000000FF0000) : (1LL << 16);
 	//zobrist
 	cast_diff = b->info & castle;
@@ -1979,7 +1979,7 @@ void do_move(board_1 *b, move *m)
 	b->info += (~ stm & 1LL) << 32;
 }
 
-void undo_move(board_1 *b, move *m)
+void undo_move(board_1 *b, move_1 *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
 	piece_set *fr, *ho; 
@@ -2121,7 +2121,7 @@ void undo_move(board_1 *b, move *m)
 }
 
 
-void printmoves(move *m_l)
+void printmoves(move_1 *m_l)
 {
 	int count = 0;
 	while ( m_l && (count < 50))
@@ -2136,7 +2136,7 @@ void printmoves(move *m_l)
 	printf("moves count: %d	\n", count);
 }
 
-void printmove(move *m_l)
+void printmove(move_1 *m_l)
 {
 	int piece_type, count = 0;
 	short d_pa;

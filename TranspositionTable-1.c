@@ -70,7 +70,7 @@ TTentry *TTlookup(U64 key)
 	return &TT[ ind];
 }
 
-void TTstore( U64 zobrist, move *pick, char depth, int score, char flag)
+void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 {
 	// always replace startegy
 	unsigned ind = zobrist % count_TT;
@@ -106,11 +106,11 @@ void printline( line pline)
 	printf("\n");
 }
 
-move *TTextractPV( board_1 pos, char n)
+move_1 *TTextractPV( board_1 pos, char n)
 {
 	char i;
 	TTentry *entry;
-	move *PV = NULL;
+	move_1 *PV = NULL;
 	for ( i = 0; i < n; i++)
 	{
 		entry = TTlookup( pos.zobrist);
@@ -126,10 +126,10 @@ move *TTextractPV( board_1 pos, char n)
 	return PV;
 }
 
-void dodaj_move( move **pocetak, move *ind )
+void dodaj_move( move_1 **pocetak, move_1 *ind )
 {
-	move *novi = *pocetak;
-	*pocetak = malloc(sizeof(move));
+	move_1 *novi = *pocetak;
+	*pocetak = malloc(sizeof(move_1));
 	(*pocetak)->next = novi;
 	(*pocetak)->from = ind->from;
 	(*pocetak)->dest = ind->dest;

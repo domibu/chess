@@ -25,10 +25,10 @@ typedef struct board_1 {
 #ifndef MOVE1
 #define MOVE1
 
-typedef struct move {
+typedef struct move_1 {
 	U64 info, from, dest;
 	struct move1 *next;
-} move;
+} move_1;
 
 #endif
 
@@ -37,7 +37,7 @@ typedef struct move {
 
 typedef struct TTentry {
 	U64 zobrist;
-	move pick;
+	move_1 pick;
 	char depth;
 	char flag;
 	short int score;
@@ -50,7 +50,7 @@ typedef struct TTentry {
 
 typedef struct line {
   int cmove;
-  move argmove[50];
+  move_1 argmove[50];
 } line;
 
 #endif

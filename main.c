@@ -10,13 +10,13 @@
 #include "MoveGeneration.h"
 #include "Search.h"
 #include "TranspositionTable.h"
-// old board_1, move, TT structures, for backtesting
+// old board_1, move_1, TT structures, for backtesting
 #include "MoveGeneration-1.h"
 #include "Search-1.h"
 #include "TranspositionTable-1.h"
 
 
-extern move *marray;
+extern move_1 *marray;
 extern line pline;
 extern Nline Npline;
 extern int TThit;
@@ -127,7 +127,7 @@ void *Thinking(void *void_ptr )
 }
 
 unsigned char capt, it;
-move *fst_pick, *list, *domove = NULL;
+move_1 *fst_pick, *list, *domove = NULL;
 Nmove *temp;
 unsigned char ln[10], d = 0;
 char w[512]; 
@@ -673,7 +673,7 @@ int chess_engine_testing(int argc, char *argv)
 			TTwr = 0;
 
 			gettimeofday(&start, NULL);	
-			marray = malloc( sizeof(move)*216*(n+1) );
+			marray = malloc( sizeof(move_1)*216*(n+1) );
 			score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			free( marray);
 			gettimeofday(&end, NULL);	
@@ -722,7 +722,7 @@ int chess_engine_testing(int argc, char *argv)
 			count = 0;
 
 			gettimeofday(&start, NULL);	
-			marray = malloc( sizeof(move)*216*(n+1) );
+			marray = malloc( sizeof(move_1)*216*(n+1) );
 			score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
 			free( marray);
 			gettimeofday(&end, NULL);	
@@ -744,7 +744,7 @@ int chess_engine_testing(int argc, char *argv)
 		{	
 			scanf("%d", &n);
 			gettimeofday(&start, NULL);
-			marray = malloc( sizeof(move)*216*(n+1) );
+			marray = malloc( sizeof(move_1)*216*(n+1) );
 			count = divide_perft(n, &cb);
 			free( marray);
 			gettimeofday(&end, NULL);
@@ -836,7 +836,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 		}
 		else if ( strcmp(w,"legal") == 0 )	
 		{	
-			marray = malloc( sizeof(move)*256);
+			marray = malloc( sizeof(move_1)*256);
 			score = generate_moves(cb, marray);
 			for (n = 0; n < score; n++)     
 			{

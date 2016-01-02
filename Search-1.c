@@ -5,7 +5,7 @@
 #include "MoveGeneration-1.h"
 #include "TranspositionTable-1.h"
 
-move *marray = NULL;
+move_1 *marray = NULL;
 line pline;
 
 int eval( board_1 *b)
@@ -31,7 +31,7 @@ int eval( board_1 *b)
 int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int val, best;
-	move *list, *it;
+	move_1 *list, *it;
 	line nline;
 
 	if ( !depth ) 
@@ -61,7 +61,7 @@ int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int dep
 			{
 				alpha = val;
 				pline->argmove[0] = *it;
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move_1));
 				pline->cmove = nline.cmove +1;
 			}
 		}
@@ -100,7 +100,7 @@ int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int dep
 			{
 				alpha = val;
 				pline->argmove[0] = marray[it];
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move_1));
 				pline->cmove = nline.cmove +1;
 			}
 		}
@@ -111,7 +111,7 @@ int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int dep
 int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha;
-	move *list, *it, *pick = NULL;
+	move_1 *list, *it, *pick = NULL;
 	line nline;
 	TTentry *entry;
 
@@ -187,7 +187,7 @@ int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, movecount, it;
-	move *pick = NULL;
+	move_1 *pick = NULL;
 	line nline;
 	TTentry *entry;
 
@@ -261,7 +261,7 @@ int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 int rootnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val;
-	move *list, *it;
+	move_1 *list, *it;
 	line nline;
 
 	if ( !depth ) return 0;
@@ -288,7 +288,7 @@ int rootnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int 
 			{
 				alpha = val;
 				pline->argmove[0] = *it;
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move_1));
 				pline->cmove = nline.cmove +1;
 			}
 		}
@@ -300,7 +300,7 @@ int rootnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int 
 
 U64 mPerft(int depth, board_1 *arg)
 {
-	move *move_list, *it;
+	move_1 *move_list, *it;
 	U64 nodes = 0;
 
 	if (depth == 1) return delete_movelist( generate_movesALLOC( *arg));
@@ -318,7 +318,7 @@ U64 mPerft(int depth, board_1 *arg)
 
 U64 mdivide_perft(int depth, board_1 *arg)
 {
-	move *move_list, *it;
+	move_1 *move_list, *it;
 	U64 childs, nodes = 0;
 
 	mfree = 0;
@@ -385,9 +385,9 @@ U64 divide_perft(int depth, board_1 *arg)
 	return nodes;
 }
 
-int delete_movelist(move *arg)
+int delete_movelist(move_1 *arg)
 {
-	move *d; 
+	move_1 *d; 
 	int c = 0;
 	while (arg != NULL)
 	{
