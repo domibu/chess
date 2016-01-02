@@ -165,7 +165,7 @@ int main ( int argc, char *argv[])
 
 	fgets(w, input_max_length, stdin);
 
-	if (strstr(w,"xboard_1") != NULL)	chess_engine_communication_protocol();
+	if (strstr(w,"xboard") != NULL)	chess_engine_communication_protocol();
 	else	chess_engine_testing( argc, argv);
 	return 0;
 }
