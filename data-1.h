@@ -6,8 +6,8 @@
 typedef unsigned long long U64;
 
 
-#ifndef BOARD1
-#define BOARD1
+#ifndef BOARD_1
+#define BOARD_1
 
 typedef struct piece_set {
 	U64 K, Q, R, B, N, P;

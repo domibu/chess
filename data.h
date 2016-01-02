@@ -5,8 +5,8 @@
 
 typedef unsigned long long U64;
 
-#ifndef NBOARD
-#define NBOARD
+#ifndef BOARD
+#define BOARD
 
 /*
 pieceset:
