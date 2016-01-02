@@ -77,7 +77,7 @@ void initZobrist()
 	}
 }
 
-void nsetZobrist( Nboard *b)
+void nsetZobrist( board *b)
 {
 	int it, enp;
 	U64 m = 1ULL;
@@ -151,11 +151,11 @@ void printNline( Nline pline)
 	printf("\n");
 }
 
-void print_TTentry( nTTentry *arg, Nboard pos)
+void print_TTentry( nTTentry *arg, board pos)
 {
 }
 
-Nmove nTTextractPV( Nboard pos, char n)
+Nmove nTTextractPV( board pos, char n)
 {
 	char i;
 	nTTentry *entry;

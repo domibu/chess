@@ -11,7 +11,7 @@ Nline Npline;
 int stop = 0;
 
 #define QUIESCE_DEPTH	-38
-int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int Quiesce( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int score;
 	int stand_pat = color*evaluate(*pos, draft, color, pos);
@@ -48,7 +48,7 @@ int Quiesce( Nboard *pos, Nline *pline, int alpha, int beta, int color, int dept
 	return alpha;
 }
 
-int search( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int search( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL, hash_move = 0, do_move;
@@ -155,7 +155,7 @@ forpetlja:
 	return best;
 }
 
-int neval( Nboard *b)
+int neval( board *b)
 {	
 	int w_score = 0, b_score = 0;
 
@@ -175,7 +175,7 @@ int neval( Nboard *b)
 	return w_score + b_score;
 }
 
-int nnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int nnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, it, limes;
 	unsigned char quiet, capt;
@@ -224,7 +224,7 @@ forpetlja:
 	return best;
 }
 
-int  pvs_02(Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int  pvs_02(board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL, hash_move = 0;
@@ -390,7 +390,7 @@ sortforpetlja:
 		}
 }
 
-int pvs_01( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft)
+int pvs_01( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft)
 {
 	int best, val, it, limes;
 	unsigned char quiet, capt;
@@ -439,7 +439,7 @@ forpetlja:
 	return best;
 }
 
-int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
+int ntestnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, it;
 	unsigned char quiet;
@@ -477,7 +477,7 @@ int ntestnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int
 	return best;
 }
 
-int nTTnegamax( Nboard *pos, Nline *pline, int alpha, int beta, int color, int depth)
+int nTTnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, it, limes;
 	Nmove pick = NULL;
@@ -580,7 +580,7 @@ forpetlja:
 	return best;
 }
 
-U64 NPerft(int depth, Nboard *arg, Nmovelist *ml)
+U64 NPerft(int depth, board *arg, Nmovelist *ml)
 {
 	unsigned char capt, quiet, it;
 	U64 nodes = 0;
@@ -606,7 +606,7 @@ U64 NPerft(int depth, Nboard *arg, Nmovelist *ml)
 	return nodes;
 }
 
-U64 Ndivide_perft(int depth, Nboard *arg, Nmovelist *ml)
+U64 Ndivide_perft(int depth, board *arg, Nmovelist *ml)
 {
 	unsigned char capt, quiet, it;
 	U64 childs, nodes = 0;

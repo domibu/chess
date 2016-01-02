@@ -5,15 +5,15 @@
 #include "data.h"
 #include "data-1.h"
 
-void objtoarr(board *arg, Nboard *to);
-void arrtoobj(Nboard *to, board *arg);
+void objtoarr(board_1 *arg, board *to);
+void arrtoobj(board *to, board_1 *arg);
 
-void printNboard(Nboard arg);
 void printboard(board arg);
-board importFEN(char *fen);
-Nboard NimportFEN(char *fen);
+void printboard_1(board_1 arg);
+board_1 importFEN(char *fen);
+board NimportFEN(char *fen);
+void resetboard_1(board_1 *arg);
 void resetboard(board *arg);
-void resetNboard(Nboard *arg);
 
 void printBits(size_t const size, void const * const ptr);
 char *piece(int index);

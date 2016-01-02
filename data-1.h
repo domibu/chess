@@ -14,11 +14,11 @@ typedef struct piece_set {
 	U64 atack, pieces;
 } piece_set;
 
-typedef struct board {
+typedef struct board_1 {
 	U64 info, zobrist;
 	piece_set w, b;
 	U64 all_p;
-} board;
+} board_1;
 
 #endif
 

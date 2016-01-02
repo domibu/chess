@@ -7,7 +7,7 @@
 static inline void fill_move( Nmove *move, U64 p_type, U64 source, U64 destination);
 static inline void capt_type( U64 *ho, U64 in, Nmove *move, U64 f, U64 mask);
 
-U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
+U64 generate_captures_2(Nmovelist *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -738,7 +738,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, Nboard arg)
 	return captcount - 218;
 }
 
-U64 generate_captures(Nmovelist *ZZZ, Nboard arg)
+U64 generate_captures(Nmovelist *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -1502,7 +1502,7 @@ static inline void capt_type( U64 *ho, U64 in, Nmove *move, U64 f, U64 mask)
 
 } 
 
-char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
+char generate_movesN_test(Nmovelist *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -2341,7 +2341,7 @@ char generate_movesN_test(Nmovelist *ZZZ, Nboard arg)
 	return quietcount ;
 }
 
-int evaluate( Nboard arg, int draft, int color, Nboard *rb)
+int evaluate( board arg, int draft, int color, board *rb)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -2653,7 +2653,7 @@ found_move:
 }
 
 
-U64 gen_ho_atackN( Nboard arg)
+U64 gen_ho_atackN( board arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
 	U64 *fr, *ho; 
@@ -2716,7 +2716,7 @@ U64 gen_ho_atackN( Nboard arg)
 	return at;
 }
 
-char generate_movesN(Nmovelist *ZZZ, Nboard arg)
+char generate_movesN(Nmovelist *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -3568,7 +3568,7 @@ char generate_movesN(Nmovelist *ZZZ, Nboard arg)
 	return quietcount + captcount - 218;
 }
 
-int Ndo_move(Nboard *b, Nmove m)
+int Ndo_move(board *b, Nmove m)
 {
 	//if (stop) return 0;
 	U64 stm, castle, cast_diff, hm, fm, m_cas, f_cas, CK, CQ, KS, KR, QR, hKR, hQR;
@@ -3726,7 +3726,7 @@ int Ndo_move(Nboard *b, Nmove m)
 	b->info += (~ stm & 1LL) << 16;//fm
 }
 
-int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m)
+int Nundo_move(board *b, Nmovelist *ml, Nmove m)
 {
 	//if (stop) return 0;
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
@@ -3841,7 +3841,7 @@ int Nundo_move(Nboard *b, Nmovelist *ml, Nmove m)
 	b->zobrist = ml->old_zobrist;
 }
 
-void print_move_xboard(Nmove *m)
+void print_move_xboard_1(Nmove *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
@@ -3896,7 +3896,7 @@ void printmovedetailsN(Nmove *ff)
 	printf("----------\n");
 }
 
-void print_state(Nboard arg)
+void print_state(board arg)
 {
 	char i;
 	for ( i = 0; i < 17; i++)

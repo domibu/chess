@@ -9,7 +9,7 @@ static inline int max(int a, int b) {
 	return a > b ? a : b;
 }
 
-move *generate_movesALLOC(board arg)
+move *generate_movesALLOC(board_1 arg)
 {
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, piece_type, capture, stm, enp;
 	U64 check_pieces, check_grid = ~0LL;
@@ -908,7 +908,7 @@ move *generate_movesALLOC(board arg)
 	return m_list;
 }
 
-char generate_moves(board arg, move *movearray)
+char generate_moves(board_1 arg, move *movearray)
 {
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, piece_type, capture, stm, enp;
 	U64 check_pieces, check_grid = ~0LL;
@@ -1751,7 +1751,7 @@ char generate_moves(board arg, move *movearray)
 	}
 }
 
-U64 gen_ho_atack(board arg)
+U64 gen_ho_atack(board_1 arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
 	piece_set *fr, *ho; 
@@ -1812,7 +1812,7 @@ U64 gen_ho_atack(board arg)
 	return at;
 }
 
-void do_move(board *b, move *m)
+void do_move(board_1 *b, move *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, castle, cast_diff, hm, fm, m_cas, f_cas, empty = 0ULL, CK, CQ, KS, KR, QR, hKR, hQR, t;
 	piece_set *fr, *ho; 
@@ -1979,7 +1979,7 @@ void do_move(board *b, move *m)
 	b->info += (~ stm & 1LL) << 32;
 }
 
-void undo_move(board *b, move *m)
+void undo_move(board_1 *b, move *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
 	piece_set *fr, *ho; 

@@ -8,13 +8,13 @@ int TThit, TTowr, TTwr;
 
 void printNline( Nline pline);
 
-Nmove nTTextractPV( Nboard pos, char n);
+Nmove nTTextractPV( board pos, char n);
 Nmove TTfind_move( U64 key);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);
 void initZobrist();
-void nsetZobrist( Nboard *b);
+void nsetZobrist( board *b);
 U64 setnTT( U64 n);
 void freeTT();
 

@@ -8,7 +8,7 @@
 move *marray = NULL;
 line pline;
 
-int eval( board *b)
+int eval( board_1 *b)
 {	
 	int w_score = 0, b_score = 0;
 
@@ -28,7 +28,7 @@ int eval( board *b)
 	return w_score + b_score;
 }
 
-int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int val, best;
 	move *list, *it;
@@ -70,7 +70,7 @@ int mnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	return best;
 }
 
-int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, it;
 	line nline;
@@ -108,7 +108,7 @@ int anegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	return best;
 }
 
-int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha;
 	move *list, *it, *pick = NULL;
@@ -184,7 +184,7 @@ int mTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
-int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, movecount, it;
 	move *pick = NULL;
@@ -258,7 +258,7 @@ int aTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
-int rootnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
+int rootnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val;
 	move *list, *it;
@@ -298,7 +298,7 @@ int rootnegamax( board *pos, line *pline, int alpha, int beta, int color, int de
 }
 
 
-U64 mPerft(int depth, board *arg)
+U64 mPerft(int depth, board_1 *arg)
 {
 	move *move_list, *it;
 	U64 nodes = 0;
@@ -316,7 +316,7 @@ U64 mPerft(int depth, board *arg)
 	return nodes;
 }
 
-U64 mdivide_perft(int depth, board *arg)
+U64 mdivide_perft(int depth, board_1 *arg)
 {
 	move *move_list, *it;
 	U64 childs, nodes = 0;
@@ -342,7 +342,7 @@ U64 mdivide_perft(int depth, board *arg)
 	return nodes;
 }
 
-U64 Perft(int depth, board *arg)
+U64 Perft(int depth, board_1 *arg)
 {
 	int it, movecount;
 	U64 nodes = 0;
@@ -359,7 +359,7 @@ U64 Perft(int depth, board *arg)
 	return nodes;
 }
 
-U64 divide_perft(int depth, board *arg)
+U64 divide_perft(int depth, board_1 *arg)
 {
 	int it;
 	char movecount;

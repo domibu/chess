@@ -10,7 +10,7 @@
 #include "MoveGeneration.h"
 #include "Search.h"
 #include "TranspositionTable.h"
-// old board, move, TT structures, for backtesting
+// old board_1, move, TT structures, for backtesting
 #include "MoveGeneration-1.h"
 #include "Search-1.h"
 #include "TranspositionTable-1.h"
@@ -37,8 +37,8 @@ int ping=0;
 int computer=0, cores=0, egtpath=0, option=0;
 
 int input_max_length = 512;
-board cb;
-Nboard Ncb;
+board_1 cb;
+board Ncb;
 
 struct t_man {
 	unsigned en_time;
@@ -165,7 +165,7 @@ int main ( int argc, char *argv[])
 
 	fgets(w, input_max_length, stdin);
 
-	if (strstr(w,"xboard") != NULL)	chess_engine_communication_protocol();
+	if (strstr(w,"xboard_1") != NULL)	chess_engine_communication_protocol();
 	else	chess_engine_testing( argc, argv);
 	return 0;
 }
@@ -311,10 +311,10 @@ en_state_THINKING:
 			sscanf(buff, "otim %u", &t);
 			t_manager.op_time = t;
 		}
-		else if (strstr(buff, "setboard ") != NULL)
+		else if (strstr(buff, "setboard_1 ") != NULL)
 		{
 			char fen[127];
-			sscanf(buff, "setboard %[^\n]", fen);
+			sscanf(buff, "setboard_1 %[^\n]", fen);
 
 			//stderr
 			printf("buff:	%s\n", buff);
@@ -327,7 +327,7 @@ en_state_THINKING:
 			Ncb = NimportFEN(fen);
 			nsetZobrist( &Ncb);
 
-			printNboard(Ncb);	
+			printboard(Ncb);	
 		}
 		else if (strstr(buff, "memory ") != NULL)
 		{
@@ -635,7 +635,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if (strstr(w,"mTT") != NULL) 
 		{	
 			scanf("%d", &n);
-			printboard(cb);		
+			printboard_1(cb);		
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -651,7 +651,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if (strstr(w,"msearch") != NULL) 
 		{	
 			scanf("%d", &n);
-			printboard(cb);		
+			printboard_1(cb);		
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
@@ -666,7 +666,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if (strstr(w,"aTT") != NULL) 
 		{	
 			scanf("%d", &n);
-			printboard(cb);		
+			printboard_1(cb);		
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -702,7 +702,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if (strstr(w,"ntestsearch") != NULL)
 		{
 			scanf("%d", &n);
-			printNboard(Ncb);
+			printboard(Ncb);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 
@@ -717,7 +717,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if (strstr(w,"asearch") != NULL) 
 		{	
 			scanf("%d", &n);
-			printboard(cb);		
+			printboard_1(cb);		
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
@@ -856,7 +856,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			setZobrist( &cb);	
 			nsetZobrist( &Ncb);
 
-			printNboard(Ncb);	
+			printboard(Ncb);	
 		} 
 		else if ( strstr(w,"do_move") != NULL )	
 		{	
@@ -867,7 +867,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			printf("m\n");
 			printBits(8, &NML[d].mdata[n]);
 			Ndo_move( &Ncb, NML[d].mdata[n]);
-			printNboard(Ncb);
+			printboard(Ncb);
 			d++;		
 
 		}
@@ -875,7 +875,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 		{
 			d--;
 			Nundo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
-			printNboard(Ncb);		
+			printboard(Ncb);		
 
 		}
 		else if ( strstr(w,"state") != NULL )
@@ -884,18 +884,18 @@ ntestLegal_for:     for (; it < limes ; it++)
 		}
 		else if ( strstr(w,"Ndisp") != NULL )
 		{
-			printNboard(Ncb);	
+			printboard(Ncb);	
 		}
 		else if ( strstr(w,"disp") != NULL )
 		{
-			printboard(cb);		
+			printboard_1(cb);		
 		}
 		else if ( strstr(w,"change_stm") != NULL )
 		{
 			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
 			setZobrist( &cb);
-			printboard(cb);		
+			printboard_1(cb);		
 		}
 		else if ( strstr(w,"new") != NULL )
 		{

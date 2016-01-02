@@ -26,11 +26,11 @@ stm             14
 
 */
 
-typedef struct Nboard {
+typedef struct board {
 	U64             zobrist;
 	U64  info;
 	U64             pieceset[17];
-} Nboard;
+} board;
 
 #endif
 
@@ -47,7 +47,7 @@ promo           18-20
 enp square      21-25
 MVV-LSA		26-30
 
-undo board data:
+undo board_1 data:
 old_enp         0-3
 old_castle      4-7
 old_hm          8-13

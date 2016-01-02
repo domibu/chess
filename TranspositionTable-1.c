@@ -15,7 +15,7 @@
 U64 zobrist[782];
 TTentry *TT = NULL;
 
-void setZobrist( board *b)
+void setZobrist( board_1 *b)
 {
 	int it, enp;
 	U64 m = 1ULL;
@@ -106,7 +106,7 @@ void printline( line pline)
 	printf("\n");
 }
 
-move *TTextractPV( board pos, char n)
+move *TTextractPV( board_1 pos, char n)
 {
 	char i;
 	TTentry *entry;

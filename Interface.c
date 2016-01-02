@@ -2,7 +2,7 @@
 #include <string.h>
 #include "Interface.h"
 
-void objtoarr(board *arg, Nboard *to)
+void objtoarr(board_1 *arg, board *to)
 {
 	to->pieceset[0] = arg->w.K;
 	to->pieceset[1] = arg->w.Q;
@@ -23,7 +23,7 @@ void objtoarr(board *arg, Nboard *to)
 	to->pieceset[16] = arg->all_p;
 }
 
-void arrtoobj(Nboard *to, board *arg)
+void arrtoobj(board *to, board_1 *arg)
 {
 	arg->w.K = to->pieceset[0];
 	arg->w.Q = to->pieceset[1];
@@ -44,7 +44,7 @@ void arrtoobj(Nboard *to, board *arg)
 	arg->all_p = to->pieceset[16];
 }
 
-void printNboard(Nboard arg)
+void printboard(board arg)
 {
 	unsigned i, fm;
 	unsigned short hm, enp_;
@@ -99,7 +99,7 @@ void printNboard(Nboard arg)
 	printf("zobrist: %llu\n", arg.zobrist);
 }
 
-void printboard(board arg)
+void printboard_1(board_1 arg)
 {
 	unsigned i, fm;
 	unsigned short hm;
@@ -151,15 +151,15 @@ void printboard(board arg)
 	printf("zobrist: %llu\n", arg.zobrist);
 }
 
-board importFEN(char *fen)
+board_1 importFEN(char *fen)
 {
 	U64 m = 0x8000000000000000;
-	board chessb;
+	board_1 chessb;
 	int n, s = 0, enp;
 	short hm_,fm_;
 	char b[90], s_t_m[2], castle[5], enpas[2], hm[3], fm[5];
 	sscanf(fen, "%s %s %s %s %s %s", b, s_t_m, castle, enpas, hm, fm);
-	resetboard(&chessb);
+	resetboard_1(&chessb);
 	for (n = 0; n <= strlen(b); n++ )
 		switch (b[n])
 		{
@@ -214,16 +214,16 @@ board importFEN(char *fen)
 	return chessb;
 }
 
-Nboard NimportFEN(char *fen)
+board NimportFEN(char *fen)
 {
 	U64 m = 0x8000000000000000;
-	Nboard chessb;
+	board chessb;
 	int n, s = 0;
 	short hm_,fm_;
 	unsigned char  enp;
 	char b[90], s_t_m[2], castle[5], enpas[2], hm[3], fm[5];
 	sscanf(fen, "%s %s %s %s %s %s", b, s_t_m, castle, enpas, hm, fm);
-	resetNboard(&chessb);
+	resetboard(&chessb);
 	for (n = 0; n <= strlen(b); n++ )
 		switch (b[n])
 		{
@@ -275,7 +275,7 @@ Nboard NimportFEN(char *fen)
 	return chessb;
 }
 
-void resetboard(board *arg)
+void resetboard_1(board_1 *arg)
 {
 	U64 n = 0LL;
 	arg->w.P &= n;
@@ -292,7 +292,7 @@ void resetboard(board *arg)
 	arg->b.B &= n;
 }
 
-void resetNboard(Nboard *arg)
+void resetboard(board *arg)
 {
 	U64 n = ~0xFFFFFFFFFFFFFFFF;
 	char i;
