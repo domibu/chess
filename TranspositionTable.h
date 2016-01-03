@@ -18,7 +18,7 @@ void nsetZobrist( board *b);
 U64 setnTT( U64 n);
 void freeTT();
 
-nTTentry *nTTlookup(U64 key);
+TTentry *nTTlookup(U64 key);
 void nTTstore( U64 zobrist, U64 data);
 
 #endif

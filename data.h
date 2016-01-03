@@ -90,10 +90,10 @@ age             47
 
 */
 
-typedef struct nTTentry {
+typedef struct TTentry {
         U64 zobrist;
         U64 data;
-} nTTentry;
+} TTentry;
 
 #endif
 

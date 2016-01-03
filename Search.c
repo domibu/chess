@@ -54,7 +54,7 @@ int search( board *pos, Nline *pline, int alpha, int beta, int color, int depth,
 	move pick = NULL, hash_move = 0, do_move;
 	unsigned char quiet, capt, flag;
 	Nline nline;
-	nTTentry *entry;
+	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);
 	if (entry)
@@ -230,7 +230,7 @@ int  pvs_02(board *pos, Nline *pline, int alpha, int beta, int color, int depth,
 	move pick = NULL, hash_move = 0;
 	unsigned char quiet, capt, flag;
 	Nline nline;
-	nTTentry *entry;
+	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);
 	if (entry)
@@ -483,7 +483,7 @@ int nTTnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int de
 	move pick = NULL;
 	unsigned char quiet, capt, flag;
 	Nline nline;
-	nTTentry *entry;
+	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);
 	if (entry)

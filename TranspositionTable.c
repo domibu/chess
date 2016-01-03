@@ -13,7 +13,7 @@
 #define LM UINT64_C(0x7FFFFFFF) /* Least significant 31 bits */
 
 U64 zobrist[782];
-nTTentry *nTT = NULL;
+TTentry *nTT = NULL;
 
 /* The array for the state vector */
 static U64 mt[NN]; 
@@ -115,13 +115,13 @@ U64 setnTT( U64 n)
 	U64 count;
 	n *= 1024*1024;
 
-	count = LargestPrime( n / sizeof(nTTentry) );
-	nTT = calloc( sizeof( nTTentry), count);
+	count = LargestPrime( n / sizeof(TTentry) );
+	nTT = calloc( sizeof( TTentry), count);
 
 	return count;
 }
 
-nTTentry *nTTlookup(U64 key)
+TTentry *nTTlookup(U64 key)
 {
 	unsigned ind = key % count_nTT;
 	if (nTT[ ind].zobrist != key) 
@@ -151,14 +151,14 @@ void printNline( Nline pline)
 	printf("\n");
 }
 
-void print_TTentry( nTTentry *arg, board pos)
+void print_TTentry( TTentry *arg, board pos)
 {
 }
 
 move nTTextractPV( board pos, char n)
 {
 	char i;
-	nTTentry *entry;
+	TTentry *entry;
 	move PV = NULL, pick = NULL;
 
 	for ( i = 0; i < n; i++)
@@ -195,7 +195,7 @@ move nTTextractPV( board pos, char n)
 
 move TTfind_move( U64 key)
 {
-	nTTentry *entry;
+	TTentry *entry;
 
 	entry = nTTlookup( key);
 	if (!entry)   
