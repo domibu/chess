@@ -3,22 +3,22 @@
 
 #include "data-1.h"
 
-U64 count_TT;
+U64 count_TT_1;
 int TThit, TTowr, TTwr;
 
-void printline( line_1 pline);
-void dodaj_move( move_1 **pocetak, move_1 *ind );
+void printline_1( line_1 pline);
+void dodaj_move_1( move_1 **pocetak, move_1 *ind );
 
 
-move_1 *TTextractPV( board_1 pos, char n);
+move_1 *TTextractPV_1( board_1 pos, char n);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);
 void initZobrist();
-void setZobrist(board_1 *b);
-U64 setTT( U64 n);
+void set_zobrist_1(board_1 *b);
+U64 setTT_1( U64 n);
 
-TTentry_1 *TTlookup(U64 key);
-void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag);
+TTentry_1 *TTlookup_1(U64 key);
+void TTstore_1( U64 zobrist, move_1 *pick, char depth, int score, char flag);
 
 #endif

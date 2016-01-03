@@ -644,7 +644,7 @@ int chess_engine_testing(int argc, char *argv)
 			score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);	
 
-			TTextractPV( cb, n);
+			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 		}
@@ -659,7 +659,7 @@ int chess_engine_testing(int argc, char *argv)
 			score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);	
 
-			printline( pline);
+			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 		}
@@ -678,7 +678,7 @@ int chess_engine_testing(int argc, char *argv)
 			free( marray);
 			gettimeofday(&end, NULL);	
 
-			TTextractPV( cb, n);
+			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 		}
@@ -727,7 +727,7 @@ int chess_engine_testing(int argc, char *argv)
 			free( marray);
 			gettimeofday(&end, NULL);	
 
-			printline( pline);
+			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 		}
@@ -853,7 +853,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			scanf("%[^\n]", FEN);
 			cb = importFEN(FEN);		
 			Ncb = NimportFEN(FEN);
-			setZobrist( &cb);	
+			set_zobrist_1( &cb);	
 			nsetZobrist( &Ncb);
 
 			printboard(Ncb);	
@@ -894,14 +894,14 @@ ntestLegal_for:     for (; it < limes ; it++)
 		{
 			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
-			setZobrist( &cb);
+			set_zobrist_1( &cb);
 			printboard_1(cb);		
 		}
 		else if ( strstr(w,"new") != NULL )
 		{
 			cb = importFEN(START_FEN);	
 			Ncb = NimportFEN(START_FEN);	
-			setZobrist( &cb);	
+			set_zobrist_1( &cb);	
 			nsetZobrist( &Ncb);
 		}
 		else if ( strstr(w,"quit") != NULL )

@@ -115,7 +115,7 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 	line_1 nline;
 	TTentry_1 *entry;
 
-	entry = TTlookup( pos->zobrist);
+	entry = TTlookup_1( pos->zobrist);
 	if (entry)
 		if (entry->depth >= depth)
 		{
@@ -154,7 +154,7 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
-			TTstore( pos->zobrist, it, depth, val, 2);
+			TTstore_1( pos->zobrist, it, depth, val, 2);
 			delete_movelist( list);
 			return val; //fail-soft
 		}
@@ -171,13 +171,13 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 	// exact score
 	if (best > old_alpha)  
 	{
-		TTstore( pos->zobrist, pick, depth, best, 1);
+		TTstore_1( pos->zobrist, pick, depth, best, 1);
 
 	}
 	// fail low implies upperbound
 	if (best <= old_alpha)
 	{
-		TTstore( pos->zobrist, NULL, depth, best, 3);
+		TTstore_1( pos->zobrist, NULL, depth, best, 3);
 	}
 
 	delete_movelist( list);
@@ -191,7 +191,7 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 	line_1 nline;
 	TTentry_1 *entry;
 
-	entry = TTlookup( pos->zobrist);
+	entry = TTlookup_1( pos->zobrist);
 	if (entry)
 	{
 		if (entry->depth >= depth)
@@ -231,7 +231,7 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
-			TTstore( pos->zobrist, &marray[it], depth, val, 2);
+			TTstore_1( pos->zobrist, &marray[it], depth, val, 2);
 			return val; //fail-soft
 		}
 
@@ -248,12 +248,12 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 	// exact score
 	if (best > old_alpha)  
 	{
-		TTstore( pos->zobrist, pick, depth, best, 1);
+		TTstore_1( pos->zobrist, pick, depth, best, 1);
 	}
 	// fail low implies upperbound
 	if (best <= old_alpha)
 	{
-		TTstore( pos->zobrist, NULL, depth, best, 3);
+		TTstore_1( pos->zobrist, NULL, depth, best, 3);
 	}
 	return best;
 }

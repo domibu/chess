@@ -15,7 +15,7 @@
 U64 zobrist[782];
 TTentry_1 *TT = NULL;
 
-void setZobrist( board_1 *b)
+void set_zobrist_1( board_1 *b)
 {
 	int it, enp;
 	U64 m = 1ULL;
@@ -48,7 +48,7 @@ void setZobrist( board_1 *b)
 	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL; 
 }
 
-U64 setTT( U64 n)
+U64 setTT_1( U64 n)
 {
 	U64 count;
 	n *= 1024*1024;
@@ -60,9 +60,9 @@ U64 setTT( U64 n)
 	return count;
 }
 
-TTentry_1 *TTlookup(U64 key)
+TTentry_1 *TTlookup_1(U64 key)
 {
-	unsigned ind = key % count_TT;
+	unsigned ind = key % count_TT_1;
 
 	if (TT[ ind].zobrist != key) return NULL;
 
@@ -70,10 +70,10 @@ TTentry_1 *TTlookup(U64 key)
 	return &TT[ ind];
 }
 
-void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag)
+void TTstore_1( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 {
 	// always replace startegy
-	unsigned ind = zobrist % count_TT;
+	unsigned ind = zobrist % count_TT_1;
 
 	TT[ ind].zobrist = zobrist;
 
@@ -94,7 +94,7 @@ void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 	TT[ ind].flag = flag;
 }
 
-void printline( line_1 pline)
+void printline_1( line_1 pline)
 {
 	int it;
 	for (it = 0; pline.cmove > it; it++)
@@ -106,16 +106,16 @@ void printline( line_1 pline)
 	printf("\n");
 }
 
-move_1 *TTextractPV( board_1 pos, char n)
+move_1 *TTextractPV_1( board_1 pos, char n)
 {
 	char i;
 	TTentry_1 *entry;
 	move_1 *PV = NULL;
 	for ( i = 0; i < n; i++)
 	{
-		entry = TTlookup( pos.zobrist);
+		entry = TTlookup_1( pos.zobrist);
 		if (!entry)	break;
-		dodaj_move( &PV, &entry->pick);
+		dodaj_move_1( &PV, &entry->pick);
 
 		if (pos.info & 1ULL)
 			printf(" #%llu ", pos.info >> 14);
@@ -126,7 +126,7 @@ move_1 *TTextractPV( board_1 pos, char n)
 	return PV;
 }
 
-void dodaj_move( move_1 **pocetak, move_1 *ind )
+void dodaj_move_1( move_1 **pocetak, move_1 *ind )
 {
 	move_1 *novi = *pocetak;
 	*pocetak = malloc(sizeof(move_1));
