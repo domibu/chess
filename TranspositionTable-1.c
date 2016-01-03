@@ -101,7 +101,7 @@ void printline( line_1 pline)
 	{
 		if (pline.argmove[it].info & 1ULL)
 			printf(" #%d ", it);
-		printmove( &pline.argmove[it]);
+		printmove_1( &pline.argmove[it]);
 	}
 	printf("\n");
 }
@@ -119,8 +119,8 @@ move_1 *TTextractPV( board_1 pos, char n)
 
 		if (pos.info & 1ULL)
 			printf(" #%llu ", pos.info >> 14);
-		printmove( &entry->pick);
-		do_move( &pos, &entry->pick);
+		printmove_1( &entry->pick);
+		do_move_1( &pos, &entry->pick);
 	}
 	printf("\n");
 	return PV;

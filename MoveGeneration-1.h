@@ -5,15 +5,15 @@
 
 extern U64 zobrist[782];
 
-void printmove(move_1 *m_l);
-void printmoves(move_1 *m_l);
+void printmove_1(move_1 *m_l);
+void printmoves_1(move_1 *m_l);
 
-U64 gen_ho_atack(board_1 arg);
-move_1 *generate_movesALLOC(board_1 arg);
-char generate_moves(board_1 arg, move_1 *movearray);
+U64 gen_ho_atack_1(board_1 arg);
+move_1 *generate_moves_2(board_1 arg);
+char generate_moves_1(board_1 arg, move_1 *movearray);
 
-void do_move(board_1 *b, move_1 *m);
-void do_move(board_1 *b, move_1 *m);
+void do_move_1(board_1 *b, move_1 *m);
+void undo_move_1(board_1 *b, move_1 *m);
 
 #endif
 

@@ -51,7 +51,7 @@ int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth,
 int search( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
-	move pick = NULL, hash_move = 0, do_move;
+	move pick = NULL, hash_move = 0, do_move_1;
 	unsigned char quiet, capt, flag;
 	line nline;
 	TTentry *entry;
@@ -100,17 +100,17 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 forpetlja: 
 	for (; (it < limes) && (en_state == THINKING); it++  )
 	{
-		do_move = NML[depth].mdata[it];
-		Ndo_move(pos, do_move);
+		do_move_1 = NML[depth].mdata[it];
+		Ndo_move(pos, do_move_1);
 		val = -search( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
-		Nundo_move(pos, &NML[depth], do_move);
+		Nundo_move(pos, &NML[depth], do_move_1);
 
 		if ( val >= beta)       
 		{	
 			U64 data = 0ULL;
 			data ^= (short)val;
 			data <<= 48;
-			data ^= do_move;
+			data ^= do_move_1;
 			data ^= (U64)depth << 32;
 			data ^= (2ULL << 40);
 			nTTstore( pos->zobrist, data);

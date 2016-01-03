@@ -362,13 +362,13 @@ en_state_THINKING:
 			t_manager.fm -= ((Ncb.info >> 14) & 1ULL) ? 1 : 0;
 			history.curr--;
 
-			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+			move undo_move_1 = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
 			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move);
+			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
 		}
 		else if ((strstr(buff, "remove ") != NULL) && (history.curr > 1))
 		{
@@ -377,22 +377,22 @@ en_state_THINKING:
 			t_manager.fm--;
 			history.curr--;
 
-			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+			move undo_move_1 = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
 			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move);
+			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
 
 			history.curr--;
 
-			undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+			undo_move_1 = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			undo_data = history.tag[history.curr] >> 32;
 
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move);
+			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
 		}
 		else if ((strstr(buff,"usermove ") != NULL) &&  ((en_state == PONDERING) || (en_state == OBSERVING)))
 		{
@@ -837,11 +837,11 @@ ntestLegal_for:     for (; it < limes ; it++)
 		else if ( strcmp(w,"legal") == 0 )	
 		{	
 			marray = malloc( sizeof(move_1)*256);
-			score = generate_moves(cb, marray);
+			score = generate_moves_1(cb, marray);
 			for (n = 0; n < score; n++)     
 			{
 				printf("%d  ", n+1);
-				printmove( &marray[n]);
+				printmove_1( &marray[n]);
 				printf("\n");
 			}
 			printf("moves count: %d	\n", score);

@@ -41,13 +41,13 @@ int mnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int d
 	}
 
 	best = -WIN;
-	list = generate_movesALLOC( *pos);
+	list = generate_moves_2( *pos);
 
 	for (it = list; it; it = it->next )
 	{
-		do_move(pos, it);
+		do_move_1(pos, it);
 		val = -mnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, it);
+		undo_move_1(pos, it);
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
@@ -82,12 +82,12 @@ int anegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int d
 	}
 
 	best = -WIN;
-	unsigned movecount = generate_moves( *pos, &marray[ 216 * depth ]);
+	unsigned movecount = generate_moves_1( *pos, &marray[ 216 * depth ]);
 	for (it = 216*depth + movecount - 1; it >= 216*depth; it--)
 	{
-		do_move(pos, &marray[it]);
+		do_move_1(pos, &marray[it]);
 		val = -anegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, &marray[it]);
+		undo_move_1(pos, &marray[it]);
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
@@ -144,13 +144,13 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 
 	old_alpha = alpha;
 	best = -WIN;
-	list = generate_movesALLOC( *pos);
+	list = generate_moves_2( *pos);
 
 	for (it = list; it; it = it->next )
 	{
-		do_move(pos, it);
+		do_move_1(pos, it);
 		val = -mTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, it);
+		undo_move_1(pos, it);
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
@@ -221,13 +221,13 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 
 	old_alpha = alpha;
 	best = -WIN;
-	movecount = generate_moves( *pos, &marray[ 216 * depth ]);
+	movecount = generate_moves_1( *pos, &marray[ 216 * depth ]);
 
 	for (it = 216*depth + movecount - 1; it >= 216*depth; it--)
 	{
-		do_move(pos, &marray[it]);
+		do_move_1(pos, &marray[it]);
 		val = -aTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, &marray[it]);
+		undo_move_1(pos, &marray[it]);
 		//fail high implies lowerbound
 		if ( val >= beta)
 		{
@@ -267,14 +267,14 @@ int rootnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, in
 	if ( !depth ) return 0;
 
 	best = -WIN;
-	list = generate_movesALLOC( *pos);
+	list = generate_moves_2( *pos);
 
 	for (it = list; it; it = it->next )
 	{
 
-		do_move(pos, it);
+		do_move_1(pos, it);
 		val = -anegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, it);
+		undo_move_1(pos, it);
 
 		if ( val >= beta)
 		{
@@ -303,14 +303,14 @@ U64 mPerft(int depth, board_1 *arg)
 	move_1 *move_list, *it;
 	U64 nodes = 0;
 
-	if (depth == 1) return delete_movelist( generate_movesALLOC( *arg));
+	if (depth == 1) return delete_movelist( generate_moves_2( *arg));
 
-	move_list = generate_movesALLOC( *arg);
+	move_list = generate_moves_2( *arg);
 	for (it = move_list; it; it = it->next)
 	{
-		do_move(arg, it);
+		do_move_1(arg, it);
 		nodes += mPerft(depth - 1, arg);
-		undo_move(arg, it);
+		undo_move_1(arg, it);
 	}
 	delete_movelist( move_list);
 	return nodes;
@@ -325,15 +325,15 @@ U64 mdivide_perft(int depth, board_1 *arg)
 
 	if (depth == 0) return 1;
 
-	move_list = generate_movesALLOC( *arg);
+	move_list = generate_moves_2( *arg);
 	for (it = move_list; it; it = it->next )
 	{
 		childs = 0;
-		printmove(it);
-		do_move(arg, it);
+		printmove_1(it);
+		do_move_1(arg, it);
 
 		childs += depth > 10 ? mdivide_perft(depth - 1, arg) : mPerft(depth - 1, arg);
-		undo_move(arg, it);
+		undo_move_1(arg, it);
 		printf(" %llu\n", childs);
 		nodes += childs;
 	}
@@ -347,14 +347,14 @@ U64 Perft(int depth, board_1 *arg)
 	int it, movecount;
 	U64 nodes = 0;
 
-	if (depth == 1) return generate_moves( *arg, &marray[ 216 * depth ]);
+	if (depth == 1) return generate_moves_1( *arg, &marray[ 216 * depth ]);
 
-	movecount = generate_moves( *arg, &marray[ 216 * depth ]);
+	movecount = generate_moves_1( *arg, &marray[ 216 * depth ]);
 	for (it = 216 * depth; it < 216*depth + movecount; it++)
 	{
-		do_move(arg, &marray[it]);
+		do_move_1(arg, &marray[it]);
 		nodes += Perft(depth - 1, arg);
-		undo_move(arg, &marray[it]);
+		undo_move_1(arg, &marray[it]);
 	}
 	return nodes;
 }
@@ -369,15 +369,15 @@ U64 divide_perft(int depth, board_1 *arg)
 
 	if (depth == 0) return 1;
 
-	movecount = generate_moves( *arg, &marray[ 216 * depth ]);
+	movecount = generate_moves_1( *arg, &marray[ 216 * depth ]);
 	for (it = 216 * depth; it < 216*depth + movecount; it++)
 	{
 		childs = 0;
-		printmove(&marray[it]);
-		do_move(arg, &marray[it]);
+		printmove_1(&marray[it]);
+		do_move_1(arg, &marray[it]);
 
 		childs += Perft(depth - 1, arg);
-		undo_move(arg, &marray[it]);
+		undo_move_1(arg, &marray[it]);
 		printf(" %llu\n", childs);
 		nodes += childs;
 	}
