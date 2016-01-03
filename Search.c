@@ -27,15 +27,15 @@ int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth,
 	if ( alpha < stand_pat )	alpha = stand_pat;
 
 	unsigned capt_count;
-	generate_movesN(&NML[draft+1], *pos);
+	generate_moves(&NML[draft+1], *pos);
 	capt_count = NML[draft+1].captcount;
 	int it;
 
 	for (it = 218; (it < capt_count) && (en_state == THINKING); it++)
 	{
-		Ndo_move(pos, NML[draft+1].mdata[it]);
+		do_move(pos, NML[draft+1].mdata[it]);
 		score = -Quiesce( pos, pline, -beta, -alpha, -color, depth-1, draft+1);
-		Nundo_move(pos, &NML[draft+1], NML[draft+1].mdata[it]);
+		undo_move(pos, &NML[draft+1], NML[draft+1].mdata[it]);
 
 		if( score >= beta )	return beta;
 		if( score > alpha )
@@ -89,7 +89,7 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 
 	old_alpha = alpha;
 	best = -WIN-300;
-	generate_movesN(&NML[depth] , *pos);
+	generate_moves(&NML[depth] , *pos);
 	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
@@ -101,9 +101,9 @@ forpetlja:
 	for (; (it < limes) && (en_state == THINKING); it++  )
 	{
 		do_move_1 = NML[depth].mdata[it];
-		Ndo_move(pos, do_move_1);
+		do_move(pos, do_move_1);
 		val = -search( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
-		Nundo_move(pos, &NML[depth], do_move_1);
+		undo_move(pos, &NML[depth], do_move_1);
 
 		if ( val >= beta)       
 		{	
@@ -188,7 +188,7 @@ int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	}
 	best = -WIN-300;
 
-	generate_movesN(&NML[depth] , *pos);
+	generate_moves(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
@@ -198,9 +198,9 @@ int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 forpetlja: 
 	for (; it < limes ; it++  )
 	{
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move(pos, NML[depth].mdata[it]);
 		val = -nnegamax( pos, &nline, -beta, -alpha, -color, depth - 1, draft +1);
-		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
 		if ( val >= beta)       return val; //fail-soft
 		if ( val > best)
@@ -264,7 +264,7 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 
 	old_alpha = alpha;
 	best = -WIN-300;
-	generate_movesN(&NML[depth] , *pos);
+	generate_moves(&NML[depth] , *pos);
 	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
@@ -275,9 +275,9 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 forpetlja: 
 	for (; it < limes ; it++  )
 	{
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move(pos, NML[depth].mdata[it]);
 		val = -pvs_02( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
-		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
 		if ( val >= beta)       
 		{	
@@ -403,7 +403,7 @@ int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	}
 
 	best = -WIN;
-	generate_movesN(&NML[depth] , *pos);
+	generate_moves(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
@@ -413,9 +413,9 @@ int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 forpetlja: 
 	for (; it < limes ; it++  )
 	{
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move(pos, NML[depth].mdata[it]);
 		val = -pvs_01( pos, &nline, -beta, -alpha, -color, depth - 1, is_PV, draft + 1);
-		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
 		if ( val >= beta)       return val; //fail-soft
 		if ( val > best)
@@ -452,14 +452,14 @@ int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int d
 	}                
 
 	best = -WIN;
-	generate_movesN_test(&NML[depth] , *pos);
+	gm1(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 
 	for (it = quiet-1; it >= 0 ; it--  )
 	{
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move(pos, NML[depth].mdata[it]);
 		val = -ntestnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
 		if ( val >= beta)       return val; //fail-soft
 		if ( val > best)
@@ -514,7 +514,7 @@ int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 
 	old_alpha = alpha;
 	best = -WIN;
-	generate_movesN(&NML[depth] , *pos);
+	generate_moves(&NML[depth] , *pos);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
@@ -524,9 +524,9 @@ int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 forpetlja: 
 	for (; it < limes ; it++  )
 	{
-		Ndo_move(pos, NML[depth].mdata[it]);
+		do_move(pos, NML[depth].mdata[it]);
 		val = -nTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		Nundo_move(pos, &NML[depth], NML[depth].mdata[it]);
+		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
 		if ( val >= beta)       
 		{	
@@ -586,22 +586,22 @@ U64 NPerft(int depth, board *arg, node_move_list *ml)
 	U64 nodes = 0;
 
 	//if (depth == 0) return 1;
-	if (depth == 1) return generate_movesN( &ml[depth], *arg);
+	if (depth == 1) return generate_moves( &ml[depth], *arg);
 
-	generate_movesN( &ml[depth], *arg);
+	generate_moves( &ml[depth], *arg);
 	quiet = ml[depth].quietcount;
 	capt = ml[depth].captcount;
 	for (it = 218; it > capt && !stop; it--)
 	{
-		Ndo_move(arg, ml[depth].mdata[it]);
+		do_move(arg, ml[depth].mdata[it]);
 		nodes += NPerft(depth - 1, arg, ml);
-		Nundo_move(arg, &ml[depth], ml[depth].mdata[it]);
+		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 	}
 	for (it = 0; it < quiet && !stop; it++)
 	{
-		Ndo_move(arg, ml[depth].mdata[it]);
+		do_move(arg, ml[depth].mdata[it]);
 		nodes += NPerft(depth - 1, arg, ml);
-		Nundo_move(arg, &ml[depth], ml[depth].mdata[it]);
+		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 	}
 	return nodes;
 }
@@ -612,29 +612,29 @@ U64 Ndivide_perft(int depth, board *arg, node_move_list *ml)
 	U64 childs, nodes = 0;
 	mfree = 0;
 
-	generate_movesN( &ml[depth], *arg);
+	generate_moves( &ml[depth], *arg);
 	quiet = ml[depth].quietcount;
 	capt = ml[depth].captcount;
 	for (it = 218; it > capt && !stop; it++)
 	{
 		childs = 0;
-		printmoveN(&ml[depth].mdata[it]);
-		Ndo_move(arg, ml[depth].mdata[it]);
+		print_smith_notation(&ml[depth].mdata[it]);
+		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
 		printf(" %llu\n", childs);
-		Nundo_move(arg, &ml[depth], ml[depth].mdata[it]);
+		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}
 	for (it = 0; it < quiet && !stop; it++)
 	{
 		childs = 0;
-		printmoveN(&ml[depth].mdata[it]);
-		Ndo_move(arg, ml[depth].mdata[it]);
+		print_smith_notation(&ml[depth].mdata[it]);
+		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
 		printf(" %llu\n", childs);
-		Nundo_move(arg, &ml[depth], ml[depth].mdata[it]);
+		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}
 	return nodes;

@@ -7,7 +7,7 @@
 static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination);
 static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask);
 
-U64 generate_captures_2(node_move_list *ZZZ, board arg)
+U64 gc2(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -53,7 +53,7 @@ U64 generate_captures_2(node_move_list *ZZZ, board arg)
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
-	ho[7] = gen_ho_atackN(arg);
+	ho[7] = generate_hostile_atackmap(arg);
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
@@ -785,7 +785,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
-	ho[7] = gen_ho_atackN(arg);
+	ho[7] = generate_hostile_atackmap(arg);
 
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info; 
@@ -1502,7 +1502,7 @@ static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
 
 } 
 
-char generate_movesN_test(node_move_list *ZZZ, board arg)
+char gm1(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -1563,7 +1563,7 @@ char generate_movesN_test(node_move_list *ZZZ, board arg)
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
-	ho[7] = gen_ho_atackN(arg);
+	ho[7] = generate_hostile_atackmap(arg);
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info; 
 	ZZZ->old_zobrist = arg.zobrist;
@@ -2401,7 +2401,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
-	ho[7] = gen_ho_atackN(arg);
+	ho[7] = generate_hostile_atackmap(arg);
 
 	if (fr[0] & ho[7])
 	{
@@ -2653,7 +2653,7 @@ found_move:
 }
 
 
-U64 gen_ho_atackN( board arg)
+U64 generate_hostile_atackmap( board arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
 	U64 *fr, *ho; 
@@ -2716,7 +2716,7 @@ U64 gen_ho_atackN( board arg)
 	return at;
 }
 
-char generate_movesN(node_move_list *ZZZ, board arg)
+char generate_moves(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -2777,7 +2777,7 @@ char generate_movesN(node_move_list *ZZZ, board arg)
 	fr[6] = fr[5] ^ fr[4] ^ fr[2] ^ fr[3] ^ fr[0] ^ fr[1];
 	ho[6] = ho[5] ^ ho[4] ^ ho[2] ^ ho[3] ^ ho[0] ^ ho[1];
 	arg.pieceset[16] = fr[6] ^ ho[6];
-	ho[7] = gen_ho_atackN(arg);
+	ho[7] = generate_hostile_atackmap(arg);
 
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info; 
@@ -3568,7 +3568,7 @@ char generate_movesN(node_move_list *ZZZ, board arg)
 	return quietcount + captcount - 218;
 }
 
-int Ndo_move(board *b, move m)
+int do_move(board *b, move m)
 {
 	//if (stop) return 0;
 	U64 stm, castle, cast_diff, hm, fm, m_cas, f_cas, CK, CQ, KS, KR, QR, hKR, hQR;
@@ -3726,7 +3726,7 @@ int Ndo_move(board *b, move m)
 	b->info += (~ stm & 1LL) << 16;//fm
 }
 
-int Nundo_move(board *b, node_move_list *ml, move m)
+int undo_move(board *b, node_move_list *ml, move m)
 {
 	//if (stop) return 0;
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
@@ -3841,7 +3841,7 @@ int Nundo_move(board *b, node_move_list *ml, move m)
 	b->zobrist = ml->old_zobrist;
 }
 
-void print_move_xboard_1(move *m)
+void print_SAN_notation(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
@@ -3863,7 +3863,7 @@ void print_move_xboard_1(move *m)
 
 }
 
-void printmoveN(move *m)
+void print_smith_notation(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
@@ -3881,11 +3881,11 @@ void printmoveN(move *m)
 
 }
 
-void printmovedetailsN(move *ff)
+void print_move_details(move *ff)
 {
 	unsigned char p_type, capt_type, sq_from, sq_dest;
 	printf("\n-----move_details-------\n");
-	printmoveN(ff);
+	print_smith_notation(ff);
 	printBits(4, ff);
 	p_type = *ff & 0x00000007;
 	capt_type = *ff >> 3 & 0x0000000000000007;

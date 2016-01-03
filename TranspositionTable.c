@@ -146,7 +146,7 @@ void printNline( line pline)
 	for (it = 0; pline.cmove > it; it++)
 	{
 		//if (pline.argmove[it].info & 1ULL)	printf(" #%d ", it);
-		printmoveN( &pline.argmove[it]);
+		print_smith_notation( &pline.argmove[it]);
 	}
 	printf("\n");
 }
@@ -167,7 +167,7 @@ move nTTextractPV( board pos, char n)
 		if (!entry)   
 		{
 			printf("!!pvN: %d	", i);
-			printmoveN(&pick);
+			print_smith_notation(&pick);
 			printf("\n");
 			return pick;
 		}
@@ -180,14 +180,14 @@ move nTTextractPV( board pos, char n)
 		if (PV == 0)
 		{
 			printf("pvN: %d		", i);
-			printmoveN(&pick);
+			print_smith_notation(&pick);
 			printf("\n");
 			return pick;
 		}
 
-		printmoveN( &PV);
+		print_smith_notation( &PV);
 
-		Ndo_move( &pos, PV);
+		do_move( &pos, PV);
 	}
 	printf("\n");
 	return pick;

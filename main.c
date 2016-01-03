@@ -117,9 +117,9 @@ void *Thinking(void *void_ptr )
 		history.curr++;
 
 		t_manager.fm += (color == -1) ? 1 : 0;
-		Ndo_move( &Ncb, pm);
+		do_move( &Ncb, pm);
 		printf("move ");
-		printmoveN(&pm);
+		print_smith_notation(&pm);
 		printf("\n");
 	}
 	freeTT();
@@ -368,7 +368,7 @@ en_state_THINKING:
 			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
+			undo_move(&Ncb, &dummy_move_list, undo_move_1);
 		}
 		else if ((strstr(buff, "remove ") != NULL) && (history.curr > 1))
 		{
@@ -383,7 +383,7 @@ en_state_THINKING:
 			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
+			undo_move(&Ncb, &dummy_move_list, undo_move_1);
 
 			history.curr--;
 
@@ -392,7 +392,7 @@ en_state_THINKING:
 
 			dummy_move_list.undo = undo_data;
 
-			Nundo_move(&Ncb, &dummy_move_list, undo_move_1);
+			undo_move(&Ncb, &dummy_move_list, undo_move_1);
 		}
 		else if ((strstr(buff,"usermove ") != NULL) &&  ((en_state == PONDERING) || (en_state == OBSERVING)))
 		{
@@ -450,7 +450,7 @@ en_state_THINKING:
 			}
 			dst = f + r*8;
 
-			score = generate_movesN(NML, Ncb);
+			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
@@ -469,7 +469,7 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
 					history.tag[history.curr] = NML->mdata[it];
 					history.curr++;
 
-					Ndo_move(&Ncb, NML->mdata[it]);
+					do_move(&Ncb, NML->mdata[it]);
 					if (en_state == PONDERING)
 					{
 						en_state = THINKING;
@@ -492,7 +492,7 @@ end_user_move: ;
 		else if ( strstr(buff,"nLegal") != NULL )	
 		{	
 			NML = malloc( sizeof(node_move_list)*(n+1) );
-			score = generate_movesN(NML, Ncb);
+			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
@@ -501,7 +501,7 @@ end_user_move: ;
 xn_Legal_for:	for (; it < limes ; it++)
 		{
 			printf("%d  ", it);
-			printmoveN( &NML->mdata[it]);
+			print_smith_notation( &NML->mdata[it]);
 			printf("\n");
 
 		}
@@ -754,7 +754,7 @@ int chess_engine_testing(int argc, char *argv)
 		else if ( strcmp(w,"sortmoves") == 0 )
 		{
 			NML = malloc( sizeof(node_move_list)*(n+1) );
-			score = generate_movesN(NML, Ncb);
+			score = generate_moves(NML, Ncb);
 			sortmoves(NML, 0);
 			capt = NML->captcount;
 			int limes;
@@ -764,7 +764,7 @@ int chess_engine_testing(int argc, char *argv)
 sortnLegal_for:     for (; it < limes ; it++)
 		    {
 			    printf("%d  ", it);
-			    printmoveN( &NML->mdata[it]);
+			    print_smith_notation( &NML->mdata[it]);
 			    printf("\n");
 		    }
 
@@ -782,7 +782,7 @@ sortnLegal_for:     for (; it < limes ; it++)
 		}
 		else if ( strcmp(w,"nLegal") == 0 )	
 		{	
-			score = generate_movesN(NML, Ncb);
+			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
@@ -791,7 +791,7 @@ sortnLegal_for:     for (; it < limes ; it++)
 nLegal_for:	for (; it < limes ; it++)
 		{
 			printf("%d  ", it);
-			printmoveN( &NML->mdata[it]);
+			print_smith_notation( &NML->mdata[it]);
 			printf("\n");
 		}
 
@@ -809,7 +809,7 @@ nLegal_for:	for (; it < limes ; it++)
 		else if ( strcmp(w,"ntestLegal") == 0 )
 		{
 			NML = malloc( sizeof(node_move_list)*(n+1) );
-			score = generate_movesN_test(NML, Ncb);
+			score = gm1(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
@@ -818,7 +818,7 @@ nLegal_for:	for (; it < limes ; it++)
 ntestLegal_for:     for (; it < limes ; it++)
 		    {
 			    printf("%d  ", it);
-			    printmoveN( &NML->mdata[it]);
+			    print_smith_notation( &NML->mdata[it]);
 			    printf("\n");
 		    }
 
@@ -862,11 +862,11 @@ ntestLegal_for:     for (; it < limes ; it++)
 		{	
 			scanf("%d", &n);
 			ln[d] = n;
-			score = generate_movesN(&NML[d], Ncb);
+			score = generate_moves(&NML[d], Ncb);
 
 			printf("m\n");
 			printBits(8, &NML[d].mdata[n]);
-			Ndo_move( &Ncb, NML[d].mdata[n]);
+			do_move( &Ncb, NML[d].mdata[n]);
 			printboard(Ncb);
 			d++;		
 
@@ -874,7 +874,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 		else if ( strstr(w,"undomove") != NULL )
 		{
 			d--;
-			Nundo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
+			undo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
 			printboard(Ncb);		
 
 		}
