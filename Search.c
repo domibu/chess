@@ -56,7 +56,7 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	line nline;
 	TTentry *entry;
 
-	entry = nTTlookup( pos->zobrist);
+	entry = lookup_TT( pos->zobrist);
 	if (entry)
 	{
 		if (((entry->data >> 32)  & 0x0000000000FF) >= depth)
@@ -113,7 +113,7 @@ forpetlja:
 			data ^= do_move_1;
 			data ^= (U64)depth << 32;
 			data ^= (2ULL << 40);
-			nTTstore( pos->zobrist, data);
+			store_TT( pos->zobrist, data);
 			return val; //fail-soft
 		}
 		if ( val > best)
@@ -140,7 +140,7 @@ forpetlja:
 		data ^= pick;
 		data ^= (U64)depth << 32;
 		data ^= (1ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 	}
 	// fail low implies upperbound
 	if (best <= old_alpha)
@@ -150,7 +150,7 @@ forpetlja:
 		data <<= 48;
 		data ^= (U64)depth << 32;
 		data ^= (3ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 	}
 	return best;
 }
@@ -232,7 +232,7 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	line nline;
 	TTentry *entry;
 
-	entry = nTTlookup( pos->zobrist);
+	entry = lookup_TT( pos->zobrist);
 	if (entry)
 	{
 		if (((entry->data >> 32)  & 0x0000000000FF) >= depth)
@@ -287,7 +287,7 @@ forpetlja:
 			data ^= NML[depth].mdata[it];
 			data ^= (U64)depth << 32;
 			data ^= (2ULL << 40);
-			nTTstore( pos->zobrist, data);
+			store_TT( pos->zobrist, data);
 			return val; //fail-soft
 		}
 		if ( val > best)
@@ -314,7 +314,7 @@ forpetlja:
 		data ^= pick;
 		data ^= (U64)depth << 32;
 		data ^= (1ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 	}
 	// fail low implies upperbound
 	if (best <= old_alpha)
@@ -324,7 +324,7 @@ forpetlja:
 		data <<= 48;
 		data ^= (U64)depth << 32;
 		data ^= (3ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 	}
 	return best;
 }
@@ -485,7 +485,7 @@ int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 	line nline;
 	TTentry *entry;
 
-	entry = nTTlookup( pos->zobrist);
+	entry = lookup_TT( pos->zobrist);
 	if (entry)
 		if (((entry->data >> 32)  & 0x0000000000FF) >= depth)
 		{
@@ -536,7 +536,7 @@ forpetlja:
 			data ^= NML[depth].mdata[it];
 			data ^= (U64)depth << 32;
 			data ^= (2ULL << 40);
-			nTTstore( pos->zobrist, data);
+			store_TT( pos->zobrist, data);
 			return val; //fail-soft
 		}
 
@@ -564,7 +564,7 @@ forpetlja:
 		data ^= pick;
 		data ^= (U64)depth << 32;
 		data ^= (1ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 
 	}
 	// fail low implies upperbound
@@ -575,7 +575,7 @@ forpetlja:
 		data <<= 48;
 		data ^= (U64)depth << 32;
 		data ^= (3ULL << 40);
-		nTTstore( pos->zobrist, data);
+		store_TT( pos->zobrist, data);
 	}
 	return best;
 }

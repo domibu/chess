@@ -3,22 +3,22 @@
 
 #include "data.h"
 
-U64 count_nTT;
+U64 TTentry_count;
 int TThit, TTowr, TTwr;
 
-void printNline( line pline);
+void print_line_Smith_notation( line pline);
 
-move nTTextractPV( board pos, char n);
+move print_TT_PV( board pos, char n);
 move TTfind_move( U64 key);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);
 void initZobrist();
-void nsetZobrist( board *b);
-U64 setnTT( U64 n);
-void freeTT();
+void set_zobrist_keys( board *b);
+U64 set_TT( U64 n);
+void free_TT();
 
-TTentry *nTTlookup(U64 key);
-void nTTstore( U64 zobrist, U64 data);
+TTentry *lookup_TT(U64 key);
+void store_TT( U64 zobrist, U64 data);
 
 #endif

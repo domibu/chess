@@ -77,7 +77,7 @@ void initZobrist()
 	}
 }
 
-void nsetZobrist( board *b)
+void set_zobrist_keys( board *b)
 {
 	int it, enp;
 	U64 m = 1ULL;
@@ -110,7 +110,7 @@ void nsetZobrist( board *b)
 	b->zobrist ^= (b->info >> 14) & 1ULL ? zobrist[ 777] : 0ULL;
 }
 
-U64 setnTT( U64 n)
+U64 set_TT( U64 n)
 {
 	U64 count;
 	n *= 1024*1024;
@@ -121,26 +121,26 @@ U64 setnTT( U64 n)
 	return count;
 }
 
-TTentry *nTTlookup(U64 key)
+TTentry *lookup_TT(U64 key)
 {
-	unsigned ind = key % count_nTT;
+	unsigned ind = key % TTentry_count;
 	if (nTT[ ind].zobrist != key) 
 		return NULL;
 	TThit++;
 	return &nTT[ ind];
 }
 
-void nTTstore( U64 zobrist, U64 data)
+void store_TT( U64 zobrist, U64 data)
 {
 	//always replace strategy
-	U64 ind = zobrist % count_nTT;
+	U64 ind = zobrist % TTentry_count;
 
 	TTwr++;
 	nTT[ ind].zobrist = zobrist;
 	nTT[ ind].data = data;
 }
 
-void printNline( line pline)
+void print_line_Smith_notation( line pline)
 {
 	int it;
 	for (it = 0; pline.cmove > it; it++)
@@ -155,7 +155,7 @@ void print_TTentry( TTentry *arg, board pos)
 {
 }
 
-move nTTextractPV( board pos, char n)
+move print_TT_PV( board pos, char n)
 {
 	char i;
 	TTentry *entry;
@@ -163,7 +163,7 @@ move nTTextractPV( board pos, char n)
 
 	for ( i = 0; i < n; i++)
 	{
-		entry = nTTlookup( pos.zobrist);
+		entry = lookup_TT( pos.zobrist);
 		if (!entry)   
 		{
 			printf("!!pvN: %d	", i);
@@ -197,7 +197,7 @@ move TTfind_move( U64 key)
 {
 	TTentry *entry;
 
-	entry = nTTlookup( key);
+	entry = lookup_TT( key);
 	if (!entry)   
 	{
 		printf("!!pv_find error\n");
@@ -207,7 +207,7 @@ move TTfind_move( U64 key)
 	return (entry->data >> 0) & 0x00000003FFFFFF;
 }
 
-void freeTT()
+void free_TT()
 {
 	free(nTT);
 }

@@ -81,7 +81,7 @@ void *Thinking(void *void_ptr )
 	//stderr
 	printf("mem %d\n", memory);
 
-	count_nTT = setnTT( memory);
+	TTentry_count = set_TT( memory);
 
 	for (i = 1; (en_state == THINKING) && (i <= search_depth); i++)
 	{
@@ -98,7 +98,7 @@ void *Thinking(void *void_ptr )
 			{
 				/////PRINTING THINKING OUTPUT/////////////
 				fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, search_time*100, count);
-				pm = nTTextractPV( Ncb, i);
+				pm = print_TT_PV( Ncb, i);
 			}
 			else	pm = TTfind_move( Ncb.zobrist); 
 
@@ -122,7 +122,7 @@ void *Thinking(void *void_ptr )
 		print_smith_notation(&pm);
 		printf("\n");
 	}
-	freeTT();
+	free_TT();
 	pthread_exit(NULL);
 }
 
@@ -159,7 +159,7 @@ int main ( int argc, char *argv[])
 	initZobrist();
 
 	Ncb = NimportFEN(START_FEN);
-	nsetZobrist( &Ncb);
+	set_zobrist_keys( &Ncb);
 	NML = malloc( sizeof(node_move_list)*search_depth);
 	en_state = WAITING;
 
@@ -217,7 +217,7 @@ int chess_engine_communication_protocol()
 			history.curr = 0;
 			search_depth = SD_MAX;
 			Ncb = NimportFEN(START_FEN);	
-			nsetZobrist( &Ncb);
+			set_zobrist_keys( &Ncb);
 			en_state = PONDERING;
 			////////associate einge's clock with black and the opponent's clock with white/////////
 		}
@@ -325,7 +325,7 @@ en_state_THINKING:
 			history.curr = 0;
 
 			Ncb = NimportFEN(fen);
-			nsetZobrist( &Ncb);
+			set_zobrist_keys( &Ncb);
 
 			printboard(Ncb);	
 		}
@@ -527,7 +527,7 @@ xn_Legal_for:	for (; it < limes ; it++)
 
 int chess_engine_testing(int argc, char *argv)
 {
-	count_nTT = setnTT( memory);
+	TTentry_count = set_TT( memory);
 
 	while (1)
 	{
@@ -536,8 +536,8 @@ int chess_engine_testing(int argc, char *argv)
 
 		if (strstr(w, "resetnTT") != NULL)
 		{
-			freeTT();
-			count_nTT= setnTT( memory);
+			free_TT();
+			TTentry_count= set_TT( memory);
 		}
 		else if (strstr(w,"pvs03") != NULL)
 		{
@@ -554,7 +554,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~pvs03   	%d	%.2f	%llu	", n, razmisljao, count); 
-			nTTextractPV( Ncb, n);
+			print_TT_PV( Ncb, n);
 		}
 		else if (strstr(w,"pvs02") != NULL)
 		{
@@ -571,7 +571,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~pvs02   	%d	%.2f	%llu	", n, razmisljao, count); 
-			nTTextractPV( Ncb, n);
+			print_TT_PV( Ncb, n);
 		}
 		else if (strstr(w,"nTT") != NULL)
 		{
@@ -589,7 +589,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~nTT    	%d	%.2f	%llu	", n, razmisljao, count); 
 
-			nTTextractPV( Ncb, n);
+			print_TT_PV( Ncb, n);
 		}
 		else if (strstr(w,"pvs01") != NULL)
 		{
@@ -605,7 +605,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~pvs01   	%d	%.2f	%llu	", n, razmisljao, count); 
-			printNline( Npline);
+			print_line_Smith_notation( Npline);
 		}
 
 		else if (strstr(w,"nsearch") != NULL) 
@@ -621,7 +621,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~nsearch	%d	%.2f	%llu	", n, razmisljao, count); 
 
-			printNline( Npline);
+			print_line_Smith_notation( Npline);
 		}
 		else if (strstr(w,"ndivide") != NULL) 
 		{	
@@ -694,7 +694,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 			printf("q_result:	%d", score);
 
-			printNline( Npline);
+			print_line_Smith_notation( Npline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
 			printf("\n");
@@ -710,7 +710,7 @@ int chess_engine_testing(int argc, char *argv)
 			score = ntestnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);
 
-			printNline( Npline);
+			print_line_Smith_notation( Npline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
 		}
@@ -854,7 +854,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			cb = importFEN(FEN);		
 			Ncb = NimportFEN(FEN);
 			set_zobrist_1( &cb);	
-			nsetZobrist( &Ncb);
+			set_zobrist_keys( &Ncb);
 
 			printboard(Ncb);	
 		} 
@@ -902,7 +902,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			cb = importFEN(START_FEN);	
 			Ncb = NimportFEN(START_FEN);	
 			set_zobrist_1( &cb);	
-			nsetZobrist( &Ncb);
+			set_zobrist_keys( &Ncb);
 		}
 		else if ( strstr(w,"quit") != NULL )
 		{
