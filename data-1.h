@@ -48,10 +48,10 @@ typedef struct TTentry_1 {
 #ifndef LINE1
 #define LINE1
 
-typedef struct line {
+typedef struct line_1 {
   int cmove;
   move_1 argmove[50];
-} line;
+} line_1;
 
 #endif
 

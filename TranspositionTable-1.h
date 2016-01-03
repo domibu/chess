@@ -6,7 +6,7 @@
 U64 count_TT;
 int TThit, TTowr, TTwr;
 
-void printline( line pline);
+void printline( line_1 pline);
 void dodaj_move( move_1 **pocetak, move_1 *ind );
 
 

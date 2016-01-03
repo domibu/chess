@@ -94,7 +94,7 @@ void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 	TT[ ind].flag = flag;
 }
 
-void printline( line pline)
+void printline( line_1 pline)
 {
 	int it;
 	for (it = 0; pline.cmove > it; it++)

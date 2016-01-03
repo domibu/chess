@@ -12,10 +12,10 @@ int delete_movelist(move_1 *arg);
 
 int eval( board_1 *b);
 
-int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth);
-int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth);
-int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth);
-int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth);
+int mnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth);
+int anegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth);
+int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth);
+int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth);
 
 U64 Perft(int depth, board_1 *arg);
 U64 divide_perft(int depth, board_1 *arg);

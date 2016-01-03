@@ -17,7 +17,7 @@
 
 
 extern move_1 *marray;
-extern line pline;
+extern line_1 pline;
 extern Nline Npline;
 extern int TThit;
 

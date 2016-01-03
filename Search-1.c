@@ -6,7 +6,7 @@
 #include "TranspositionTable-1.h"
 
 move_1 *marray = NULL;
-line pline;
+line_1 pline;
 
 int eval( board_1 *b)
 {	
@@ -28,11 +28,11 @@ int eval( board_1 *b)
 	return w_score + b_score;
 }
 
-int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
+int mnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth)
 {
 	int val, best;
 	move_1 *list, *it;
-	line nline;
+	line_1 nline;
 
 	if ( !depth ) 
 	{
@@ -70,10 +70,10 @@ int mnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
-int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
+int anegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, it;
-	line nline;
+	line_1 nline;
 
 	if ( !depth ) 
 	{
@@ -108,11 +108,11 @@ int anegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int dep
 	return best;
 }
 
-int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
+int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha;
 	move_1 *list, *it, *pick = NULL;
-	line nline;
+	line_1 nline;
 	TTentry_1 *entry;
 
 	entry = TTlookup( pos->zobrist);
@@ -184,11 +184,11 @@ int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 	return best;
 }
 
-int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
+int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, movecount, it;
 	move_1 *pick = NULL;
-	line nline;
+	line_1 nline;
 	TTentry_1 *entry;
 
 	entry = TTlookup( pos->zobrist);
@@ -258,11 +258,11 @@ int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 	return best;
 }
 
-int rootnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int depth)
+int rootnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val;
 	move_1 *list, *it;
-	line nline;
+	line_1 nline;
 
 	if ( !depth ) return 0;
 
