@@ -7,11 +7,11 @@
 
 extern int en_state;
 
-Nline Npline;
+line Npline;
 int stop = 0;
 
 #define QUIESCE_DEPTH	-38
-int Quiesce( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int score;
 	int stand_pat = color*evaluate(*pos, draft, color, pos);
@@ -48,12 +48,12 @@ int Quiesce( board *pos, Nline *pline, int alpha, int beta, int color, int depth
 	return alpha;
 }
 
-int search( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int search( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
 	move pick = NULL, hash_move = 0, do_move;
 	unsigned char quiet, capt, flag;
-	Nline nline;
+	line nline;
 	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);
@@ -175,11 +175,11 @@ int neval( board *b)
 	return w_score + b_score;
 }
 
-int nnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, it, limes;
 	unsigned char quiet, capt;
-	Nline nline;
+	line nline;
 
 	if ( !depth ) 
 	{
@@ -224,12 +224,12 @@ forpetlja:
 	return best;
 }
 
-int  pvs_02(board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
+int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
 	move pick = NULL, hash_move = 0;
 	unsigned char quiet, capt, flag;
-	Nline nline;
+	line nline;
 	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);
@@ -390,11 +390,11 @@ sortforpetlja:
 		}
 }
 
-int pvs_01( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int is_PV, int draft)
+int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, int is_PV, int draft)
 {
 	int best, val, it, limes;
 	unsigned char quiet, capt;
-	Nline nline;
+	line nline;
 
 	if ( !depth ) 
 	{
@@ -439,11 +439,11 @@ forpetlja:
 	return best;
 }
 
-int ntestnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth)
+int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, it;
 	unsigned char quiet;
-	Nline nline; 
+	line nline; 
 
 	if ( !depth )
 	{
@@ -477,12 +477,12 @@ int ntestnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int 
 	return best;
 }
 
-int nTTnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth)
+int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, it, limes;
 	move pick = NULL;
 	unsigned char quiet, capt, flag;
-	Nline nline;
+	line nline;
 	TTentry *entry;
 
 	entry = nTTlookup( pos->zobrist);

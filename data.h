@@ -100,10 +100,10 @@ typedef struct TTentry {
 #ifndef NLINE
 #define NLINE
 
-typedef struct Nline {
+typedef struct line {
   int cmove;
   move argmove[50]; // 20 je moveMAX
-} Nline;
+} line;
 
 #endif
 

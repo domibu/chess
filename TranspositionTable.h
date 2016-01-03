@@ -6,7 +6,7 @@
 U64 count_nTT;
 int TThit, TTowr, TTwr;
 
-void printNline( Nline pline);
+void printNline( line pline);
 
 move nTTextractPV( board pos, char n);
 move TTfind_move( U64 key);

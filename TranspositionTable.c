@@ -140,7 +140,7 @@ void nTTstore( U64 zobrist, U64 data)
 	nTT[ ind].data = data;
 }
 
-void printNline( Nline pline)
+void printNline( line pline)
 {
 	int it;
 	for (it = 0; pline.cmove > it; it++)

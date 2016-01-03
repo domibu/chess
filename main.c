@@ -18,7 +18,7 @@
 
 extern move_1 *marray;
 extern line_1 pline;
-extern Nline Npline;
+extern line Npline;
 extern int TThit;
 
 U64 count = 0, mfree = 0;
