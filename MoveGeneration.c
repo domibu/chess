@@ -7,7 +7,7 @@
 static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination);
 static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask);
 
-U64 generate_captures_2(Nmovelist *ZZZ, board arg)
+U64 generate_captures_2(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -738,7 +738,7 @@ U64 generate_captures_2(Nmovelist *ZZZ, board arg)
 	return captcount - 218;
 }
 
-U64 generate_captures(Nmovelist *ZZZ, board arg)
+U64 generate_captures(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -1502,7 +1502,7 @@ static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
 
 } 
 
-char generate_movesN_test(Nmovelist *ZZZ, board arg)
+char generate_movesN_test(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -2716,7 +2716,7 @@ U64 gen_ho_atackN( board arg)
 	return at;
 }
 
-char generate_movesN(Nmovelist *ZZZ, board arg)
+char generate_movesN(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
 	U64 ppb, ppr, bb, at_b, at_r, blank = 0LL, all_pp, mpb, mpr, capture, stm, enp;
@@ -3726,7 +3726,7 @@ int Ndo_move(board *b, move m)
 	b->info += (~ stm & 1LL) << 16;//fm
 }
 
-int Nundo_move(board *b, Nmovelist *ml, move m)
+int Nundo_move(board *b, node_move_list *ml, move m)
 {
 	//if (stop) return 0;
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;

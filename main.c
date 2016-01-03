@@ -160,7 +160,7 @@ int main ( int argc, char *argv[])
 
 	Ncb = NimportFEN(START_FEN);
 	nsetZobrist( &Ncb);
-	NML = malloc( sizeof(Nmovelist)*search_depth);
+	NML = malloc( sizeof(node_move_list)*search_depth);
 	en_state = WAITING;
 
 	fgets(w, input_max_length, stdin);
@@ -365,7 +365,7 @@ en_state_THINKING:
 			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
-			Nmovelist dummy_move_list;
+			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
 			Nundo_move(&Ncb, &dummy_move_list, undo_move);
@@ -380,7 +380,7 @@ en_state_THINKING:
 			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
-			Nmovelist dummy_move_list;
+			node_move_list dummy_move_list;
 			dummy_move_list.undo = undo_data;
 
 			Nundo_move(&Ncb, &dummy_move_list, undo_move);
@@ -491,7 +491,7 @@ end_user_move: ;
 		}
 		else if ( strstr(buff,"nLegal") != NULL )	
 		{	
-			NML = malloc( sizeof(Nmovelist)*(n+1) );
+			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_movesN(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
@@ -753,7 +753,7 @@ int chess_engine_testing(int argc, char *argv)
 		}
 		else if ( strcmp(w,"sortmoves") == 0 )
 		{
-			NML = malloc( sizeof(Nmovelist)*(n+1) );
+			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_movesN(NML, Ncb);
 			sortmoves(NML, 0);
 			capt = NML->captcount;
@@ -808,7 +808,7 @@ nLegal_for:	for (; it < limes ; it++)
 		} 
 		else if ( strcmp(w,"ntestLegal") == 0 )
 		{
-			NML = malloc( sizeof(Nmovelist)*(n+1) );
+			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_movesN_test(NML, Ncb);
 			capt = NML->captcount;
 			int limes;

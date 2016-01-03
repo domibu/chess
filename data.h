@@ -69,12 +69,12 @@ old_hm          8-13
 stm             14
 */
 
-typedef struct Nmovelist {
+typedef struct node_move_list {
 	unsigned char   quietcount, captcount;
         unsigned 	undo;
         U64             old_zobrist;
 	move            mdata[256]; 
-} Nmovelist;
+} node_move_list;
 
 #endif
 

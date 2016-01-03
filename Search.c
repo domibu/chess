@@ -330,7 +330,7 @@ forpetlja:
 }
 
 //BUG
-void sortmoves(Nmovelist *m_list, move PV_move)
+void sortmoves(node_move_list *m_list, move PV_move)
 {
 	int start= (m_list->captcount > 218) ? 218 : 0;
 	int limes = (m_list->captcount > 218) ? m_list->captcount : m_list->quietcount;
@@ -580,7 +580,7 @@ forpetlja:
 	return best;
 }
 
-U64 NPerft(int depth, board *arg, Nmovelist *ml)
+U64 NPerft(int depth, board *arg, node_move_list *ml)
 {
 	unsigned char capt, quiet, it;
 	U64 nodes = 0;
@@ -606,7 +606,7 @@ U64 NPerft(int depth, board *arg, Nmovelist *ml)
 	return nodes;
 }
 
-U64 Ndivide_perft(int depth, board *arg, Nmovelist *ml)
+U64 Ndivide_perft(int depth, board *arg, node_move_list *ml)
 {
 	unsigned char capt, quiet, it;
 	U64 childs, nodes = 0;
