@@ -13,7 +13,7 @@
 #define LM UINT64_C(0x7FFFFFFF) /* Least significant 31 bits */
 
 U64 zobrist[782];
-TTentry *TT = NULL;
+TTentry_1 *TT = NULL;
 
 void setZobrist( board_1 *b)
 {
@@ -53,14 +53,14 @@ U64 setTT( U64 n)
 	U64 count;
 	n *= 1024*1024;
 
-	count = LargestPrime( n / sizeof(TTentry) );
+	count = LargestPrime( n / sizeof(TTentry_1) );
 
-	TT = calloc( sizeof( TTentry), count);
+	TT = calloc( sizeof( TTentry_1), count);
 
 	return count;
 }
 
-TTentry *TTlookup(U64 key)
+TTentry_1 *TTlookup(U64 key)
 {
 	unsigned ind = key % count_TT;
 
@@ -109,7 +109,7 @@ void printline( line pline)
 move_1 *TTextractPV( board_1 pos, char n)
 {
 	char i;
-	TTentry *entry;
+	TTentry_1 *entry;
 	move_1 *PV = NULL;
 	for ( i = 0; i < n; i++)
 	{

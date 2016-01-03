@@ -18,7 +18,7 @@ void initZobrist();
 void setZobrist(board_1 *b);
 U64 setTT( U64 n);
 
-TTentry *TTlookup(U64 key);
+TTentry_1 *TTlookup(U64 key);
 void TTstore( U64 zobrist, move_1 *pick, char depth, int score, char flag);
 
 #endif

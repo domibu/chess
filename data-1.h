@@ -35,13 +35,13 @@ typedef struct move_1 {
 #ifndef TTENTRY1
 #define TTENTRY1
 
-typedef struct TTentry {
+typedef struct TTentry_1 {
 	U64 zobrist;
 	move_1 pick;
 	char depth;
 	char flag;
 	short int score;
-} TTentry;
+} TTentry_1;
 
 #endif
 

@@ -113,7 +113,7 @@ int mTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 	int best, val, old_alpha;
 	move_1 *list, *it, *pick = NULL;
 	line nline;
-	TTentry *entry;
+	TTentry_1 *entry;
 
 	entry = TTlookup( pos->zobrist);
 	if (entry)
@@ -189,7 +189,7 @@ int aTTnegamax( board_1 *pos, line *pline, int alpha, int beta, int color, int d
 	int best, val, old_alpha, movecount, it;
 	move_1 *pick = NULL;
 	line nline;
-	TTentry *entry;
+	TTentry_1 *entry;
 
 	entry = TTlookup( pos->zobrist);
 	if (entry)
