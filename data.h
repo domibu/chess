@@ -34,8 +34,8 @@ typedef struct board {
 
 #endif
 
-#ifndef NMOVE
-#define NMOVE
+#ifndef MOVE
+#define MOVE
 
 /*
 ttentry data:
@@ -54,7 +54,7 @@ old_hm          8-13
 stm             14
 */
 
-typedef unsigned Nmove;
+typedef unsigned move;
 
 #endif
 
@@ -73,7 +73,7 @@ typedef struct Nmovelist {
 	unsigned char   quietcount, captcount;
         unsigned 	undo;
         U64             old_zobrist;
-	Nmove            mdata[256]; 
+	move            mdata[256]; 
 } Nmovelist;
 
 #endif
@@ -102,7 +102,7 @@ typedef struct nTTentry {
 
 typedef struct Nline {
   int cmove;
-  Nmove argmove[50]; // 20 je moveMAX
+  move argmove[50]; // 20 je moveMAX
 } Nline;
 
 #endif

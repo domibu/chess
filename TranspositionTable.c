@@ -155,11 +155,11 @@ void print_TTentry( nTTentry *arg, board pos)
 {
 }
 
-Nmove nTTextractPV( board pos, char n)
+move nTTextractPV( board pos, char n)
 {
 	char i;
 	nTTentry *entry;
-	Nmove PV = NULL, pick = NULL;
+	move PV = NULL, pick = NULL;
 
 	for ( i = 0; i < n; i++)
 	{
@@ -193,7 +193,7 @@ Nmove nTTextractPV( board pos, char n)
 	return pick;
 }
 
-Nmove TTfind_move( U64 key)
+move TTfind_move( U64 key)
 {
 	nTTentry *entry;
 

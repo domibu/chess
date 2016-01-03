@@ -51,7 +51,7 @@ int Quiesce( board *pos, Nline *pline, int alpha, int beta, int color, int depth
 int search( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
-	Nmove pick = NULL, hash_move = 0, do_move;
+	move pick = NULL, hash_move = 0, do_move;
 	unsigned char quiet, capt, flag;
 	Nline nline;
 	nTTentry *entry;
@@ -210,7 +210,7 @@ forpetlja:
 			{
 				alpha = val;
 				pline->argmove[0] = NML[depth].mdata[it];
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
 		}	
@@ -227,7 +227,7 @@ forpetlja:
 int  pvs_02(board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, old_alpha, it, limes;
-	Nmove pick = NULL, hash_move = 0;
+	move pick = NULL, hash_move = 0;
 	unsigned char quiet, capt, flag;
 	Nline nline;
 	nTTentry *entry;
@@ -330,7 +330,7 @@ forpetlja:
 }
 
 //BUG
-void sortmoves(Nmovelist *m_list, Nmove PV_move)
+void sortmoves(Nmovelist *m_list, move PV_move)
 {
 	int start= (m_list->captcount > 218) ? 218 : 0;
 	int limes = (m_list->captcount > 218) ? m_list->captcount : m_list->quietcount;
@@ -425,7 +425,7 @@ forpetlja:
 			{
 				alpha = val;
 				pline->argmove[0] = NML[depth].mdata[it];
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
 		}	
@@ -469,7 +469,7 @@ int ntestnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int 
 			{
 				alpha = val;
 				pline->argmove[0] = NML[depth].mdata[it];
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(Nmove));
+				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
 		}       
@@ -480,7 +480,7 @@ int ntestnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int 
 int nTTnegamax( board *pos, Nline *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, it, limes;
-	Nmove pick = NULL;
+	move pick = NULL;
 	unsigned char quiet, capt, flag;
 	Nline nline;
 	nTTentry *entry;

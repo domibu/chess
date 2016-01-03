@@ -4,8 +4,8 @@
 #include "MoveGeneration.h"
 #include "Search.h"
 
-static inline void fill_move( Nmove *move, U64 p_type, U64 source, U64 destination);
-static inline void capt_type( U64 *ho, U64 in, Nmove *move, U64 f, U64 mask);
+static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination);
+static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask);
 
 U64 generate_captures_2(Nmovelist *ZZZ, board arg)
 {
@@ -1473,7 +1473,7 @@ static inline int max(int a, int b) {
 	return a > b ? a : b;
 }
 
-static inline void fill_move( Nmove *move, U64 p_type, U64 source, U64 destination)
+static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination)
 {
 	*move &= 0ULL;
 	*move ^= p_type; //piecetype
@@ -1481,7 +1481,7 @@ static inline void fill_move( Nmove *move, U64 p_type, U64 source, U64 destinati
 	*move ^= destination << 12; //destination
 } 
 
-static inline void capt_type( U64 *ho, U64 in, Nmove *move, U64 f, U64 mask)
+static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
 {
 	//determine captured piece<$1>
 	f = (ho[1] >> in) & 1LL;
@@ -3568,7 +3568,7 @@ char generate_movesN(Nmovelist *ZZZ, board arg)
 	return quietcount + captcount - 218;
 }
 
-int Ndo_move(board *b, Nmove m)
+int Ndo_move(board *b, move m)
 {
 	//if (stop) return 0;
 	U64 stm, castle, cast_diff, hm, fm, m_cas, f_cas, CK, CQ, KS, KR, QR, hKR, hQR;
@@ -3726,7 +3726,7 @@ int Ndo_move(board *b, Nmove m)
 	b->info += (~ stm & 1LL) << 16;//fm
 }
 
-int Nundo_move(board *b, Nmovelist *ml, Nmove m)
+int Nundo_move(board *b, Nmovelist *ml, move m)
 {
 	//if (stop) return 0;
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
@@ -3841,7 +3841,7 @@ int Nundo_move(board *b, Nmovelist *ml, Nmove m)
 	b->zobrist = ml->old_zobrist;
 }
 
-void print_move_xboard_1(Nmove *m)
+void print_move_xboard_1(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
@@ -3863,7 +3863,7 @@ void print_move_xboard_1(Nmove *m)
 
 }
 
-void printmoveN(Nmove *m)
+void printmoveN(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
@@ -3881,7 +3881,7 @@ void printmoveN(Nmove *m)
 
 }
 
-void printmovedetailsN(Nmove *ff)
+void printmovedetailsN(move *ff)
 {
 	unsigned char p_type, capt_type, sq_from, sq_dest;
 	printf("\n-----move_details-------\n");

@@ -8,8 +8,8 @@ int TThit, TTowr, TTwr;
 
 void printNline( Nline pline);
 
-Nmove nTTextractPV( board pos, char n);
-Nmove TTfind_move( U64 key);
+move nTTextractPV( board pos, char n);
+move TTfind_move( U64 key);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);

@@ -77,7 +77,7 @@ void *Thinking(void *void_ptr )
 {
 	int i;
 	struct itimerspec curr_tick;
-	Nmove pm;
+	move pm;
 	//stderr
 	printf("mem %d\n", memory);
 
@@ -128,7 +128,7 @@ void *Thinking(void *void_ptr )
 
 unsigned char capt, it;
 move_1 *fst_pick, *list, *domove = NULL;
-Nmove *temp;
+move *temp;
 unsigned char ln[10], d = 0;
 char w[512]; 
 
@@ -362,7 +362,7 @@ en_state_THINKING:
 			t_manager.fm -= ((Ncb.info >> 14) & 1ULL) ? 1 : 0;
 			history.curr--;
 
-			Nmove undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
 			Nmovelist dummy_move_list;
@@ -377,7 +377,7 @@ en_state_THINKING:
 			t_manager.fm--;
 			history.curr--;
 
-			Nmove undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
+			move undo_move = history.tag[history.curr] & 0x00000000FFFFFFFF;
 			unsigned undo_data = history.tag[history.curr] >> 32;
 
 			Nmovelist dummy_move_list;
@@ -398,7 +398,7 @@ en_state_THINKING:
 		{
 			char s[16];
 			int a, f, r;
-			Nmove src, dst;
+			move src, dst;
 
 			sscanf(buff, "usermove %s", s);
 
@@ -457,8 +457,8 @@ en_state_THINKING:
 			limes = (capt > 218) ? capt : NML->quietcount;
 sxn_Legal_fo02r:	for (; it < limes ; it++)
 			{
-				Nmove tmp_src = (NML->mdata[it] >> 6) & 0x000000000000003F;
-				Nmove tmp_dst = (NML->mdata[it] >> 12) & 0x000000000000003F;
+				move tmp_src = (NML->mdata[it] >> 6) & 0x000000000000003F;
+				move tmp_dst = (NML->mdata[it] >> 12) & 0x000000000000003F;
 
 				if ((tmp_src == src) && (tmp_dst == dst))
 				{

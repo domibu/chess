@@ -9,7 +9,7 @@ Nline PV;
 
 extern U64 count;
 
-void sortmoves(Nmovelist *m_list, Nmove PV_move);
+void sortmoves(Nmovelist *m_list, move PV_move);
 
 int search(board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
 int Quiesce( board *pos, Nline *pline, int alpha, int beta, int color, int depth, int draft);
