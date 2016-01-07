@@ -365,3 +365,50 @@ long int LargestPrime(long int n)
 	} while (i<=max_fact);
 	return n;
 }
+
+int InitializeLogId(char *log_path)
+{
+	FILE *log_file;
+	int log_id;
+	char *log_filename;
+
+	log_filename = malloc(sizeof(log_path)+3);
+
+	for (log_id=0; log_id<1000; log_id++)
+	{
+		sprintf(log_filename, "%s/log.%03d", log_path, log_id);
+		log_file = fopen(log_filename, "r");
+		if (!log_file)
+			break;
+		fclose(log_file);
+	}
+	free(log_filename);
+
+	return log_id;
+}
+
+void Print(int vb, char *fmt, ...)
+{
+	va_list ap;
+	char pbuff[2046];
+	char tag;
+
+	va_start(ap, fmt);
+	if (vb)
+		vfprintf(stdout, fmt, ap);
+	if (log_file)
+	{
+		switch (vb)
+		{
+			case 0: tag = 35; break;
+			case 1: tag = 62; break;
+			case 2: tag = 60; break;
+			default: tag = 126;
+		}
+		va_start(ap, fmt);
+		sprintf(pbuff, "%c%.2045s", tag, fmt);
+		vfprintf(log_file, pbuff, ap);
+		fflush(log_file);
+	}
+	va_end(ap);
+}

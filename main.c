@@ -97,7 +97,7 @@ void *Thinking(void *void_ptr )
 			if (post)
 			{
 				/////PRINTING THINKING OUTPUT/////////////
-				fprintf(stdout, "%d	%d	%.2f	%llu	", i, score, search_time*100, count);
+				fprintf(stdout, "%2d %7d %6.2f %12llu ", i, score*100, search_time*100, count);
 				pm = print_TT_PV( Ncb, i);
 			}
 			else	pm = TTfind_move( Ncb.zobrist); 
@@ -130,7 +130,7 @@ unsigned char capt, it;
 move_1 *fst_pick, *list, *domove = NULL;
 move *temp;
 unsigned char ln[10], d = 0;
-char w[512]; 
+char buff[2048];
 
 int main ( int argc, char *argv[])
 {
@@ -155,6 +155,9 @@ int main ( int argc, char *argv[])
 	t_manager.lag = 10;
 	t_manager.est_moves_game = 16;
 
+	sprintf(buff, "%s/log.%03d", LOG_PATH, InitializeLogId(LOG_PATH));
+	log_file = fopen(buff, "w");
+
 	InitializeMoveDatabase();
 	initZobrist();
 
@@ -163,9 +166,9 @@ int main ( int argc, char *argv[])
 	NML = malloc( sizeof(node_move_list)*search_depth);
 	en_state = WAITING;
 
-	fgets(w, input_max_length, stdin);
+	fgets(buff, input_max_length, stdin);
 
-	if (strstr(w,"xboard") != NULL)	chess_engine_communication_protocol();
+	if (strstr(buff,"xboard") != NULL)	chess_engine_communication_protocol();
 	else	chess_engine_testing( argc, argv);
 	return 0;
 }
@@ -532,14 +535,14 @@ int chess_engine_testing(int argc, char *argv)
 	while (1)
 	{
 
-		scanf("%s",w);
+		scanf("%s",buff);
 
-		if (strstr(w, "resetnTT") != NULL)
+		if (strstr(buff, "resetnTT") != NULL)
 		{
 			free_TT();
 			TTentry_count= set_TT( memory);
 		}
-		else if (strstr(w,"pvs03") != NULL)
+		else if (strstr(buff,"pvs03") != NULL)
 		{
 			scanf("%d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -556,7 +559,7 @@ int chess_engine_testing(int argc, char *argv)
 			printf( "~~pvs03   	%d	%.2f	%llu	", n, razmisljao, count); 
 			print_TT_PV( Ncb, n);
 		}
-		else if (strstr(w,"pvs02") != NULL)
+		else if (strstr(buff,"pvs02") != NULL)
 		{
 			scanf("%d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -573,7 +576,7 @@ int chess_engine_testing(int argc, char *argv)
 			printf( "~~pvs02   	%d	%.2f	%llu	", n, razmisljao, count); 
 			print_TT_PV( Ncb, n);
 		}
-		else if (strstr(w,"nTT") != NULL)
+		else if (strstr(buff,"nTT") != NULL)
 		{
 			scanf("%d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -591,7 +594,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			print_TT_PV( Ncb, n);
 		}
-		else if (strstr(w,"pvs01") != NULL)
+		else if (strstr(buff,"pvs01") != NULL)
 		{
 			scanf("%d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -608,7 +611,7 @@ int chess_engine_testing(int argc, char *argv)
 			print_line_Smith_notation( Npline);
 		}
 
-		else if (strstr(w,"nsearch") != NULL) 
+		else if (strstr(buff,"nsearch") != NULL)
 		{	
 			scanf("%d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -623,7 +626,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			print_line_Smith_notation( Npline);
 		}
-		else if (strstr(w,"ndivide") != NULL) 
+		else if (strstr(buff,"ndivide") != NULL)
 		{	
 			scanf("%d", &n);
 			gettimeofday(&start, NULL);
@@ -632,7 +635,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			printf( "~~ndivide	%d	%.2f	%llu\n", n, razmisljao, count); 
 		}
-		else if (strstr(w,"mTT") != NULL) 
+		else if (strstr(buff,"mTT") != NULL)
 		{	
 			scanf("%d", &n);
 			printboard_1(cb);		
@@ -648,7 +651,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 		}
-		else if (strstr(w,"msearch") != NULL) 
+		else if (strstr(buff,"msearch") != NULL)
 		{	
 			scanf("%d", &n);
 			printboard_1(cb);		
@@ -663,7 +666,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 		}
-		else if (strstr(w,"aTT") != NULL) 
+		else if (strstr(buff,"aTT") != NULL)
 		{	
 			scanf("%d", &n);
 			printboard_1(cb);		
@@ -682,7 +685,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
 		}
-		else if (strstr(w,"quesc") != NULL)
+		else if (strstr(buff,"quesc") != NULL)
 		{
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
@@ -699,7 +702,7 @@ int chess_engine_testing(int argc, char *argv)
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
 			printf("\n");
 		}
-		else if (strstr(w,"ntestsearch") != NULL)
+		else if (strstr(buff,"ntestsearch") != NULL)
 		{
 			scanf("%d", &n);
 			printboard(Ncb);
@@ -714,7 +717,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
 		}
-		else if (strstr(w,"asearch") != NULL) 
+		else if (strstr(buff,"asearch") != NULL)
 		{	
 			scanf("%d", &n);
 			printboard_1(cb);		
@@ -731,7 +734,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
 		}
-		else if (strstr(w,"mdivide") != NULL) 
+		else if (strstr(buff,"mdivide") != NULL)
 		{	
 			scanf("%d", &n);
 			gettimeofday(&start, NULL);	
@@ -740,7 +743,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
 		}
-		else if (strstr(w,"adivide") != NULL) 
+		else if (strstr(buff,"adivide") != NULL)
 		{	
 			scanf("%d", &n);
 			gettimeofday(&start, NULL);
@@ -751,7 +754,7 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
 		}
-		else if ( strcmp(w,"sortmoves") == 0 )
+		else if ( strcmp(buff,"sortmoves") == 0 )
 		{
 			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_moves(NML, Ncb);
@@ -780,7 +783,7 @@ sortnLegal_for:     for (; it < limes ; it++)
 		    printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
 		    free( NML);
 		}
-		else if ( strcmp(w,"nLegal") == 0 )	
+		else if ( strcmp(buff,"nLegal") == 0 )
 		{	
 			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
@@ -806,7 +809,7 @@ nLegal_for:	for (; it < limes ; it++)
 		printf("capt count: %d	\n", 255-NML->captcount);
 		printf("moves count: %d	\n", NML->quietcount + NML->captcount - 218);
 		} 
-		else if ( strcmp(w,"ntestLegal") == 0 )
+		else if ( strcmp(buff,"ntestLegal") == 0 )
 		{
 			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = gm1(NML, Ncb);
@@ -834,7 +837,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 		    printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
 		    free( NML);
 		}
-		else if ( strcmp(w,"legal") == 0 )	
+		else if ( strcmp(buff,"legal") == 0 )
 		{	
 			marray = malloc( sizeof(move_1)*256);
 			score = generate_moves_1(cb, marray);
@@ -847,7 +850,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 			printf("moves count: %d	\n", score);
 			free(marray);		
 		} 
-		else if ( strstr(w,"set") != NULL )	
+		else if ( strstr(buff,"set") != NULL )
 		{	
 			char FEN[512];
 			scanf("%[^\n]", FEN);
@@ -858,7 +861,7 @@ ntestLegal_for:     for (; it < limes ; it++)
 
 			printboard(Ncb);	
 		} 
-		else if ( strstr(w,"do_move") != NULL )	
+		else if ( strstr(buff,"do_move") != NULL )
 		{	
 			scanf("%d", &n);
 			ln[d] = n;
@@ -871,40 +874,40 @@ ntestLegal_for:     for (; it < limes ; it++)
 			d++;		
 
 		}
-		else if ( strstr(w,"undomove") != NULL )
+		else if ( strstr(buff,"undomove") != NULL )
 		{
 			d--;
 			undo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
 			printboard(Ncb);		
 
 		}
-		else if ( strstr(w,"state") != NULL )
+		else if ( strstr(buff,"state") != NULL )
 		{
 			print_state( Ncb);
 		}
-		else if ( strstr(w,"Ndisp") != NULL )
+		else if ( strstr(buff,"Ndisp") != NULL )
 		{
 			printboard(Ncb);	
 		}
-		else if ( strstr(w,"disp") != NULL )
+		else if ( strstr(buff,"disp") != NULL )
 		{
 			printboard_1(cb);		
 		}
-		else if ( strstr(w,"change_stm") != NULL )
+		else if ( strstr(buff,"change_stm") != NULL )
 		{
 			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
 			set_zobrist_1( &cb);
 			printboard_1(cb);		
 		}
-		else if ( strstr(w,"new") != NULL )
+		else if ( strstr(buff,"new") != NULL )
 		{
 			cb = importFEN(START_FEN);	
 			Ncb = NimportFEN(START_FEN);	
 			set_zobrist_1( &cb);	
 			set_zobrist_keys( &Ncb);
 		}
-		else if ( strstr(w,"quit") != NULL )
+		else if ( strstr(buff,"quit") != NULL )
 		{
 			break;	
 		}

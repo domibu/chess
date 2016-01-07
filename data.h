@@ -122,4 +122,7 @@ int en_state;
 
 #endif
 
+#define LOG_PATH "."
+FILE *log_file;
+
 #endif

@@ -1,3 +1,5 @@
+#include<stdarg.h>
+#include<stdio.h>
 
 #ifndef domibuChessInterface
 #define domibuChessInterface
@@ -21,4 +23,7 @@ void square(int index, char *sq);
 void square2(char *sq, int *index);
 
 long int LargestPrime(long int n);
+int InitializeLogId(char *log_path);
+void Print(int vb, char *fmt, ...);
+
 #endif
