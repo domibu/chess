@@ -8,11 +8,11 @@ node_move_list *NML;
 extern int stop;
 extern U64 zobrist[782];
 
-void print_state(board arg);
+char *print_state(board arg);
 
-void print_smith_notation(move *m);
-void print_move_details(move *ff);
-void print_SAN_notation(move *m);
+char *print_smith_notation(move *m);
+char *print_move_details(move *ff);
+char *print_SAN_notation(move *m);
 
 U64 generate_hostile_atackmap(board arg);
 char generate_moves(node_move_list *ZZZ, board arg);

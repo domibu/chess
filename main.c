@@ -78,8 +78,6 @@ void *Thinking(void *void_ptr )
 	int i;
 	struct itimerspec curr_tick;
 	move pm;
-	//stderr
-	printf("mem %d\n", memory);
 
 	TTentry_count = set_TT( memory);
 
@@ -94,14 +92,14 @@ void *Thinking(void *void_ptr )
 		search_time -= curr_tick.it_value.tv_sec + (double)curr_tick.it_value.tv_nsec/1000000000;
 
 		if (en_state == THINKING)
+		{	
 			if (post)
 			{
 				/////PRINTING THINKING OUTPUT/////////////
-				fprintf(stdout, "%2d %7d %6.2f %12llu ", i, score*100, search_time*100, count);
-				pm = print_TT_PV( Ncb, i);
+				Print(1, "%2d %7d %6.2f %12llu %s", i, score*100, search_time*100, count, print_TT_PV( Ncb, i));
 			}
-			else	pm = TTfind_move( Ncb.zobrist); 
-
+			pm = TTfind_move( Ncb.zobrist); 
+		}
 		if (((score  <= -WIN) || (score >= WIN)) && (en_state == THINKING))
 		{
 			en_state = PONDERING;
@@ -118,9 +116,7 @@ void *Thinking(void *void_ptr )
 
 		t_manager.fm += (color == -1) ? 1 : 0;
 		do_move( &Ncb, pm);
-		printf("move ");
-		print_smith_notation(&pm);
-		printf("\n");
+		Print(1, "move %s\n", print_smith_notation(&pm));
 	}
 	free_TT();
 	pthread_exit(NULL);
@@ -175,7 +171,7 @@ int main ( int argc, char *argv[])
 
 void catch_alrm()
 {
-	//stderr ----- printf("alarm ---- PONDERING now\n");
+	Print(0, "catch_alarm ---- PONDERING now\n");
 	en_state = PONDERING;
 }
 
@@ -196,23 +192,24 @@ int chess_engine_communication_protocol()
 	{
 		while ((read=getline(&buff, &len, features)) != -1) 
 		{
-			fprintf(stdout, "feature %s", buff);
-
+			Print(1, "feature %s", buff);
 		}
 		fclose(features);
 		free(buff);
 	}
 	else
 	{
-		perror("Couldn't open CECP_features.txt\n");
+		Print(1, "Couldn't open CECP_features file, quiting\n");
 		return 1;
 	}
 	//SEND DONE
-	fprintf(stdout, "feature done=1\n");
+	Print(1, "feature done=1\n");
+
 	while (1)
 	{
 		////////////////////CHECK PING////////////////////////////////
 		read=getline(&buff, &len, stdin);
+		Print(2, "%s", buff);
 
 		if ( strstr(buff,"new") != NULL )
 		{
@@ -262,8 +259,6 @@ en_state_THINKING:
 			its.it_interval.tv_nsec = 0;
 			timer_settime(timer_id, 0, &its, NULL);
 			pthread_create(&threads[0], NULL, Thinking, NULL);
-
-			printf("target %u\n", t_manager.target);
 		}
 		else if (strstr(buff,"playother") != NULL)
 		{
@@ -289,7 +284,7 @@ en_state_THINKING:
 				t_manager.en_time = (min*60 + sec) * 100;
 				t_manager.increment = inc;
 			}
-			printf("t_man CTRL_STYLE %d mp_ctrl %d base %u inc %d\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment);
+			Print(0, "CTRL_STYLE %d mp_ctrl %d base %u inc %d\n", t_manager.ctrl_style, t_manager.moves_per_ctrl, t_manager.en_time, t_manager.increment);
 		}
 		else if (strstr(buff, "st ") != NULL)
 		{
@@ -314,14 +309,10 @@ en_state_THINKING:
 			sscanf(buff, "otim %u", &t);
 			t_manager.op_time = t;
 		}
-		else if (strstr(buff, "setboard_1 ") != NULL)
+		else if (strstr(buff, "setboard") != NULL)
 		{
 			char fen[127];
-			sscanf(buff, "setboard_1 %[^\n]", fen);
-
-			//stderr
-			printf("buff:	%s\n", buff);
-			printf("FEN:	%s\n", fen);
+			sscanf(buff, "setboard %[^\n]", fen);
 
 			en_state = OBSERVING;
 			//	reset history	///////////
@@ -330,7 +321,7 @@ en_state_THINKING:
 			Ncb = NimportFEN(fen);
 			set_zobrist_keys( &Ncb);
 
-			printboard(Ncb);	
+			Print(0, "%s", printboard(Ncb));
 		}
 		else if (strstr(buff, "memory ") != NULL)
 		{
@@ -489,7 +480,7 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
 				goto sxn_Legal_fo02r;
 			}
 			////////////////////////////// REPORT ILLEGALMOVE        ///////////////////
-			printf("Illegal move: %s\n", s);
+			Print(1, "Illegal move ^& %s\n", s);
 end_user_move: ;		
 		}
 		else if ( strstr(buff,"nLegal") != NULL )	
@@ -501,26 +492,24 @@ end_user_move: ;
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-xn_Legal_for:	for (; it < limes ; it++)
-		{
-			printf("%d  ", it);
-			print_smith_notation( &NML->mdata[it]);
-			printf("\n");
+xn_Legal_for:	
+			for (; it < limes ; it++)
+			{
+				Print(1, "%d  %s\n", it, print_smith_notation( &NML->mdata[it]));
+			}
 
-		}
+			if (it == (capt ))
+			{
+				it = 0;
+				limes = NML->quietcount;
+				goto xn_Legal_for;
+			}
 
-		if (it == (capt ))
-		{
-			it = 0;
-			limes = NML->quietcount;
-			goto xn_Legal_for;
-		}
-
-		printf("quiet count: %d	\n", NML->quietcount);
+			Print(1, "quiet count: %d\n", NML->quietcount);
 		}
 		else if (strstr(buff, "quit") != NULL)
 		{
-			printf("quiting :(\n");
+			Print(1, "quiting :(\n");
 			break;
 		}
 
@@ -530,12 +519,17 @@ xn_Legal_for:	for (; it < limes ; it++)
 
 int chess_engine_testing(int argc, char *argv)
 {
+	char *buff;
+	size_t len = 0;
+	ssize_t read;
+
 	TTentry_count = set_TT( memory);
 
 	while (1)
 	{
-
-		scanf("%s",buff);
+		//scanf("%s",buff);
+		read=getline(&buff, &len, stdin);
+		Print(2, "<%s", buff);
 
 		if (strstr(buff, "resetnTT") != NULL)
 		{
@@ -544,7 +538,7 @@ int chess_engine_testing(int argc, char *argv)
 		}
 		else if (strstr(buff,"pvs03") != NULL)
 		{
-			scanf("%d", &n);
+			sscanf(buff, "pvs03 %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -556,12 +550,11 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~pvs03   	%d	%.2f	%llu	", n, razmisljao, count); 
-			print_TT_PV( Ncb, n);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"pvs02") != NULL)
 		{
-			scanf("%d", &n);
+			sscanf(buff, "pvs02 %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -573,12 +566,11 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~pvs02   	%d	%.2f	%llu	", n, razmisljao, count); 
-			print_TT_PV( Ncb, n);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"nTT") != NULL)
 		{
-			scanf("%d", &n);
+			sscanf(buff, "nTT %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -590,13 +582,11 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~nTT    	%d	%.2f	%llu	", n, razmisljao, count); 
-
-			print_TT_PV( Ncb, n);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"pvs01") != NULL)
 		{
-			scanf("%d", &n);
+			sscanf(buff, "pvs01 %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 
@@ -607,13 +597,12 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~pvs01   	%d	%.2f	%llu	", n, razmisljao, count); 
-			print_line_Smith_notation( Npline);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 
 		else if (strstr(buff,"nsearch") != NULL)
 		{	
-			scanf("%d", &n);
+			sscanf(buff, "nsearch %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 
@@ -622,23 +611,20 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);	
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~nsearch	%d	%.2f	%llu	", n, razmisljao, count); 
-
-			print_line_Smith_notation( Npline);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"ndivide") != NULL)
 		{	
-			scanf("%d", &n);
+			sscanf(buff, "ndivide %d", &n);
 			gettimeofday(&start, NULL);
 			count = Ndivide_perft(n, &Ncb, NML);
 			gettimeofday(&end, NULL);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			printf( "~~ndivide	%d	%.2f	%llu\n", n, razmisljao, count); 
+			Print(1, "%2d %6.2f %12llu\n", n, razmisljao, count); 
 		}
 		else if (strstr(buff,"mTT") != NULL)
 		{	
-			scanf("%d", &n);
-			printboard_1(cb);		
+			sscanf(buff, "mTT %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -647,14 +633,12 @@ int chess_engine_testing(int argc, char *argv)
 			score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);	
 
-			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
 		}
 		else if (strstr(buff,"msearch") != NULL)
 		{	
-			scanf("%d", &n);
-			printboard_1(cb);		
+			sscanf(buff, "msearch %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
@@ -662,14 +646,12 @@ int chess_engine_testing(int argc, char *argv)
 			score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);	
 
-			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"aTT") != NULL)
 		{	
-			scanf("%d", &n);
-			printboard_1(cb);		
+			sscanf(buff, "aTT %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
@@ -683,7 +665,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu, hits=%d\n", score, razmisljao, count/razmisljao,  count, TThit); 
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
 		}
 		else if (strstr(buff,"quesc") != NULL)
 		{
@@ -691,21 +673,17 @@ int chess_engine_testing(int argc, char *argv)
 			count = 0;
 
 			int i;
-			printf("quesctest\n");
 			en_state = THINKING;
 			score = Quiesce( &Ncb, &Npline, -WIN, +WIN, color, 0, 0);
 			en_state = OBSERVING;
-			printf("q_result:	%d", score);
 
-			print_line_Smith_notation( Npline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
-			printf("\n");
+			Print(1, "%2d %7d %6.2f %12llu\n", n, score*100, razmisljao*100, count);
 		}
 		else if (strstr(buff,"ntestsearch") != NULL)
 		{
-			scanf("%d", &n);
-			printboard(Ncb);
+			sscanf(buff, "ntestsearch %d", &n);
+			Print(0, "%s", printboard(Ncb));
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 
@@ -713,14 +691,12 @@ int chess_engine_testing(int argc, char *argv)
 			score = ntestnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
 			gettimeofday(&end, NULL);
 
-			print_line_Smith_notation( Npline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count);
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"asearch") != NULL)
 		{	
-			scanf("%d", &n);
-			printboard_1(cb);		
+			sscanf(buff, "asearch %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
@@ -732,27 +708,27 @@ int chess_engine_testing(int argc, char *argv)
 
 			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "==%d  time=%.2f v=%.3e c=%llu\n", score, razmisljao, count/razmisljao,  count); 
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"mdivide") != NULL)
 		{	
-			scanf("%d", &n);
+			sscanf(buff, "mdivide %d", &n);
 			gettimeofday(&start, NULL);	
 			count = mdivide_perft(n, &cb);
 			gettimeofday(&end, NULL);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
+			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
 		}
 		else if (strstr(buff,"adivide") != NULL)
 		{	
-			scanf("%d", &n);
+			sscanf(buff, "adivide %d", &n);
 			gettimeofday(&start, NULL);
 			marray = malloc( sizeof(move_1)*216*(n+1) );
 			count = divide_perft(n, &cb);
 			free( marray);
 			gettimeofday(&end, NULL);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			fprintf(stderr, "time=%.2f v=%.3e c=%llu\n", razmisljao, count/razmisljao,  count); 
+			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
 		}
 		else if ( strcmp(buff,"sortmoves") == 0 )
 		{
@@ -764,24 +740,23 @@ int chess_engine_testing(int argc, char *argv)
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-sortnLegal_for:     for (; it < limes ; it++)
-		    {
-			    printf("%d  ", it);
-			    print_smith_notation( &NML->mdata[it]);
-			    printf("\n");
-		    }
+sortnLegal_for:     
+			for (; it < limes ; it++)
+			{
+				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+			}
 
-		    if (it == (capt ))
-		    {
-			    it = 0;
-			    limes = NML->quietcount;
-			    goto sortnLegal_for;
-		    }
+			if (it == (capt ))
+			{
+				it = 0;
+				limes = NML->quietcount;
+				goto sortnLegal_for;
+			}
 
-		    printf("quiet count: %d \n", NML->quietcount);
-		    printf("capt count: %d  \n", NML->captcount-218);
-		    printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
-		    free( NML);
+			Print(1, "quiet count:%3d\n", NML->quietcount);
+			Print(1, "capt count:%4d\n", NML->captcount-218);
+			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
+			free( NML);
 		}
 		else if ( strcmp(buff,"nLegal") == 0 )
 		{	
@@ -791,23 +766,22 @@ sortnLegal_for:     for (; it < limes ; it++)
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-nLegal_for:	for (; it < limes ; it++)
-		{
-			printf("%d  ", it);
-			print_smith_notation( &NML->mdata[it]);
-			printf("\n");
-		}
+nLegal_for:	
+			for (; it < limes ; it++)
+			{
+				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+			}
 
-		if (it == (capt ))
-		{
-			it = 0;
-			limes = NML->quietcount;
-			goto nLegal_for;
-		}
+			if (it == (capt ))
+			{
+				it = 0;
+				limes = NML->quietcount;
+				goto nLegal_for;
+			}
 
-		printf("quiet count: %d	\n", NML->quietcount);
-		printf("capt count: %d	\n", 255-NML->captcount);
-		printf("moves count: %d	\n", NML->quietcount + NML->captcount - 218);
+			Print(1, "quiet count:%3d\n", NML->quietcount);
+			Print(1, "capt count:%4d\n", 255-NML->captcount);
+			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		} 
 		else if ( strcmp(buff,"ntestLegal") == 0 )
 		{
@@ -818,24 +792,23 @@ nLegal_for:	for (; it < limes ; it++)
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-ntestLegal_for:     for (; it < limes ; it++)
-		    {
-			    printf("%d  ", it);
-			    print_smith_notation( &NML->mdata[it]);
-			    printf("\n");
-		    }
+ntestLegal_for:     
+			for (; it < limes ; it++)
+			{
+				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+			}
 
-		    if (it == (capt ))
-		    {
-			    it = 0;
-			    limes = NML->quietcount;
-			    goto ntestLegal_for;
-		    }
+			if (it == (capt ))
+			{
+				it = 0;
+				limes = NML->quietcount;
+				goto ntestLegal_for;
+			}
 
-		    printf("quiet count: %d \n", NML->quietcount);
-		    printf("capt count: %d  \n", 255-NML->captcount);
-		    printf("moves count: %d \n", NML->quietcount + NML->captcount - 218);
-		    free( NML);
+			Print(1, "quiet count:%3d\n", NML->quietcount);
+			Print(1, "capt count:%4d\n", 255-NML->captcount);
+			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
+			free( NML);
 		}
 		else if ( strcmp(buff,"legal") == 0 )
 		{	
@@ -843,42 +816,37 @@ ntestLegal_for:     for (; it < limes ; it++)
 			score = generate_moves_1(cb, marray);
 			for (n = 0; n < score; n++)     
 			{
-				printf("%d  ", n+1);
-				printmove_1( &marray[n]);
-				printf("\n");
+				Print(1, "%d %s\n", n+1, printmove_1( &marray[n]));
 			}
-			printf("moves count: %d	\n", score);
+			Print(1, "moves count: %d\n", score);
 			free(marray);		
 		} 
-		else if ( strstr(buff,"set") != NULL )
-		{	
-			char FEN[512];
-			scanf("%[^\n]", FEN);
-			cb = importFEN(FEN);		
-			Ncb = NimportFEN(FEN);
-			set_zobrist_1( &cb);	
-			set_zobrist_keys( &Ncb);
+		else if (strstr(buff, "setboard") != NULL)
+		{
+			char fen[127];
+			sscanf(buff, "setboard %[^\n]", fen);
 
-			printboard(Ncb);	
-		} 
-		else if ( strstr(buff,"do_move") != NULL )
+			Ncb = NimportFEN(fen);
+			set_zobrist_keys(&Ncb);
+
+			Print(0, "%s", printboard(Ncb));
+		}
+		else if (strstr(buff,"do_move") != NULL )
 		{	
-			scanf("%d", &n);
+			sscanf(buff, "do_move %d", &n);
 			ln[d] = n;
 			score = generate_moves(&NML[d], Ncb);
 
-			printf("m\n");
-			printBits(8, &NML[d].mdata[n]);
+			Print(0, "%s", printBits(8, &NML[d].mdata[n]));
 			do_move( &Ncb, NML[d].mdata[n]);
-			printboard(Ncb);
+			Print(0, "%s", printboard(Ncb));
 			d++;		
-
 		}
 		else if ( strstr(buff,"undomove") != NULL )
 		{
 			d--;
 			undo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
-			printboard(Ncb);		
+			Print(0, "%s", printboard(Ncb));		
 
 		}
 		else if ( strstr(buff,"state") != NULL )
@@ -887,18 +855,18 @@ ntestLegal_for:     for (; it < limes ; it++)
 		}
 		else if ( strstr(buff,"Ndisp") != NULL )
 		{
-			printboard(Ncb);	
+			Print(1, "%s", printboard(Ncb));	
 		}
 		else if ( strstr(buff,"disp") != NULL )
 		{
-			printboard_1(cb);		
+			Print(1, "%s", printboard_1(cb));		
 		}
 		else if ( strstr(buff,"change_stm") != NULL )
 		{
 			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
 			set_zobrist_1( &cb);
-			printboard_1(cb);		
+			Print(0, "%s", printboard_1(cb));		
 		}
 		else if ( strstr(buff,"new") != NULL )
 		{

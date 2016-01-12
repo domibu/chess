@@ -44,30 +44,33 @@ void arrtoobj(board *to, board_1 *arg)
 	arg->all_p = to->pieceset[16];
 }
 
-void printboard(board arg)
+char *printboard(board arg)
 {
+	static char buff[512];
 	unsigned i, fm;
 	unsigned short hm, enp_;
 	char stm, castle[4] = "", enp[2] = "";
 	U64 m = 0x8000000000000000;
 
+	buff[0] = '\0';
+	sprintf(buff, "%llu\n", arg.zobrist);
 	for (i = 0; i<64; i++)
 	{
-		if (arg.pieceset[5] & (m >> i) ) printf("P"); 
-		else if (arg.pieceset[4] & (m >> i)) printf("N"); 
-		else if (arg.pieceset[3] & (m >> i)) printf( "B"); 
-		else if (arg.pieceset[2] & (m >> i)) printf( "R"); 
-		else if (arg.pieceset[1] & (m >> i)) printf( "Q"); 
-		else if (arg.pieceset[0] & (m >> i)) printf( "K"); 
-		else if (arg.pieceset[13] & (m >> i)) printf( "p"); 
-		else if (arg.pieceset[12] & (m >> i)) printf( "n"); 
-		else if (arg.pieceset[11] & (m >> i)) printf( "b"); 
-		else if (arg.pieceset[10] & (m >> i)) printf( "r"); 
-		else if (arg.pieceset[9] & (m >> i)) printf( "q"); 
-		else if (arg.pieceset[8] & (m >> i)) printf( "k"); 
-		else if (~arg.pieceset[16] & (m >> i)) printf( "¤");
-		printf(" ");
-		if ((i+1)%8 == 0) printf("\n");
+		if (arg.pieceset[5] & (m >> i) ) strcat(buff,"P"); 
+		else if (arg.pieceset[4] & (m >> i)) strcat(buff,"N"); 
+		else if (arg.pieceset[3] & (m >> i)) strcat(buff, "B"); 
+		else if (arg.pieceset[2] & (m >> i)) strcat(buff, "R"); 
+		else if (arg.pieceset[1] & (m >> i)) strcat(buff, "Q"); 
+		else if (arg.pieceset[0] & (m >> i)) strcat(buff, "K"); 
+		else if (arg.pieceset[13] & (m >> i)) strcat(buff, "p"); 
+		else if (arg.pieceset[12] & (m >> i)) strcat(buff, "n"); 
+		else if (arg.pieceset[11] & (m >> i)) strcat(buff, "b"); 
+		else if (arg.pieceset[10] & (m >> i)) strcat(buff, "r"); 
+		else if (arg.pieceset[9] & (m >> i)) strcat(buff, "q"); 
+		else if (arg.pieceset[8] & (m >> i)) strcat(buff, "k"); 
+		else if (~arg.pieceset[16] & (m >> i)) strcat(buff, "¤");
+		strcat(buff," ");
+		if ((i+1)%8 == 0) strcat(buff,"\n");
 	}
 	hm = (arg.info >> 8) & 0x00000003F;
 	fm = arg.info >> 16;
@@ -94,35 +97,38 @@ void printboard(board arg)
 
 	hm = arg.info >> 8 & 0x000000000000001F;
 	fm = arg.info >> 15 & 0x00000000000007FF;
-	printf("stm: %c hm: %d	fm: %d\n", stm, hm, fm);
-	printf("cast_fl: %s enp_square: %s\n", castle, enp);
-	printf("zobrist: %llu\n", arg.zobrist);
+	
+	sprintf(buff, "%s%c %s %s %d %d\n", buff, stm, castle, enp, hm, fm);
+	return buff;
 }
 
-void printboard_1(board_1 arg)
+char *printboard_1(board_1 arg)
 {
+	char buff[128];
 	unsigned i, fm;
 	unsigned short hm;
 	char stm, castle[4] = "", enp[2] = "";
 	U64 m = 0x8000000000000000;
 
+	buff[0] = '\0';
+	sprintf(buff, "%llu\n", arg.zobrist);
 	for (i = 0; i<64; i++)
 	{
-		if (arg.w.P & (m >> i) ) printf("P"); 
-		else if (arg.w.N & (m >> i)) printf("N"); 
-		else if (arg.w.B & (m >> i)) printf( "B"); 
-		else if (arg.w.R & (m >> i)) printf( "R"); 
-		else if (arg.w.Q & (m >> i)) printf( "Q"); 
-		else if (arg.w.K & (m >> i)) printf( "K"); 
-		else if (arg.b.P & (m >> i)) printf( "p"); 
-		else if (arg.b.N & (m >> i)) printf( "n"); 
-		else if (arg.b.B & (m >> i)) printf( "b"); 
-		else if (arg.b.R & (m >> i)) printf( "r"); 
-		else if (arg.b.Q & (m >> i)) printf( "q"); 
-		else if (arg.b.K & (m >> i)) printf( "k"); 
-		else if (~arg.all_p & (m >> i)) printf( "¤");
-		printf(" ");
-		if ((i+1)%8 == 0) printf("\n");
+		if (arg.w.P & (m >> i) ) strcat(buff,"P"); 
+		else if (arg.w.N & (m >> i)) strcat(buff,"N"); 
+		else if (arg.w.B & (m >> i)) strcat(buff, "B"); 
+		else if (arg.w.R & (m >> i)) strcat(buff, "R"); 
+		else if (arg.w.Q & (m >> i)) strcat(buff, "Q"); 
+		else if (arg.w.K & (m >> i)) strcat(buff, "K"); 
+		else if (arg.b.P & (m >> i)) strcat(buff, "p"); 
+		else if (arg.b.N & (m >> i)) strcat(buff, "n"); 
+		else if (arg.b.B & (m >> i)) strcat(buff, "b"); 
+		else if (arg.b.R & (m >> i)) strcat(buff, "r"); 
+		else if (arg.b.Q & (m >> i)) strcat(buff, "q"); 
+		else if (arg.b.K & (m >> i)) strcat(buff, "k"); 
+		else if (~arg.all_p & (m >> i)) strcat(buff, "¤");
+		strcat(buff," ");
+		if ((i+1)%8 == 0) strcat(buff,"\n");
 	}
 	hm = arg.info >> 16;
 	fm = arg.info >> 32;
@@ -146,9 +152,8 @@ void printboard_1(board_1 arg)
 		strcat(enp, 1LL & arg.info ? "6" : "3");
 	}
 
-	printf("stm: %c hm: %d	fm: %d\n", stm, hm, fm);
-	printf("cast_fl: %s enp_square: %s\n", castle, enp);
-	printf("zobrist: %llu\n", arg.zobrist);
+	sprintf(buff, "%s%c %s %s %d %d\n", buff, stm, castle, enp, hm, fm);
+	return buff;
 }
 
 board_1 importFEN(char *fen)
@@ -331,23 +336,25 @@ void square2(char *sq, int *index)
 	*index = (sq[1]-49)*8 + (104-sq[0]);
 }
 
-void printBits(size_t const size, void const * const ptr)
+char *printBits(size_t const size, void const * const ptr)
 {
 	unsigned char *b = (unsigned char*) ptr;
 	unsigned char byte;
 	int i, j;
-
+	static char buff[3072];
+	
+	buff[0] = '\0';
 	for (i=size-1;i>=0;i--)
 	{
 		for (j=7;j>=0;j--)
 		{
 			byte = b[i] & (1<<j);
 			byte >>= j;
-			printf("%u", byte);
+			sprintf(buff, "%s%u", buff, byte);
 		}
-		puts("");
+		sprintf(buff, "%s\n", buff);
 	}
-	printf("\n");
+	return buff;
 }
 
 /* Calculate the largest (odd) prime number not greater than n.

@@ -140,36 +140,40 @@ void store_TT( U64 zobrist, U64 data)
 	nTT[ ind].data = data;
 }
 
-void print_line_Smith_notation( line pline)
+char *print_line_Smith_notation( line pline)
 {
 	int it;
+	static char buff[2048];
+
+	buff[0] = '\0';
 	for (it = 0; pline.cmove > it; it++)
 	{
 		//if (pline.argmove[it].info & 1ULL)	printf(" #%d ", it);
-		print_smith_notation( &pline.argmove[it]);
+		strcat(buff, print_smith_notation( &pline.argmove[it]));
 	}
-	printf("\n");
+	strcat(buff, "\n");
+	return buff;
 }
 
 void print_TTentry( TTentry *arg, board pos)
 {
 }
 
-move print_TT_PV( board pos, char n)
+char *print_TT_PV( board pos, char n)
 {
 	char i;
 	TTentry *entry;
 	move PV = NULL, pick = NULL;
+	static char buff[2048];
 
+	buff[0] = '\0';
 	for ( i = 0; i < n; i++)
 	{
 		entry = lookup_TT( pos.zobrist);
 		if (!entry)   
 		{
-			printf("!!pvN: %d	", i);
-			print_smith_notation(&pick);
-			printf("\n");
-			return pick;
+			strcat(buff, "!entry");
+			goto print_TT_PV_end;
 		}
 
 		TThit--;
@@ -179,18 +183,18 @@ move print_TT_PV( board pos, char n)
 
 		if (PV == 0)
 		{
-			printf("pvN: %d		", i);
+			strcat(buff, "PV==0");
 			print_smith_notation(&pick);
-			printf("\n");
-			return pick;
+			goto print_TT_PV_end;
 		}
 
-		print_smith_notation( &PV);
-
+		strcat(buff, print_smith_notation( &PV));
 		do_move( &pos, PV);
 	}
-	printf("\n");
-	return pick;
+
+print_TT_PV_end :
+	strcat(buff, "\n");
+	return buff;
 }
 
 move TTfind_move( U64 key)
@@ -198,9 +202,9 @@ move TTfind_move( U64 key)
 	TTentry *entry;
 
 	entry = lookup_TT( key);
-	if (!entry)   
+	if (!entry)
 	{
-		printf("!!pv_find error\n");
+		Print(0, "!entry\n");
 		return 0;
 	}
 	TThit--;

@@ -2121,31 +2121,36 @@ void undo_move_1(board_1 *b, move_1 *m)
 }
 
 
-void printmoves_1(move_1 *m_l)
-{
+char *printmoves_1(move_1 *m_l)
+{	
 	int count = 0;
+	static char buff[2048];
+
+	buff[0] = '\0';
 	while ( m_l && (count < 50))
 	{
-		printf("%d  ", count);
-		printmove_1( m_l);
-		printf("\n");
+		sprintf(buff, "%s%d %s\n", buff, count, printmove_1( m_l));
 
 		m_l = m_l->next;
 		count ++;
 	}
-	printf("moves count: %d	\n", count);
+	return buff;
 }
 
-void printmove_1(move_1 *m_l)
+char *printmove_1(move_1 *m_l)
 {
 	int piece_type, count = 0;
 	short d_pa;
 	char promotion, fr[3], dst[3];
+	static char buff[2048];
 
+	buff[0] = '\0';
 	piece_type = __builtin_ffsll(m_l->info)-1;
 	square( __builtin_ffsll(m_l->dest)-1, dst);
 	square( __builtin_ffsll(m_l->from)-1, fr);
 
-	if (piece_type == 13 || piece_type == 14) 	printf("%s ", piece(piece_type));
-	else	printf("%s%s%s ", piece(piece_type), fr, dst);
+	if (piece_type == 13 || piece_type == 14) 	sprintf(buff, "%s ", piece(piece_type));
+	else	sprintf(buff, "%s%s%s ", piece(piece_type), fr, dst);
+
+	return buff;
 }

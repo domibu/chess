@@ -323,7 +323,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
 				mpr &= ~(1LL << (mpp)); 
-				(tmp == captcount) ? captcount++ : quietcount++;;
+				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
 	}
@@ -1052,7 +1052,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
 				mpr &= ~(1LL << (mpp)); 
-				(tmp == captcount) ? captcount++ : quietcount++;;
+				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
 	}
@@ -3049,7 +3049,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
 				mpr &= ~(1LL << (mpp)); 
-				(tmp == captcount) ? captcount++ : quietcount++;;
+				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
 
@@ -3841,11 +3841,12 @@ int undo_move(board *b, node_move_list *ml, move m)
 	b->zobrist = ml->old_zobrist;
 }
 
-void print_SAN_notation(move *m)
+char *print_SAN_notation(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
 	char promotion, fr[3], dst[3];
+	static char buff[7];
 
 	piece_type = *m & 0x0000000000000007;
 	capt_type = (*m >> 3) & 0x0000000000000007;
@@ -3854,20 +3855,23 @@ void print_SAN_notation(move *m)
 	square( dest, dst);
 	square( from, fr);
 
+	buff[0] = '\0';
 	if (piece_type == 6 )
-		printf("%s ", piece(capt_type));
+		strcat(buff, piece(capt_type));
 	else if (piece_type == 7 )
-		printf("%s%s\n", fr, dest);
+		sprintf(buff, "%s%s%s\n", buff, fr, dest);
 	else	
-		printf("%s%s\n", fr, dest);
+		sprintf(buff, "%s%s%s\n", buff, fr, dest);
 
+	return buff;
 }
 
-void print_smith_notation(move *m)
+char *print_smith_notation(move *m)
 {
 	int piece_type, capt_type, from, dest, count = 0;
 	short d_pa;
 	char promotion, fr[3], dst[3];
+	static char buff[7];
 
 	piece_type = *m & 0x0000000000000007;
 	capt_type = (*m >> 3) & 0x0000000000000007;
@@ -3876,35 +3880,47 @@ void print_smith_notation(move *m)
 	square( dest, dst);
 	square( from, fr);
 
-	if (piece_type == 7 ) 	printf("%s%s ", fr, dst);
-	else	printf("%s%s ", fr, dst);
+	buff[0] = '\0';
+	if (piece_type == 7 ) 	sprintf(buff, "%s%s%s ", buff, fr, dst);
+	else	sprintf(buff, "%s%s%s ", buff, fr, dst);
 
+	return buff;
 }
 
-void print_move_details(move *ff)
+char *print_move_details(move *ff)
 {
 	unsigned char p_type, capt_type, sq_from, sq_dest;
-	printf("\n-----move_details-------\n");
-	print_smith_notation(ff);
-	printBits(4, ff);
+	static char buff[127];
+
 	p_type = *ff & 0x00000007;
 	capt_type = *ff >> 3 & 0x0000000000000007;
 	sq_from = *ff >> 6 & 0x0000003F;
 	sq_dest = *ff >> 12 & 0x0000003F;
-	printf("p %d capt %d\n", p_type, capt_type);
-	printf("fr %d dst %d \n", sq_from, sq_dest);
-	printf("----------\n");
+
+	buff[0] = '\0';
+
+	strcat(buff, "\n-----move_details-------\n");
+	strcat(buff, print_smith_notation(ff));
+	strcat(buff, printBits(4, ff));
+	sprintf(buff, "%sp %d capt %d\n", buff, p_type, capt_type);
+	sprintf(buff, "%sfr %d dst %d\n", buff, sq_from, sq_dest);
+	strcat(buff, "----------\n");
+
+	return buff;
 }
 
-void print_state(board arg)
+char *print_state(board arg)
 {
 	char i;
+	static char buff[10480];
+
+	buff[0] = '\0';
 	for ( i = 0; i < 17; i++)
 	{
-		printf("pieceset[   %d    ]\n", i);
-		printBits(8, &arg.pieceset[i]);
-
+		sprintf(buff, "%spieceset[   %d    ]\n", buff, i);
+		strcat(buff, printBits(8, &arg.pieceset[i]));
 	}
-	printBits(8, &arg.info);
+	strcat(buff, printBits(8, &arg.info));
 
+	return buff;
 }

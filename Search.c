@@ -18,8 +18,7 @@ int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth,
 
 	if (depth < QUIESCE_DEPTH)
 	{
-		//stderr
-		printf("***QUIESCE_DEPTH***\n");
+		Print(0,"***QUIESCE_DEPTH*** reached\n");
 		return stand_pat;
 	}
 
@@ -40,8 +39,6 @@ int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth,
 		if( score >= beta )	return beta;
 		if( score > alpha )
 		{
-			//stderr
-			NML[draft+1].mdata[it];
 			alpha = score;
 		}
 	}
@@ -618,22 +615,22 @@ U64 Ndivide_perft(int depth, board *arg, node_move_list *ml)
 	for (it = 218; it > capt && !stop; it++)
 	{
 		childs = 0;
-		print_smith_notation(&ml[depth].mdata[it]);
+		Print(1, "%s", print_smith_notation(&ml[depth].mdata[it]));
 		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
-		printf(" %llu\n", childs);
+		Print(1, " %llu\n", childs);
 		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}
 	for (it = 0; it < quiet && !stop; it++)
 	{
 		childs = 0;
-		print_smith_notation(&ml[depth].mdata[it]);
+		Print(1, "%s", print_smith_notation(&ml[depth].mdata[it]));
 		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
-		printf(" %llu\n", childs);
+		Print(1, " %llu\n", childs);
 		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}

@@ -10,14 +10,14 @@
 void objtoarr(board_1 *arg, board *to);
 void arrtoobj(board *to, board_1 *arg);
 
-void printboard(board arg);
-void printboard_1(board_1 arg);
+char *printboard(board arg);
+char *printboard_1(board_1 arg);
 board_1 importFEN(char *fen);
 board NimportFEN(char *fen);
 void resetboard_1(board_1 *arg);
 void resetboard(board *arg);
 
-void printBits(size_t const size, void const * const ptr);
+char *printBits(size_t const size, void const * const ptr);
 char *piece(int index);
 void square(int index, char *sq);
 void square2(char *sq, int *index);

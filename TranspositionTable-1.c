@@ -94,36 +94,43 @@ void TTstore_1( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 	TT[ ind].flag = flag;
 }
 
-void printline_1( line_1 pline)
+char *printline_1( line_1 pline)
 {
 	int it;
+	static char buff[2048];
+
+	buff[0] = '\0';
 	for (it = 0; pline.cmove > it; it++)
 	{
-		if (pline.argmove[it].info & 1ULL)
-			printf(" #%d ", it);
-		printmove_1( &pline.argmove[it]);
+		//if (pline.argmove[it].info & 1ULL)
+		//	printf(" #%d ", it);
+		strcat(buff, printmove_1( &pline.argmove[it]));
 	}
-	printf("\n");
+	strcat(buff, "\n");
+	return buff;
 }
 
-move_1 *TTextractPV_1( board_1 pos, char n)
+char *TTextractPV_1( board_1 pos, char n)
 {
 	char i;
 	TTentry_1 *entry;
 	move_1 *PV = NULL;
+	static char buff[2048];
+
+	buff[0] = '\0';
 	for ( i = 0; i < n; i++)
 	{
 		entry = TTlookup_1( pos.zobrist);
 		if (!entry)	break;
 		dodaj_move_1( &PV, &entry->pick);
 
-		if (pos.info & 1ULL)
-			printf(" #%llu ", pos.info >> 14);
-		printmove_1( &entry->pick);
+		//if (pos.info & 1ULL)
+		//	printf(" #%llu ", pos.info >> 14);
+		strcat(buff, printmove_1( &entry->pick));
 		do_move_1( &pos, &entry->pick);
 	}
-	printf("\n");
-	return PV;
+	strcat(buff, "\n");
+	return buff;
 }
 
 void dodaj_move_1( move_1 **pocetak, move_1 *ind )

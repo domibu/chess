@@ -6,9 +6,9 @@
 U64 TTentry_count;
 int TThit, TTowr, TTwr;
 
-void print_line_Smith_notation( line pline);
+char *print_line_Smith_notation( line pline);
 
-move print_TT_PV( board pos, char n);
+char *print_TT_PV( board pos, char n);
 move TTfind_move( U64 key);
 
 void init_genrand64(U64 seed);

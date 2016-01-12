@@ -6,11 +6,11 @@
 U64 count_TT_1;
 int TThit, TTowr, TTwr;
 
-void printline_1( line_1 pline);
+char *printline_1( line_1 pline);
 void dodaj_move_1( move_1 **pocetak, move_1 *ind );
 
 
-move_1 *TTextractPV_1( board_1 pos, char n);
+char *TTextractPV_1( board_1 pos, char n);
 
 void init_genrand64(U64 seed);
 U64 genrand64_int64(void);

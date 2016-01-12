@@ -329,16 +329,16 @@ U64 mdivide_perft(int depth, board_1 *arg)
 	for (it = move_list; it; it = it->next )
 	{
 		childs = 0;
-		printmove_1(it);
+		Print(1, "%s", printmove_1(it));
 		do_move_1(arg, it);
 
 		childs += depth > 10 ? mdivide_perft(depth - 1, arg) : mPerft(depth - 1, arg);
 		undo_move_1(arg, it);
-		printf(" %llu\n", childs);
+		Print(1, " %llu\n", childs);
 		nodes += childs;
 	}
 	delete_movelist(move_list);
-	printf("count %llu obr %llun ", nodes, mfree);
+	Print(1, "count %llu obr %llu\n", nodes, mfree);
 	return nodes;
 }
 
@@ -373,15 +373,15 @@ U64 divide_perft(int depth, board_1 *arg)
 	for (it = 216 * depth; it < 216*depth + movecount; it++)
 	{
 		childs = 0;
-		printmove_1(&marray[it]);
+		Print(1, "%s", printmove_1(&marray[it]));
 		do_move_1(arg, &marray[it]);
 
 		childs += Perft(depth - 1, arg);
 		undo_move_1(arg, &marray[it]);
-		printf(" %llu\n", childs);
+		Print(1, " %llu\n", childs);
 		nodes += childs;
 	}
-	printf("count %llu obr %llu\n ", nodes, mfree);
+	Print(1, "count %llu obr %llu\n ", nodes, mfree);
 	return nodes;
 }
 
