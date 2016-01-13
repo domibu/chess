@@ -588,7 +588,7 @@ U64 NPerft(int depth, board *arg, node_move_list *ml)
 	generate_moves( &ml[depth], *arg);
 	quiet = ml[depth].quietcount;
 	capt = ml[depth].captcount;
-	for (it = 218; it > capt && !stop; it--)
+	for (it = 218; it < capt && !stop; it++)
 	{
 		do_move(arg, ml[depth].mdata[it]);
 		nodes += NPerft(depth - 1, arg, ml);
@@ -612,25 +612,25 @@ U64 Ndivide_perft(int depth, board *arg, node_move_list *ml)
 	generate_moves( &ml[depth], *arg);
 	quiet = ml[depth].quietcount;
 	capt = ml[depth].captcount;
-	for (it = 218; it > capt && !stop; it++)
+	for (it = 218; it < capt && !stop; it++)
 	{
 		childs = 0;
-		Print(1, "%s", print_smith_notation(&ml[depth].mdata[it]));
+		Print(0, "%s", print_smith_notation(&ml[depth].mdata[it]));
 		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
-		Print(1, " %llu\n", childs);
+		Print(0, " %llu\n", childs);
 		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}
 	for (it = 0; it < quiet && !stop; it++)
 	{
 		childs = 0;
-		Print(1, "%s", print_smith_notation(&ml[depth].mdata[it]));
+		Print(0, "%s", print_smith_notation(&ml[depth].mdata[it]));
 		do_move(arg, ml[depth].mdata[it]);
 
 		childs += NPerft(depth - 1, arg, ml);
-		Print(1, " %llu\n", childs);
+		Print(0, " %llu\n", childs);
 		undo_move(arg, &ml[depth], ml[depth].mdata[it]);
 		nodes += childs;
 	}

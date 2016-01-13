@@ -485,7 +485,6 @@ end_user_move: ;
 		}
 		else if ( strstr(buff,"nLegal") != NULL )	
 		{	
-			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
@@ -527,7 +526,6 @@ int chess_engine_testing(int argc, char *argv)
 
 	while (1)
 	{
-		//scanf("%s",buff);
 		read=getline(&buff, &len, stdin);
 		Print(2, "<%s", buff);
 
@@ -730,9 +728,8 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
 		}
-		else if ( strcmp(buff,"sortmoves") == 0 )
+		else if ( strstr(buff,"sortmoves") != 0 )
 		{
-			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = generate_moves(NML, Ncb);
 			sortmoves(NML, 0);
 			capt = NML->captcount;
@@ -743,7 +740,7 @@ int chess_engine_testing(int argc, char *argv)
 sortnLegal_for:     
 			for (; it < limes ; it++)
 			{
-				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+				Print(1, "%d %s\n", it, print_smith_notation( &NML->mdata[it]));
 			}
 
 			if (it == (capt ))
@@ -756,9 +753,8 @@ sortnLegal_for:
 			Print(1, "quiet count:%3d\n", NML->quietcount);
 			Print(1, "capt count:%4d\n", NML->captcount-218);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
-			free( NML);
 		}
-		else if ( strcmp(buff,"nLegal") == 0 )
+		else if ( strstr(buff,"nLegal") != NULL )
 		{	
 			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
@@ -769,7 +765,7 @@ sortnLegal_for:
 nLegal_for:	
 			for (; it < limes ; it++)
 			{
-				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+				Print(1, "%d %s\n", it, print_smith_notation( &(NML->mdata[it])));
 			}
 
 			if (it == (capt ))
@@ -783,9 +779,8 @@ nLegal_for:
 			Print(1, "capt count:%4d\n", 255-NML->captcount);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		} 
-		else if ( strcmp(buff,"ntestLegal") == 0 )
+		else if ( strstr(buff,"ntestLegal") != 0 )
 		{
-			NML = malloc( sizeof(node_move_list)*(n+1) );
 			score = gm1(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
@@ -795,7 +790,7 @@ nLegal_for:
 ntestLegal_for:     
 			for (; it < limes ; it++)
 			{
-				Print("%d %s\n", it, print_smith_notation( &NML->mdata[it]));
+				Print(1, "%d %s\n", it, print_smith_notation( &NML->mdata[it]));
 			}
 
 			if (it == (capt ))
@@ -808,9 +803,8 @@ ntestLegal_for:
 			Print(1, "quiet count:%3d\n", NML->quietcount);
 			Print(1, "capt count:%4d\n", 255-NML->captcount);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
-			free( NML);
 		}
-		else if ( strcmp(buff,"legal") == 0 )
+		else if ( strstr(buff,"legal") != 0 )
 		{	
 			marray = malloc( sizeof(move_1)*256);
 			score = generate_moves_1(cb, marray);
@@ -827,6 +821,8 @@ ntestLegal_for:
 			sscanf(buff, "setboard %[^\n]", fen);
 
 			Ncb = NimportFEN(fen);
+			cb = importFEN(fen);	
+			set_zobrist_1( &cb);	
 			set_zobrist_keys(&Ncb);
 
 			Print(0, "%s", printboard(Ncb));
