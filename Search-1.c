@@ -9,7 +9,7 @@ move_1 *marray = NULL;
 line_1 pline;
 
 int eval( board_1 *b)
-{	
+{
 	int w_score = 0, b_score = 0;
 
 	w_score += 9 * __builtin_popcountll( b->w.Q );
@@ -34,7 +34,7 @@ int mnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int d
 	move_1 *list, *it;
 	line_1 nline;
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		pline->cmove = 0;
 		return color * eval( pos);
@@ -75,7 +75,7 @@ int anegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int d
 	int best, val, it;
 	line_1 nline;
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		pline->cmove = 0;
 		return color * eval( pos);
@@ -137,7 +137,7 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 			}
 		}
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		return color * eval( pos);
 	}
@@ -169,7 +169,7 @@ int mTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 		}
 	}
 	// exact score
-	if (best > old_alpha)  
+	if (best > old_alpha)
 	{
 		TTstore_1( pos->zobrist, pick, depth, best, 1);
 
@@ -197,7 +197,7 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 		if (entry->depth >= depth)
 		{
 			//hash move
-			val = entry->score; 
+			val = entry->score;
 			//exact
 			if	(entry->flag == 1)	return val;
 			//lowerbound
@@ -214,7 +214,7 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 			}
 		}
 	}
-	if ( !depth ) 
+	if ( !depth )
 	{
 		return color * eval( pos);
 	}
@@ -246,7 +246,7 @@ int aTTnegamax( board_1 *pos, line_1 *pline, int alpha, int beta, int color, int
 		}
 	}
 	// exact score
-	if (best > old_alpha)  
+	if (best > old_alpha)
 	{
 		TTstore_1( pos->zobrist, pick, depth, best, 1);
 	}
@@ -387,7 +387,7 @@ U64 divide_perft(int depth, board_1 *arg)
 
 int delete_movelist(move_1 *arg)
 {
-	move_1 *d; 
+	move_1 *d;
 	int c = 0;
 	while (arg != NULL)
 	{

@@ -45,7 +45,7 @@ void set_zobrist_1( board_1 *b)
 	enp = __builtin_ffsll( b->info & 0x000000000000FF00);
 	b->zobrist ^= enp ? zobrist[ 768 + enp] : 0ULL;
 
-	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL; 
+	b->zobrist ^= b->info & 1ULL ? zobrist[ 777] : 0ULL;
 }
 
 U64 setTT_1( U64 n)
@@ -83,7 +83,7 @@ void TTstore_1( U64 zobrist, move_1 *pick, char depth, int score, char flag)
 		TT[ ind].pick.dest = pick->dest;
 		TT[ ind].pick.from = pick->from;
 	}
-	else 	
+	else
 	{
 		TT[ ind].pick.info = 0ULL;
 		TT[ ind].pick.dest = 0ULL;

@@ -17,7 +17,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
@@ -55,28 +55,28 @@ U64 gc2(node_move_list *ZZZ, board arg)
 	arg.pieceset[16] = fr[6] ^ ho[6];
 	ho[7] = generate_hostile_atackmap(arg);
 	//save (enp, cast, hm, stm) for undo<1$>
-	ZZZ->undo = arg.info; 
+	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
 
 	//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
-		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
-		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
 
-		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho[4];
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -107,7 +107,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 	ppr = 0LL;
 
 	//looking for pieces pinned diagonaly<1$>
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 
 	while (__builtin_popcountll(at_b) )
@@ -123,7 +123,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -134,7 +134,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				if (fr[3] & ppb)	piecetype = 3;
 				else piecetype = 1;
 				//checking for check?<$1>
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
@@ -157,7 +157,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp)); 
+				mpb &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -196,14 +196,14 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
 			}
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
 				{
-					//promotion 
+					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
 						ZZZ->mdata[captcount] &= 0LL;
@@ -268,11 +268,11 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				}
 			}
 		}
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -287,10 +287,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr ))
 		{
 			while ( __builtin_popcountll(mpr))
 			{
@@ -298,7 +298,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
 				//checking for check?<$1>
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
@@ -322,7 +322,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpr &= ~(1LL << (mpp)); 
+				mpr &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -358,7 +358,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 			quietcount++;
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 	//legal moves<1$>
 	//PAWN
@@ -377,7 +377,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
 		mPE = (fr[5] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[6] & check_grid;
@@ -417,7 +417,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPW &= ~(1LL << in); 
+		mPW &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mPE))
@@ -445,7 +445,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPE &= ~(1LL << in); 
+		mPE &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mENP))
@@ -466,7 +466,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 
 			captcount++;
 		}
-		mENP &= ~(1LL << in); 
+		mENP &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mP1_prom))
 	{
@@ -513,7 +513,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPW_prom &= ~(1LL << in); 
+		mPW_prom &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mPE_prom))
 	{
@@ -544,7 +544,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPE_prom &= ~(1LL << in); 
+		mPE_prom &= ~(1LL << in);
 	}
 	//NIGHT
 	fr[4] &= ~ all_pp;
@@ -577,10 +577,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mN_c &= ~(1LL << in); 
+			mN_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[4] &= ~(1LL << in_N); 
+		fr[4] &= ~(1LL << in_N);
 	}
 	//BISHOP
 	fr[3] &= ~ all_pp;
@@ -615,10 +615,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mB_c &= ~(1LL << in); 
+			mB_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[3] &= ~(1LL << in_B); 
+		fr[3] &= ~(1LL << in_B);
 	}
 	//ROOK
 	fr[2] &= ~ all_pp;
@@ -653,10 +653,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mR_c &= ~(1LL << in); 
+			mR_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[2] &= ~1LL << in_R; 
+		fr[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr[1] &= ~ all_pp;
@@ -693,10 +693,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mQ_c &= ~(1LL << in); 
+			mQ_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[1] &= ~1LL << in_Q; 
+		fr[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr[0])-1;
@@ -728,7 +728,7 @@ U64 gc2(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mK_c &= ~(1LL << in); 
+		mK_c &= ~(1LL << in);
 		captcount++;
 	}
 
@@ -748,7 +748,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
@@ -788,28 +788,28 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	ho[7] = generate_hostile_atackmap(arg);
 
 	//save (enp, cast, hm, stm) for undo<1$>
-	ZZZ->undo = arg.info; 
+	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
 
 	//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
-		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
-		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
 
-		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho[4];
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -838,7 +838,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	ppb = 0LL;
 	ppr = 0LL;
 	//looking for pieces pinned diagonaly<1$>
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 
 	while (__builtin_popcountll(at_b) )
@@ -853,7 +853,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -864,7 +864,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				if (fr[3] & ppb)	piecetype = 3;
 				else piecetype = 1;
 				//checking for check?<$1>
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
@@ -887,7 +887,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp)); 
+				mpb &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -926,14 +926,14 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
 			}
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
 				{
-					//promotion 
+					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
 						ZZZ->mdata[captcount] &= 0LL;
@@ -997,11 +997,11 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				}
 			}
 		}
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -1016,10 +1016,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr ))
 		{
 			while ( __builtin_popcountll(mpr))
 			{
@@ -1027,8 +1027,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
 				//checking for check?<$1>
-				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
@@ -1051,7 +1051,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpr &= ~(1LL << (mpp)); 
+				mpr &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -1087,7 +1087,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 			quietcount++;
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 	//legal moves<1$>
 	//PAWN
@@ -1106,7 +1106,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
 		mPE = (fr[5] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[6] & check_grid;
@@ -1146,7 +1146,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPW &= ~(1LL << in); 
+		mPW &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mPE))
@@ -1174,7 +1174,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPE &= ~(1LL << in); 
+		mPE &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mENP))
@@ -1195,7 +1195,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 
 			captcount++;
 		}
-		mENP &= ~(1LL << in); 
+		mENP &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mP1_prom))
 	{
@@ -1242,7 +1242,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPW_prom &= ~(1LL << in); 
+		mPW_prom &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mPE_prom))
 	{
@@ -1273,7 +1273,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPE_prom &= ~(1LL << in); 
+		mPE_prom &= ~(1LL << in);
 	}
 	//NIGHT
 	fr[4] &= ~ all_pp;
@@ -1306,10 +1306,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mN_c &= ~(1LL << in); 
+			mN_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[4] &= ~(1LL << in_N); 
+		fr[4] &= ~(1LL << in_N);
 	}
 	//BISHOP
 	fr[3] &= ~ all_pp;
@@ -1344,10 +1344,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mB_c &= ~(1LL << in); 
+			mB_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[3] &= ~(1LL << in_B); 
+		fr[3] &= ~(1LL << in_B);
 	}
 	//ROOK
 	fr[2] &= ~ all_pp;
@@ -1382,10 +1382,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mR_c &= ~(1LL << in); 
+			mR_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[2] &= ~1LL << in_R; 
+		fr[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr[1] &= ~ all_pp;
@@ -1422,10 +1422,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mQ_c &= ~(1LL << in); 
+			mQ_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[1] &= ~1LL << in_Q; 
+		fr[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr[0])-1;
@@ -1457,7 +1457,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mK_c &= ~(1LL << in); 
+		mK_c &= ~(1LL << in);
 		captcount++;
 
 	}
@@ -1479,7 +1479,7 @@ static inline void fill_move( move *move, U64 p_type, U64 source, U64 destinatio
 	*move ^= p_type; //piecetype
 	*move ^= source << 6; //source
 	*move ^= destination << 12; //destination
-} 
+}
 
 static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
 {
@@ -1500,7 +1500,7 @@ static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
 	mask += 8;
 	*move |= (*move & ~mask) | ( -f & mask);
 
-} 
+}
 
 char gm1(node_move_list *ZZZ, board arg)
 {
@@ -1512,7 +1512,7 @@ char gm1(node_move_list *ZZZ, board arg)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, enp_sq;
 
@@ -1565,27 +1565,27 @@ char gm1(node_move_list *ZZZ, board arg)
 	arg.pieceset[16] = fr[6] ^ ho[6];
 	ho[7] = generate_hostile_atackmap(arg);
 	//save (enp, cast, hm, stm) for undo<1$>
-	ZZZ->undo = arg.info; 
+	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
 	//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
-		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
-		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
 
-		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho[4];
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -1615,7 +1615,7 @@ char gm1(node_move_list *ZZZ, board arg)
 	ppr = 0LL;
 
 	//looking for pieces pinned diagonaly<1$>
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
@@ -1628,7 +1628,7 @@ char gm1(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -1639,7 +1639,7 @@ char gm1(node_move_list *ZZZ, board arg)
 				if (fr[3] & ppb)	piecetype = 3;
 				else piecetype = 1;
 				//checking for check?<$1>
-				tmp = quietcount;					
+				tmp = quietcount;
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
@@ -1662,7 +1662,7 @@ char gm1(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp)); 
+				mpb &= ~(1LL << (mpp));
 				quietcount++;
 			}
 		}
@@ -1701,14 +1701,14 @@ char gm1(node_move_list *ZZZ, board arg)
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
 			}
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
 				{
-					//promotion 
+					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
 						ZZZ->mdata[quietcount] &= 0LL;
@@ -1772,11 +1772,11 @@ char gm1(node_move_list *ZZZ, board arg)
 				}
 			}
 		}
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -1790,10 +1790,10 @@ char gm1(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr ))
 		{
 			while ( __builtin_popcountll(mpr))
 			{
@@ -1801,8 +1801,8 @@ char gm1(node_move_list *ZZZ, board arg)
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
 				//checking for check?<$1>
-				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;					
-				tmp = quietcount;					
+				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;
+				tmp = quietcount;
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
 				ZZZ->mdata[tmp] ^= piecetype; //piecetype
@@ -1825,7 +1825,7 @@ char gm1(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpr &= ~(1LL << (mpp)); 
+				mpr &= ~(1LL << (mpp));
 				quietcount++;
 			}
 		}
@@ -1861,7 +1861,7 @@ char gm1(node_move_list *ZZZ, board arg)
 				quietcount++;
 			}
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 
 	//legal moves<1$>
@@ -1882,7 +1882,7 @@ char gm1(node_move_list *ZZZ, board arg)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP2 = ((fr[5] & 0x00FF000000000000) >> 8 & ~arg.pieceset[16]) >> 8 & ~arg.pieceset[16] & check_grid;
 		mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
@@ -1944,7 +1944,7 @@ char gm1(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-		mPW &= ~(1LL << in); 
+		mPW &= ~(1LL << in);
 		quietcount++;
 	}
 	while (__builtin_popcountll(mPE))
@@ -1972,7 +1972,7 @@ char gm1(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-		mPE &= ~(1LL << in); 
+		mPE &= ~(1LL << in);
 		quietcount++;
 	}
 	while (__builtin_popcountll(mENP))
@@ -1993,7 +1993,7 @@ char gm1(node_move_list *ZZZ, board arg)
 
 			quietcount++;
 		}
-		mENP &= ~(1LL << in); 
+		mENP &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mP1_prom))
 	{
@@ -2041,7 +2041,7 @@ char gm1(node_move_list *ZZZ, board arg)
 			quietcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPW_prom &= ~(1LL << in); 
+		mPW_prom &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mPE_prom))
 	{
@@ -2073,7 +2073,7 @@ char gm1(node_move_list *ZZZ, board arg)
 			quietcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPE_prom &= ~(1LL << in); 
+		mPE_prom &= ~(1LL << in);
 	}
 	//NIGHT
 	fr[4] &= ~ all_pp;
@@ -2118,10 +2118,10 @@ char gm1(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-			mN_c &= ~(1LL << in); 
+			mN_c &= ~(1LL << in);
 			quietcount++;
 		}
-		fr[4] &= ~(1LL << in_N); 
+		fr[4] &= ~(1LL << in_N);
 	}
 	//BISHOP
 	fr[3] &= ~ all_pp;
@@ -2168,10 +2168,10 @@ char gm1(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-			mB_c &= ~(1LL << in); 
+			mB_c &= ~(1LL << in);
 			quietcount++;
 		}
-		fr[3] &= ~(1LL << in_B); 
+		fr[3] &= ~(1LL << in_B);
 	}
 	//ROOK
 	fr[2] &= ~ all_pp;
@@ -2219,10 +2219,10 @@ char gm1(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-			mR_c &= ~(1LL << in); 
+			mR_c &= ~(1LL << in);
 			quietcount++;
 		}
-		fr[2] &= ~1LL << in_R; 
+		fr[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr[1] &= ~ all_pp;
@@ -2270,11 +2270,11 @@ char gm1(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-			mQ_c &= ~(1LL << in); 
+			mQ_c &= ~(1LL << in);
 			quietcount++;
 
 		}
-		fr[1] &= ~1LL << in_Q; 
+		fr[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr[0])-1;
@@ -2317,7 +2317,7 @@ char gm1(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[quietcount] |= (ZZZ->mdata[quietcount] & ~mask) | ( -f & mask);
 
-		mK_c &= ~(1LL << in); 
+		mK_c &= ~(1LL << in);
 		quietcount++;
 
 	}
@@ -2351,7 +2351,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
@@ -2408,22 +2408,22 @@ int evaluate( board arg, int draft, int color, board *rb)
 		in_K = movesKing[king] & ~fr[6] & ~ho[7];
 		//if (__builtin_popcountll(in_K) == 0) 	goto found_move;
 
-		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
-		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
 
-		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho[4];
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -2453,7 +2453,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	ppb = 0LL;
 	ppr = 0LL;
 	//looking for pieces pinned diagonaly<1$>
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
@@ -2469,7 +2469,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -2487,7 +2487,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 			//without promotion<1$>
 			if (mpp)
 				goto found_move;
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
@@ -2505,10 +2505,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 				}
 			}
 		}
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -2523,10 +2523,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr ))
 		{
 			if ( __builtin_popcountll(mpr))
 				goto found_move;
@@ -2541,13 +2541,13 @@ int evaluate( board arg, int draft, int color, board *rb)
 			//without promotion<1$>
 			if (mpp)
 				goto found_move;
-			//else 
+			//else
 			mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.pieceset[16]) & check_grid
 				: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 			if (mpp)
 				goto found_move;
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 	//PAWN
 	fr[5] &= ~ all_pp;
@@ -2566,7 +2566,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP2 = ((fr[5] & 0x00FF000000000000) >> 8 & ~arg.pieceset[16]) >> 8 & ~arg.pieceset[16] & check_grid;
 		mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
@@ -2593,7 +2593,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll(mN_q))
 			goto found_move;
-		fr[4] &= ~(1LL << in_N); 
+		fr[4] &= ~(1LL << in_N);
 	}
 	//BISHOP
 	fr[3] &= ~ all_pp;
@@ -2605,7 +2605,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll(mB_q))
 			goto found_move;
-		fr[3] &= ~(1LL << in_B); 
+		fr[3] &= ~(1LL << in_B);
 	}
 	//ROOK
 	fr[2] &= ~ all_pp;
@@ -2617,7 +2617,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll(mR_q))
 			goto found_move;
-		fr[2] &= ~1LL << in_R; 
+		fr[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr[1] &= ~ all_pp;
@@ -2630,7 +2630,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll(mQ_q))
 			goto found_move;
-		fr[1] &= ~1LL << in_Q; 
+		fr[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr[0])-1;
@@ -2643,7 +2643,7 @@ stand_pat :	;
 		int score;
 		if ((fr[0]&ho[7])>0)
 			score = color*(-WIN - draft);
-		else 
+		else
 			score = 0;
 		return score;	//MATE SCORE
 		return 0;
@@ -2656,7 +2656,7 @@ found_move:
 U64 generate_hostile_atackmap( board arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 
 	at = 0LL;
 
@@ -2675,13 +2675,13 @@ U64 generate_hostile_atackmap( board arg)
 		at |= (ho[5] & 0x7F7F7F7F7F7F7F7F) << 9;
 	}
 	//search squares without king cause of possible check<1$>
-	arg.pieceset[16] ^= fr[0];  
+	arg.pieceset[16] ^= fr[0];
 	//NIGHT
 	while (__builtin_popcountll(ho[4]))
 	{
 		in_N = __builtin_ffsll(ho[4])-1;
 		at |= movesNight[in_N];
-		ho[4] &= ~1LL << in_N; 
+		ho[4] &= ~1LL << in_N;
 	}
 	//BISHOP
 	while (__builtin_popcountll(ho[3]))
@@ -2689,7 +2689,7 @@ U64 generate_hostile_atackmap( board arg)
 		in_B = __builtin_ffsll(ho[3])-1;
 		in = ((arg.pieceset[16] & occupancyMaskBishop[in_B]) * magicNumberBishop[in_B]) >> magicNumberShiftsBishop[in_B];
 		at |= magicMovesBishop[in_B][in];
-		ho[3] &= ~1LL << in_B; 
+		ho[3] &= ~1LL << in_B;
 	}
 	//ROOK
 	while (__builtin_popcountll(ho[2]))
@@ -2697,7 +2697,7 @@ U64 generate_hostile_atackmap( board arg)
 		in_R = __builtin_ffsll(ho[2])-1;
 		in = ((arg.pieceset[16] & occupancyMaskRook[in_R]) * magicNumberRook[in_R]) >> magicNumberShiftsRook[in_R];
 		at |= magicMovesRook[in_R][in] ;
-		ho[2] &= ~1LL << in_R; 
+		ho[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	while (__builtin_popcountll(ho[1]))
@@ -2706,13 +2706,13 @@ U64 generate_hostile_atackmap( board arg)
 		in_R = ((arg.pieceset[16] & occupancyMaskRook[in_Q]) * magicNumberRook[in_Q]) >> magicNumberShiftsRook[in_Q];
 		in_B = ((arg.pieceset[16] & occupancyMaskBishop[in_Q]) * magicNumberBishop[in_Q]) >> magicNumberShiftsBishop[in_Q];
 		at |= (magicMovesRook[in_Q][in_R] ^ magicMovesBishop[in_Q][in_B]);
-		ho[1] &= ~1LL << in_Q; 
+		ho[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(ho[0])-1;
 	at |= movesKing[in_K];
 	//only empty squares<1$>
-	//ho[7] &= ~arg.fr[6];		
+	//ho[7] &= ~arg.fr[6];
 	return at;
 }
 
@@ -2726,7 +2726,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	U64 *fr, *ho; 
+	U64 *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	unsigned char quietcount = 0,  tmp, piecetype, captcount = 218, enp_sq;
 
@@ -2780,27 +2780,27 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	ho[7] = generate_hostile_atackmap(arg);
 
 	//save (enp, cast, hm, stm) for undo<1$>
-	ZZZ->undo = arg.info; 
+	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
 	//check if king is in CHECK<$1>
 	if (fr[0] & ho[7])
 	{
-		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];  		
-		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];  		
+		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
+		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
 
-		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.pieceset[16] & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.pieceset[16] & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho[4];
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -2833,7 +2833,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	//bb = blank & occupancyMaskBishop[king];
 
 	//looking for pieces pinned diagonaly<1$>
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho[3] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
@@ -2848,7 +2848,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -2860,7 +2860,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				else piecetype = 1;
 
 				//checking for check?<$1>
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
@@ -2884,7 +2884,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpb &= ~(1LL << (mpp)); 
+				mpb &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -2923,14 +2923,14 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
 			}
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & promotion & check_grid );
 				if (mpp)
 				{
-					//promotion 
+					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
 						ZZZ->mdata[captcount] &= 0LL;
@@ -2995,10 +2995,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				}
 			}
 		}
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho[2] ^ ho[1]); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -3013,10 +3013,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		bb = arg.pieceset[16] & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr )) 
+		if (__builtin_popcountll( (fr[1] ^ fr[2]) & ppr ))
 		{
 			while ( __builtin_popcountll(mpr))
 			{
@@ -3024,7 +3024,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				if (fr[2] & ppr)	piecetype = 2;
 				else piecetype = 1;
 				//checking for check?<$1>
-				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;					
+				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
 				//new move pp on mpp<$1>
 				ZZZ->mdata[tmp] &= 0LL;
@@ -3048,7 +3048,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				mask += 8;
 				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
 
-				mpr &= ~(1LL << (mpp)); 
+				mpr &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
 			}
 		}
@@ -3086,7 +3086,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			}
 
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 	//legal moves<1$>
 	//PAWN
@@ -3106,7 +3106,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP2 = ((fr[5] & 0x00FF000000000000) >> 8 & ~arg.pieceset[16]) >> 8 & ~arg.pieceset[16] & check_grid;
 		mP1 = fr[5] >> 8 & ~arg.pieceset[16] & check_grid;
@@ -3168,7 +3168,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPW &= ~(1LL << in); 
+		mPW &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mPE))
@@ -3196,7 +3196,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mPE &= ~(1LL << in); 
+		mPE &= ~(1LL << in);
 		captcount++;
 	}
 	while (__builtin_popcountll(mENP))
@@ -3217,7 +3217,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 
 			captcount++;
 		}
-		mENP &= ~(1LL << in); 
+		mENP &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mP1_prom))
 	{
@@ -3264,7 +3264,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPW_prom &= ~(1LL << in); 
+		mPW_prom &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mPE_prom))
 	{
@@ -3295,7 +3295,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
-		mPE_prom &= ~(1LL << in); 
+		mPE_prom &= ~(1LL << in);
 	}
 	//NIGHT
 	fr[4] &= ~ all_pp;
@@ -3340,10 +3340,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mN_c &= ~(1LL << in); 
+			mN_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[4] &= ~(1LL << in_N); 
+		fr[4] &= ~(1LL << in_N);
 	}
 	//BISHOP
 	fr[3] &= ~ all_pp;
@@ -3390,10 +3390,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mB_c &= ~(1LL << in); 
+			mB_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[3] &= ~(1LL << in_B); 
+		fr[3] &= ~(1LL << in_B);
 	}
 	//ROOK
 	fr[2] &= ~ all_pp;
@@ -3441,10 +3441,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mR_c &= ~(1LL << in); 
+			mR_c &= ~(1LL << in);
 			captcount++;
 		}
-		fr[2] &= ~1LL << in_R; 
+		fr[2] &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr[1] &= ~ all_pp;
@@ -3492,11 +3492,11 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			mask += 8;
 			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-			mQ_c &= ~(1LL << in); 
+			mQ_c &= ~(1LL << in);
 			captcount++;
 
 		}
-		fr[1] &= ~1LL << in_Q; 
+		fr[1] &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr[0])-1;
@@ -3538,11 +3538,11 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		mask += 8;
 		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
 
-		mK_c &= ~(1LL << in); 
+		mK_c &= ~(1LL << in);
 		captcount++;
 
 	}
-	//fr[0] &= ~1LL << in_K; 
+	//fr[0] &= ~1LL << in_K;
 	//CASTLE
 	if ( arg.info & cas_bit_K && !(ho[7] & cas_at_K) && !(arg.pieceset[16] & cas_occ_K) )
 	{
@@ -3602,7 +3602,7 @@ int do_move(board *b, move m)
 		castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 		//if rook plays, loosing appropriate castling rights<1$>
 		m_cas = 0x000000000000040 >> (stm<<1);
-		f_cas = (p_type == 2) && ( 1LL << sq_from & KR); 
+		f_cas = (p_type == 2) && ( 1LL << sq_from & KR);
 		castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 		m_cas = 0x000000000000080 >> (stm<<1);
 		f_cas = (p_type == 2) && ( 1LL << sq_from & QR);
@@ -3705,10 +3705,10 @@ int do_move(board *b, move m)
 
 	//zobrist
 	cast_diff = b->info & castle;
-	b->zobrist ^= zobrist[ 778] * (cast_diff >> 4 & 1LL);  
-	b->zobrist ^= zobrist[ 779] * (cast_diff >> 5 & 1LL);  
-	b->zobrist ^= zobrist[ 780] * (cast_diff >> 6 & 1LL);  
-	b->zobrist ^= zobrist[ 781] * (cast_diff >> 7 & 1LL); 
+	b->zobrist ^= zobrist[ 778] * (cast_diff >> 4 & 1LL);
+	b->zobrist ^= zobrist[ 779] * (cast_diff >> 5 & 1LL);
+	b->zobrist ^= zobrist[ 780] * (cast_diff >> 6 & 1LL);
+	b->zobrist ^= zobrist[ 781] * (cast_diff >> 7 & 1LL);
 
 	enp = b->info >> 1 & 0x0000000000000007;
 	b->zobrist ^= b->info & 1L ? zobrist[ 768 + enp] : 0ULL;
@@ -3718,7 +3718,7 @@ int do_move(board *b, move m)
 
 	b->zobrist ^= zobrist[ 777];
 
-	b->info &= ~castle; 
+	b->info &= ~castle;
 
 	b->info ^= 0x0000000000004000;//stm
 	b->info ^= (b->info & 0x000000000000000F) ^ ( m >> 21 & 0x000000000000000F);//enp
@@ -3860,7 +3860,7 @@ char *print_SAN_notation(move *m)
 		strcat(buff, piece(capt_type));
 	else if (piece_type == 7 )
 		sprintf(buff, "%s%s%s\n", buff, fr, dest);
-	else	
+	else
 		sprintf(buff, "%s%s%s\n", buff, fr, dest);
 
 	return buff;

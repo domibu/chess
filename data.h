@@ -62,7 +62,7 @@ typedef unsigned move;
 #define NMOVELIST
 
 /*
-undo: 
+undo:
 old_enp         0-3
 old_castle      4-7
 old_hm          8-13
@@ -73,7 +73,7 @@ typedef struct node_move_list {
 	unsigned char   quietcount, captcount;
         unsigned 	undo;
         U64             old_zobrist;
-	move            mdata[256]; 
+	move            mdata[256];
 } node_move_list;
 
 #endif
@@ -118,7 +118,7 @@ typedef struct line {
 #define PONDERING_COMPLETE 4
 
 
-int en_state; 
+int en_state;
 
 #endif
 

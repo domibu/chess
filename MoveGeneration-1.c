@@ -18,7 +18,7 @@ move_1 *generate_moves_2(board_1 arg)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	piece_set *fr, *ho; 
+	piece_set *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	move_1 *m_list = NULL, *m;
 
@@ -71,22 +71,22 @@ move_1 *generate_moves_2(board_1 arg)
 	// check if king is in CHECK
 	if (fr->K & ho->atack)
 	{
-		if (stm)	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) << 7 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) << 9 & ho->P;  		
-		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;  		
+		if (stm)	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) << 7 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) << 9 & ho->P;
+		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;
 
-		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho->N;
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -97,7 +97,7 @@ move_1 *generate_moves_2(board_1 arg)
 			{
 				at = __builtin_ffsll(at_r)-1;
 				in_at = ((arg.all_p & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
-				//index of king can be outside of while loop	
+				//index of king can be outside of while loop
 				check_grid = magicMovesRook[king][in_at_r] & magicMovesRook[at][in_at] | (1LL << at);
 
 			}
@@ -117,14 +117,14 @@ move_1 *generate_moves_2(board_1 arg)
 	ppb = 0LL;
 	ppr = 0LL;
 
-	// looking for pieces pinned diagonaly 
-	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+	// looking for pieces pinned diagonaly
+	in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 	at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_b) )
 	{
 		at = __builtin_ffsll(at_b)-1;
 		in_at = ((arg.all_p & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
-		//index of king can be outside of while loop	
+		//index of king can be outside of while loop
 		in_k = ((arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
 		ppb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at];
 		all_pp ^= ppb;
@@ -133,7 +133,7 @@ move_1 *generate_moves_2(board_1 arg)
 		bb = arg.all_p & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 		in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+		mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 		mpb &= check_grid;
 
 		if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) // probably doesn't need popcount
@@ -144,7 +144,7 @@ move_1 *generate_moves_2(board_1 arg)
 				if (fr->B & ppb)	piece_type = (1LL << 3);
 				else piece_type = (1LL << 1);
 				//checking for check?<$1>
-				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
+				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;
 				//new move_1 pp on mpp
 				m = m_list;
 				m_list = malloc(sizeof(move_1));
@@ -170,7 +170,7 @@ move_1 *generate_moves_2(board_1 arg)
 				m_list->info = (m_list->info & ~mask) | ( -f & mask);
 				//save enp_sq, castle flags,<$1>
 				m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-				mpb &= ~m_list->dest; 
+				mpb &= ~m_list->dest;
 			}
 		}
 		//check for pawn
@@ -209,14 +209,14 @@ move_1 *generate_moves_2(board_1 arg)
 				m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				mpb &= ~m_list->dest; //do we really need that?<1$>
 			}
-			else 
+			else
 			{
 				//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 				if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho->pieces & promotion & check_grid);
 				else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho->pieces & promotion & check_grid );
 				if (mpp)
 				{
-					//promotion 
+					//promotion
 					for (it_prom = 0x0000000000000100; it_prom ^ 0x0000000000001000; it_prom <<= 1)
 					{
 						in = __builtin_ffsll(mPW_prom)-1;
@@ -287,11 +287,11 @@ move_1 *generate_moves_2(board_1 arg)
 			}
 		}
 		//checking for pawn<1$>
-		at_b &= ~(1LL << at); 
+		at_b &= ~(1LL << at);
 	}
 
 	//looking for pieces pinned by file or rank<1$>
-	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+	in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 	at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 	while (__builtin_popcountll(at_r) )
 	{
@@ -306,10 +306,10 @@ move_1 *generate_moves_2(board_1 arg)
 		bb = arg.all_p & ~ (1LL << pp);
 		in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 		in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+		mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 		mpr &= check_grid;
 
-		if (__builtin_popcountll( (fr->Q ^ fr->R) & ppr )) 
+		if (__builtin_popcountll( (fr->Q ^ fr->R) & ppr ))
 		{
 			while ( __builtin_popcountll(mpr))
 			{
@@ -317,14 +317,14 @@ move_1 *generate_moves_2(board_1 arg)
 				if (fr->R & ppr)	piece_type = (1LL << 2);
 				else piece_type = (1LL << 1);
 				//checking for check?<$1>
-				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
+				capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;
 				//new move_1 pp on mpp<$1>
 				m = m_list;
 				m_list = malloc(sizeof(move_1));
 				m_list->next = m;
 				m_list->from = ppr;
 				m_list->dest = (1LL << mpp);
-				m_list->info = piece_type ^ capture ^ stm; 
+				m_list->info = piece_type ^ capture ^ stm;
 				//determine captured piece<$1>
 				f = (ho->Q >> mpp) & 1LL;
 				mask = 1LL << 25;
@@ -343,7 +343,7 @@ move_1 *generate_moves_2(board_1 arg)
 				m_list->info = (m_list->info & ~mask) | ( -f & mask);
 				//save enp_sq, castle flags<1$>
 				m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-				mpr &= ~m_list->dest; 
+				mpr &= ~m_list->dest;
 			}
 		}
 		//checking for pawn<1$>
@@ -364,7 +364,7 @@ move_1 *generate_moves_2(board_1 arg)
 				//save enp_sq, castle flags<1$>
 				m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 
-				mpb &= ~m_list->dest; 
+				mpb &= ~m_list->dest;
 			}
 			{
 				mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid
@@ -381,11 +381,11 @@ move_1 *generate_moves_2(board_1 arg)
 					//check is missing, write as const except stm<1$>
 					//save enp_sq, castle flags<1$>
 					m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					mpb &= ~m_list->dest; 
+					mpb &= ~m_list->dest;
 				}
 			}
 		}
-		at_r &= ~(1LL << at); 
+		at_r &= ~(1LL << at);
 	}
 	//legal moves<1$>
 	//PAWN
@@ -405,7 +405,7 @@ move_1 *generate_moves_2(board_1 arg)
 		mPE &= ~promotion;
 		mPW &= ~promotion;
 	}
-	else 
+	else
 	{
 		mP2 = ((fr->P & 0x00FF000000000000) >> 8 & ~arg.all_p) >> 8 & ~arg.all_p & check_grid;
 		mP1 = fr->P >> 8 & ~arg.all_p & check_grid;
@@ -432,7 +432,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mP2 &= ~m_list->dest; 
+		mP2 &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mP1))
 	{
@@ -446,7 +446,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mP1 &= ~m_list->dest; 
+		mP1 &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mPW))
 	{
@@ -476,7 +476,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mPW &= ~m_list->dest; 
+		mPW &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mPE))
 	{
@@ -506,7 +506,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mPE &= ~m_list->dest; 
+		mPE &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mENP))
 	{
@@ -528,7 +528,7 @@ move_1 *generate_moves_2(board_1 arg)
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
 		}
-		mENP &= ~(1LL << in); 
+		mENP &= ~(1LL << in);
 	}
 	while (__builtin_popcountll(mP1_prom))
 	{
@@ -545,7 +545,7 @@ move_1 *generate_moves_2(board_1 arg)
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
 		}
-		mP1_prom &= ~m_list->dest; 
+		mP1_prom &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mPW_prom))
 	{
@@ -578,7 +578,7 @@ move_1 *generate_moves_2(board_1 arg)
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		}
 		//check is missing, write as const except stm<1$>
-		mPW_prom &= ~m_list->dest; 
+		mPW_prom &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mPE_prom))
 	{
@@ -611,7 +611,7 @@ move_1 *generate_moves_2(board_1 arg)
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		}
 		//check is missing, write as const except stm<1$>
-		mPE_prom &= ~m_list->dest; 
+		mPE_prom &= ~m_list->dest;
 	}
 
 	//NIGHT
@@ -634,7 +634,7 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mN_q &= ~m_list->dest; 
+			mN_q &= ~m_list->dest;
 		}
 		while (__builtin_popcountll(mN_c))
 		{
@@ -664,9 +664,9 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mN_c &= ~m_list->dest; 
+			mN_c &= ~m_list->dest;
 		}
-		fr->N &= ~1LL << in_N; 
+		fr->N &= ~1LL << in_N;
 	}
 	//BISHOP
 	fr->B &= ~ all_pp;
@@ -690,7 +690,7 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mB_q &= ~m_list->dest; 
+			mB_q &= ~m_list->dest;
 		}
 		while (__builtin_popcountll(mB_c))
 		{
@@ -720,9 +720,9 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mB_c &= ~m_list->dest; 
+			mB_c &= ~m_list->dest;
 		}
-		fr->B &= ~1LL << in_B; 
+		fr->B &= ~1LL << in_B;
 	}
 	//ROOK
 	fr->R &= ~ all_pp;
@@ -746,7 +746,7 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mR_q &= ~m_list->dest; 
+			mR_q &= ~m_list->dest;
 		}
 		while (__builtin_popcountll(mR_c))
 		{
@@ -776,9 +776,9 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mR_c &= ~m_list->dest; 
+			mR_c &= ~m_list->dest;
 		}
-		fr->R &= ~1LL << in_R; 
+		fr->R &= ~1LL << in_R;
 	}
 	//QUEEN
 	fr->Q &= ~ all_pp;
@@ -803,7 +803,7 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mQ_q &= ~m_list->dest; 
+			mQ_q &= ~m_list->dest;
 		}
 		while (__builtin_popcountll(mQ_c))
 		{
@@ -833,9 +833,9 @@ move_1 *generate_moves_2(board_1 arg)
 			//save enp_sq, castle flags<1$>
 			m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mQ_c &= ~m_list->dest; 
+			mQ_c &= ~m_list->dest;
 		}
-		fr->Q &= ~1LL << in_Q; 
+		fr->Q &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(fr->K)-1;
@@ -854,7 +854,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mK_q &= ~m_list->dest; 
+		mK_q &= ~m_list->dest;
 	}
 	while (__builtin_popcountll(mK_c))
 	{
@@ -884,7 +884,7 @@ move_1 *generate_moves_2(board_1 arg)
 		//save enp_sq, castle flags<1$>
 		m_list->info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 		//check is missing, write as const except stm<1$>
-		mK_c &= ~m_list->dest; 
+		mK_c &= ~m_list->dest;
 	}
 	//CASTLE
 	if ( arg.info & cas_bit_K && !(ho->atack & cas_at_K) && !(arg.all_p & cas_occ_K) )
@@ -917,7 +917,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 	U64 mP1, mP2, mPE, mPW, mENP, mP1_prom, mPE_prom, mPW_prom, it_prom;
 	U64 cas_bit_K, cas_bit_Q, cas_at_K, cas_at_Q, cas_occ_K, cas_occ_Q, promotion, ENProw, enp_P;
 	U64 f, mask;
-	piece_set *fr, *ho; 
+	piece_set *fr, *ho;
 	int in_at_b, in_at_r, king, in_at, in_k, at, pp, mpp, P1, P2, PE, PW;
 	char  movecount = 0;
 	stm = (arg.info & 1LL) << 24;
@@ -968,22 +968,22 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 	//check if king is in CHECK<$1>
 	if (fr->K & ho->atack)
 	{
-		if (stm)	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) << 7 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) << 9 & ho->P;  		
-		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;  		
+		if (stm)	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) << 7 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) << 9 & ho->P;
+		else	in_K = (fr->K & 0xFEFEFEFEFEFEFEFE) >> 9 & ho->P | (fr->K & 0x7F7F7F7F7F7F7F7F) >> 7 & ho->P;
 
-		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( (arg.all_p & occupancyMaskBishop[king]) * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
-		mpb = magicMovesBishop[king][in_at_b];		
+		mpb = magicMovesBishop[king][in_at_b];
 
-		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( (arg.all_p & occupancyMaskRook[king]) * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 
 		in_N = movesNight[king] & ho->N;
 
 		check_pieces = in_K | in_N | at_b | at_r;
 
-		if (__builtin_popcountll(check_pieces) < 2) 
-		{		
+		if (__builtin_popcountll(check_pieces) < 2)
+		{
 			if (__builtin_popcountll(at_b))
 			{
 				at = __builtin_ffsll(at_b)-1;
@@ -1012,7 +1012,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 		ppb = 0LL;
 		ppr = 0LL;
 		//looking for pieces pinned diagonaly<1$>
-		in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king]; 
+		in_at_b = ( blank * magicNumberBishop[king] ) >> magicNumberShiftsBishop[king];
 		at_b = magicMovesBishop[king][in_at_b] & (ho->B ^ ho->Q); //friendly pieces<$1>
 		while (__builtin_popcountll(at_b) )
 		{
@@ -1027,7 +1027,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			bb = arg.all_p & ~ (1LL << pp);
 			in_at = ((bb & occupancyMaskBishop[at]) * magicNumberBishop[at]) >> magicNumberShiftsBishop[at];
 			in_k = ((bb & occupancyMaskBishop[king]) * magicNumberBishop[king]) >> magicNumberShiftsBishop[king];
-			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at); 
+			mpb = magicMovesBishop[king][in_k] & magicMovesBishop[at][in_at] &  ~ppb ^ (1LL << at);
 			mpb &= check_grid;
 
 			if (__builtin_popcountll( (fr->Q ^ fr->B) & ppb )) //maybe popcount isn't neccessary<1$>
@@ -1038,11 +1038,11 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					if (fr->B & ppb)	piece_type = (1LL << 3);
 					else piece_type = (1LL << 1);
 					//checking for check?<$1>
-					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
+					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;
 					//new move_1 pp on mpp<$1>
 					movearray[movecount].from = ppb;
 					movearray[movecount].dest = (1LL << mpp);
-					movearray[movecount].info = piece_type ^ capture ^ stm; 
+					movearray[movecount].info = piece_type ^ capture ^ stm;
 					//determine captured piece<$1>
 					f = (ho->Q >> mpp) & 1LL;
 					mask = 1LL << 25;
@@ -1061,7 +1061,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 					//save enp_sq, castle flags<1$>
 					movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					mpb &= ~movearray[movecount].dest; 
+					mpb &= ~movearray[movecount].dest;
 					movecount++;
 				}
 			}
@@ -1100,14 +1100,14 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					mpb &= ~movearray[movecount].dest; //do we really need that?<1$>
 					movecount++;
 				}
-				else 
+				else
 				{
 					//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
 					if (stm) mpp =__builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho->pieces & promotion & check_grid);
 					else mpp = __builtin_ffsll( mpb & (((ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho->pieces & promotion & check_grid );
 					if (mpp)
 					{
-						//promotion 
+						//promotion
 						for (it_prom = 0x0000000000000100; it_prom ^ 0x0000000000001000; it_prom <<= 1)
 						{
 							in = __builtin_ffsll(mPW_prom)-1;
@@ -1174,10 +1174,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				}
 			}
 			//checking for pawn<1$>
-			at_b &= ~(1LL << at); 
+			at_b &= ~(1LL << at);
 		}
 		//looking for pieces pinned by file or rank<1$>
-		in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king]; 
+		in_at_r = ( blank * magicNumberRook[king] ) >> magicNumberShiftsRook[king];
 		at_r = magicMovesRook[king][in_at_r] & (ho->R ^ ho->Q); //friendly pieces<$1>
 		while (__builtin_popcountll(at_r) )
 		{
@@ -1192,10 +1192,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			bb = arg.all_p & ~ (1LL << pp);
 			in_at = ((bb & occupancyMaskRook[at]) * magicNumberRook[at]) >> magicNumberShiftsRook[at];
 			in_k = ((bb & occupancyMaskRook[king]) * magicNumberRook[king]) >> magicNumberShiftsRook[king];
-			mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at); 
+			mpr = magicMovesRook[king][in_k] & magicMovesRook[at][in_at] &  ~ppr ^ (1LL << at);
 			mpr &= check_grid;
 
-			if (__builtin_popcountll( (fr->Q ^ fr->R) & ppr )) 
+			if (__builtin_popcountll( (fr->Q ^ fr->R) & ppr ))
 			{
 				while ( __builtin_popcountll(mpr))
 				{
@@ -1203,11 +1203,11 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					if (fr->R & ppr)	piece_type = (1LL << 2);
 					else piece_type = (1LL << 1);
 					//checking for check?<$1>
-					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;					
+					capture = (1LL << mpp) & ho->pieces ? 1LL << 6 : 0LL;
 					//new move_1 pp on mpp<$1>
 					movearray[movecount].from = ppr;
 					movearray[movecount].dest = (1LL << mpp);
-					movearray[movecount].info = piece_type ^ capture ^ stm; 
+					movearray[movecount].info = piece_type ^ capture ^ stm;
 					//determine captured piece<$1>
 					f = (ho->Q >> mpp) & 1LL;
 					mask = 1LL << 25;
@@ -1226,7 +1226,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					movearray[movecount].info = (movearray[movecount].info & ~mask) | ( -f & mask);
 					//save enp_sq, castle flags<1$>
 					movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-					mpr &= ~movearray[movecount].dest; 
+					mpr &= ~movearray[movecount].dest;
 					movecount++;
 				}
 			}
@@ -1245,10 +1245,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 					//save enp_sq, castle flags<1$>
 					movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 
-					mpb &= ~movearray[movecount].dest; 
+					mpb &= ~movearray[movecount].dest;
 					movecount++;
 				}
-				//else 
+				//else
 				{
 					mpp = (stm) ? __builtin_ffsll( mpr & (ppr << 8) & ~arg.all_p) & check_grid
 						: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.all_p) & check_grid;//include just one rank step<1$>
@@ -1261,12 +1261,12 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 						//check is missing, write as const except stm<1$>
 						//save enp_sq, castle flags<1$>
 						movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
-						mpb &= ~movearray[movecount].dest; 
+						mpb &= ~movearray[movecount].dest;
 						movecount++;
 					}
 				}
 			}
-			at_r &= ~(1LL << at); 
+			at_r &= ~(1LL << at);
 		}
 		//legal moves<1$>
 		//PAWN
@@ -1286,7 +1286,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			mPE &= ~promotion;
 			mPW &= ~promotion;
 		}
-		else 
+		else
 		{
 			mP2 = ((fr->P & 0x00FF000000000000) >> 8 & ~arg.all_p) >> 8 & ~arg.all_p & check_grid;
 			mP1 = fr->P >> 8 & ~arg.all_p & check_grid;
@@ -1311,7 +1311,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mP2 &= ~movearray[movecount].dest; 
+			mP2 &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		while (__builtin_popcountll(mP1))
@@ -1323,7 +1323,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mP1 &= ~movearray[movecount].dest; 
+			mP1 &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		while (__builtin_popcountll(mPW))
@@ -1351,7 +1351,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mPW &= ~movearray[movecount].dest; 
+			mPW &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		while (__builtin_popcountll(mPE))
@@ -1379,7 +1379,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mPE &= ~movearray[movecount].dest; 
+			mPE &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		while (__builtin_popcountll(mENP))
@@ -1400,7 +1400,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//check is missing, write as const except stm<1$>
 				movecount++;
 			}
-			mENP &= ~(1LL << in); 
+			mENP &= ~(1LL << in);
 		}
 		while (__builtin_popcountll(mP1_prom))
 		{
@@ -1415,7 +1415,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//check is missing, write as const except stm<1$>
 				movecount++;
 			}
-			mP1_prom &= ~movearray[movecount-1].dest; 
+			mP1_prom &= ~movearray[movecount-1].dest;
 		}
 		while (__builtin_popcountll(mPW_prom))
 		{
@@ -1446,7 +1446,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				movecount++;
 			}
 			//check is missing, write as const except stm<1$>
-			mPW_prom &= ~movearray[movecount-1].dest; 
+			mPW_prom &= ~movearray[movecount-1].dest;
 		}
 		while (__builtin_popcountll(mPE_prom))
 		{
@@ -1477,7 +1477,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				movecount++;
 			}
 			//check is missing, write as const except stm<1$>
-			mPE_prom &= ~movearray[movecount-1].dest; 
+			mPE_prom &= ~movearray[movecount-1].dest;
 		}
 		//NIGHT
 		fr->N &= ~ all_pp;
@@ -1496,7 +1496,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mN_q &= ~movearray[movecount].dest; 
+				mN_q &= ~movearray[movecount].dest;
 				movecount++;
 			}
 			while (__builtin_popcountll(mN_c))
@@ -1524,10 +1524,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mN_c &= ~movearray[movecount].dest; 
+				mN_c &= ~movearray[movecount].dest;
 				movecount++;
 			}
-			fr->N &= ~1LL << in_N; 
+			fr->N &= ~1LL << in_N;
 		}
 		//BISHOP
 		fr->B &= ~ all_pp;
@@ -1548,7 +1548,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mB_q &= ~movearray[movecount].dest; 
+				mB_q &= ~movearray[movecount].dest;
 				movecount++;
 			}
 			while (__builtin_popcountll(mB_c))
@@ -1576,10 +1576,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mB_c &= ~movearray[movecount].dest; 
+				mB_c &= ~movearray[movecount].dest;
 				movecount++;
 			}
-			fr->B &= ~1LL << in_B; 
+			fr->B &= ~1LL << in_B;
 		}
 		//ROOK
 		fr->R &= ~ all_pp;
@@ -1600,7 +1600,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mR_q &= ~movearray[movecount].dest; 
+				mR_q &= ~movearray[movecount].dest;
 				movecount++;
 			}
 			while (__builtin_popcountll(mR_c))
@@ -1628,10 +1628,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mR_c &= ~movearray[movecount].dest; 
+				mR_c &= ~movearray[movecount].dest;
 				movecount++;
 			}
-			fr->R &= ~1LL << in_R; 
+			fr->R &= ~1LL << in_R;
 		}
 		//QUEEN
 		fr->Q &= ~ all_pp;
@@ -1653,7 +1653,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mQ_q &= ~movearray[movecount].dest; 
+				mQ_q &= ~movearray[movecount].dest;
 				movecount++;
 			}
 			while (__builtin_popcountll(mQ_c))
@@ -1681,10 +1681,10 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 				//save enp_sq, castle flags<1$>
 				movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 				//check is missing, write as const except stm<1$>
-				mQ_c &= ~movearray[movecount].dest; 
+				mQ_c &= ~movearray[movecount].dest;
 				movecount++;
 			}
-			fr->Q &= ~1LL << in_Q; 
+			fr->Q &= ~1LL << in_Q;
 		}
 		//KING
 		in_K = __builtin_ffsll(fr->K)-1;
@@ -1701,7 +1701,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mK_q &= ~movearray[movecount].dest; 
+			mK_q &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		while (__builtin_popcountll(mK_c))
@@ -1729,7 +1729,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 			//save enp_sq, castle flags<1$>
 			movearray[movecount].info ^= (arg.info & 0x0000000000FFFF1E) << 32;
 			//check is missing, write as const except stm<1$>
-			mK_c &= ~movearray[movecount].dest; 
+			mK_c &= ~movearray[movecount].dest;
 			movecount++;
 		}
 		//CASTLE
@@ -1754,7 +1754,7 @@ char generate_moves_1(board_1 arg, move_1 *movearray)
 U64 gen_ho_atack_1(board_1 arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
-	piece_set *fr, *ho; 
+	piece_set *fr, *ho;
 
 	at = 0LL;
 
@@ -1773,13 +1773,13 @@ U64 gen_ho_atack_1(board_1 arg)
 		at |= (ho->P & 0x7F7F7F7F7F7F7F7F) << 9;
 	}
 	//search squares without king cause of possible check<1$>
-	arg.all_p ^= fr->K;  
+	arg.all_p ^= fr->K;
 	//NIGHT
 	while (__builtin_popcountll(ho->N))
 	{
 		in_N = __builtin_ffsll(ho->N)-1;
 		at |= movesNight[in_N];
-		ho->N &= ~1LL << in_N; 
+		ho->N &= ~1LL << in_N;
 	}
 	//BISHOP
 	while (__builtin_popcountll(ho->B))
@@ -1787,7 +1787,7 @@ U64 gen_ho_atack_1(board_1 arg)
 		in_B = __builtin_ffsll(ho->B)-1;
 		in = ((arg.all_p & occupancyMaskBishop[in_B]) * magicNumberBishop[in_B]) >> magicNumberShiftsBishop[in_B];
 		at |= magicMovesBishop[in_B][in];
-		ho->B &= ~1LL << in_B; 
+		ho->B &= ~1LL << in_B;
 	}
 	//ROOK
 	while (__builtin_popcountll(ho->R))
@@ -1795,7 +1795,7 @@ U64 gen_ho_atack_1(board_1 arg)
 		in_R = __builtin_ffsll(ho->R)-1;
 		in = ((arg.all_p & occupancyMaskRook[in_R]) * magicNumberRook[in_R]) >> magicNumberShiftsRook[in_R];
 		at |= magicMovesRook[in_R][in] ;
-		ho->R &= ~1LL << in_R; 
+		ho->R &= ~1LL << in_R;
 	}
 	//QUEEN
 	while (__builtin_popcountll(ho->Q))
@@ -1804,7 +1804,7 @@ U64 gen_ho_atack_1(board_1 arg)
 		in_R = ((arg.all_p & occupancyMaskRook[in_Q]) * magicNumberRook[in_Q]) >> magicNumberShiftsRook[in_Q];
 		in_B = ((arg.all_p & occupancyMaskBishop[in_Q]) * magicNumberBishop[in_Q]) >> magicNumberShiftsBishop[in_Q];
 		at |= (magicMovesRook[in_Q][in_R] ^ magicMovesBishop[in_Q][in_B]);
-		ho->Q &= ~1LL << in_Q; 
+		ho->Q &= ~1LL << in_Q;
 	}
 	//KING
 	in_K = __builtin_ffsll(ho->K)-1;
@@ -1815,7 +1815,7 @@ U64 gen_ho_atack_1(board_1 arg)
 void do_move_1(board_1 *b, move_1 *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, castle, cast_diff, hm, fm, m_cas, f_cas, empty = 0ULL, CK, CQ, KS, KR, QR, hKR, hQR, t;
-	piece_set *fr, *ho; 
+	piece_set *fr, *ho;
 	int p_type, capt_type, prom_type, sq_from, sq_dest, enp;
 
 	stm = b->info & 0x0000000000000001;
@@ -1849,7 +1849,7 @@ void do_move_1(board_1 *b, move_1 *m)
 		castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 		//if rook plays, loosing appropriate castling rights<1$>
 		m_cas = 0x000000000000008 >> (stm<<1);
-		f_cas = (m->info & 1LL << 2) && ( m->from & KR); 
+		f_cas = (m->info & 1LL << 2) && ( m->from & KR);
 		castle |= (castle & ~m_cas) | (-f_cas & m_cas);
 		m_cas = 0x000000000000010 >> (stm<<1);
 		f_cas = (m->info & 1LL << 2) && ( m->from & QR);
@@ -1873,7 +1873,7 @@ void do_move_1(board_1 *b, move_1 *m)
 		capt_p = m->info & 1LL << 27 ? &ho->B : capt_p;
 		capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 		capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
-		*capt_p &= ~m->dest;	
+		*capt_p &= ~m->dest;
 		//zobrist captured piece
 		capt_type = __builtin_ffsll( m->info >> 25 & 0x000000000000001F);
 		b->zobrist ^= capt_type ? zobrist[ !stm * 6*64 + capt_type * 64 + 64 + sq_dest] : 0ULL;
@@ -1884,7 +1884,7 @@ void do_move_1(board_1 *b, move_1 *m)
 		prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
 		prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
 		*prom_p ^= m->dest;
-		fr->P ^= m->info & 0x0000000000000F00 ? m->dest : 0ULL; 
+		fr->P ^= m->info & 0x0000000000000F00 ? m->dest : 0ULL;
 		//zobrist promotion piece
 		prom_type = __builtin_ffsll( m->info >> 8 & 0x000000000000000F);
 		b->zobrist ^= prom_type ? zobrist[ stm * 6*64 + prom_type * 64 + 64 + sq_dest] : 0ULL;
@@ -1900,7 +1900,7 @@ void do_move_1(board_1 *b, move_1 *m)
 
 		fr->P &= ~m->from;
 		fr->P |= m->dest;
-		ho->P &= stm ? ~m->dest >> 8 : ~m->dest << 8;	
+		ho->P &= stm ? ~m->dest >> 8 : ~m->dest << 8;
 
 		b->all_p &= ~m->from;
 		b->all_p |= m->dest;
@@ -1958,10 +1958,10 @@ void do_move_1(board_1 *b, move_1 *m)
 	hm = m->info & 0x000000003E008000 ? -(b->info & 0x0000000000FF0000) : (1LL << 16);
 	//zobrist
 	cast_diff = b->info & castle;
-	b->zobrist ^= zobrist[ 778] * ((cast_diff & 0x0000000000000002) >> 1);  
-	b->zobrist ^= zobrist[ 779] * ((cast_diff & 0x0000000000000004) >> 2);  
-	b->zobrist ^= zobrist[ 780] * ((cast_diff & 0x0000000000000008) >> 3);  
-	b->zobrist ^= zobrist[ 781] * ((cast_diff & 0x0000000000000010) >> 4); 
+	b->zobrist ^= zobrist[ 778] * ((cast_diff & 0x0000000000000002) >> 1);
+	b->zobrist ^= zobrist[ 779] * ((cast_diff & 0x0000000000000004) >> 2);
+	b->zobrist ^= zobrist[ 780] * ((cast_diff & 0x0000000000000008) >> 3);
+	b->zobrist ^= zobrist[ 781] * ((cast_diff & 0x0000000000000010) >> 4);
 
 	enp = __builtin_ffsll(b->info >> 8 & 0x00000000000000FF);
 	b->zobrist ^= enp ? zobrist[ 768 + enp] : 0ULL;
@@ -1971,7 +1971,7 @@ void do_move_1(board_1 *b, move_1 *m)
 
 	b->zobrist ^= zobrist[ 777];
 
-	b->info &= ~castle; 
+	b->info &= ~castle;
 
 	b->info ^= 0x0000000000000001;
 	b->info ^= (b->info & 0x000000000000FF00) ^ ( m->info & 0x0000000000FF0000) >> 8;
@@ -1982,7 +1982,7 @@ void do_move_1(board_1 *b, move_1 *m)
 void undo_move_1(board_1 *b, move_1 *m)
 {
 	U64 *p, *capt_p, *prom_p, stm, empty = 0LL, hm, CK, CQ, KS, KR, QR, cast_diff;
-	piece_set *fr, *ho; 
+	piece_set *fr, *ho;
 	int p_type, sq_from, sq_dest, capt_type, prom_type, enp;
 
 	stm = m->info >> 24 & 0x0000000000000001 ;
@@ -2014,7 +2014,7 @@ void undo_move_1(board_1 *b, move_1 *m)
 		capt_p = m->info & 1LL << 27 ? &ho->B : capt_p;
 		capt_p = m->info & 1LL << 28 ? &ho->N : capt_p;
 		capt_p = m->info & 1LL << 29 ? &ho->P : capt_p;
-		*capt_p |= m->dest;	
+		*capt_p |= m->dest;
 		//zobrist captured piece
 		capt_type = __builtin_ffsll( m->info >> 25 & 0x000000000000001F);
 		b->zobrist ^= capt_type ? zobrist[ !stm * 6*64 + capt_type * 64 + 64  + sq_dest] : 0ULL;
@@ -2025,7 +2025,7 @@ void undo_move_1(board_1 *b, move_1 *m)
 		prom_p = m->info & 1LL << 10 ? &fr->B : prom_p;
 		prom_p = m->info & 1LL << 11 ? &fr->N : prom_p;
 		*prom_p ^= m->dest;
-		fr->P |= m->info & 0x0000000000000F00 ? m->from : 0ULL; 
+		fr->P |= m->info & 0x0000000000000F00 ? m->from : 0ULL;
 		//zobrist promotion piece
 		prom_type = __builtin_ffsll( m->info >> 8 & 0x000000000000000F);
 		b->zobrist ^= prom_type ? zobrist[ stm * 6*64 + prom_type * 64 + 64 + sq_dest] : 0ULL;
@@ -2041,7 +2041,7 @@ void undo_move_1(board_1 *b, move_1 *m)
 
 		fr->P &= ~m->dest;
 		fr->P |= m->from;
-		ho->P |= stm ? m->dest >> 8 : m->dest << 8;	
+		ho->P |= stm ? m->dest >> 8 : m->dest << 8;
 
 		b->all_p &= ~m->dest;
 		b->all_p |= m->from;
@@ -2101,10 +2101,10 @@ void undo_move_1(board_1 *b, move_1 *m)
 	}
 	//zobrist
 	cast_diff = m->info >> 32 ^ b->info;
-	b->zobrist ^= zobrist[ 778] * (cast_diff >> 1 & 1ULL);  
-	b->zobrist ^= zobrist[ 779] * (cast_diff >> 2 & 1ULL);  
-	b->zobrist ^= zobrist[ 780] * (cast_diff >> 3 & 1ULL);  
-	b->zobrist ^= zobrist[ 781] * (cast_diff >> 4 & 1ULL);  
+	b->zobrist ^= zobrist[ 778] * (cast_diff >> 1 & 1ULL);
+	b->zobrist ^= zobrist[ 779] * (cast_diff >> 2 & 1ULL);
+	b->zobrist ^= zobrist[ 780] * (cast_diff >> 3 & 1ULL);
+	b->zobrist ^= zobrist[ 781] * (cast_diff >> 4 & 1ULL);
 
 	enp = __builtin_ffsll(b->info >> 8 & 0x00000000000000FF);
 	b->zobrist ^= enp ? zobrist[ 768 + enp] : 0ULL;
@@ -2122,7 +2122,7 @@ void undo_move_1(board_1 *b, move_1 *m)
 
 
 char *printmoves_1(move_1 *m_l)
-{	
+{
 	int count = 0;
 	static char buff[2048];
 

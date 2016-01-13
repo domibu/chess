@@ -92,13 +92,13 @@ void *Thinking(void *void_ptr )
 		search_time -= curr_tick.it_value.tv_sec + (double)curr_tick.it_value.tv_nsec/1000000000;
 
 		if (en_state == THINKING)
-		{	
+		{
 			if (post)
 			{
 				/////PRINTING THINKING OUTPUT/////////////
 				Print(1, "%2d %7d %6.2f %12llu %s", i, score*100, search_time*100, count, print_TT_PV( Ncb, i));
 			}
-			pm = TTfind_move( Ncb.zobrist); 
+			pm = TTfind_move( Ncb.zobrist);
 		}
 		if (((score  <= -WIN) || (score >= WIN)) && (en_state == THINKING))
 		{
@@ -190,7 +190,7 @@ int chess_engine_communication_protocol()
 	//SEND XBOARD FEATURES
 	if (features)
 	{
-		while ((read=getline(&buff, &len, features)) != -1) 
+		while ((read=getline(&buff, &len, features)) != -1)
 		{
 			Print(1, "feature %s", buff);
 		}
@@ -216,7 +216,7 @@ int chess_engine_communication_protocol()
 			//	reset history	///////////
 			history.curr = 0;
 			search_depth = SD_MAX;
-			Ncb = NimportFEN(START_FEN);	
+			Ncb = NimportFEN(START_FEN);
 			set_zobrist_keys( &Ncb);
 			en_state = PONDERING;
 			////////associate einge's clock with black and the opponent's clock with white/////////
@@ -292,7 +292,7 @@ en_state_THINKING:
 
 			sscanf(buff, "st %u", &in_st);
 			if (in_st)
-			{  
+			{
 				t_manager.ctrl_style = 2;
 				t_manager.target = in_st * 100;
 			}
@@ -334,7 +334,7 @@ en_state_THINKING:
 		{
 			unsigned in_sd;
 			sscanf(buff, "sd %u", &in_sd);
-			search_depth = (in_sd > SD_MAX) ? SD_MAX : in_sd; 
+			search_depth = (in_sd > SD_MAX) ? SD_MAX : in_sd;
 		}
 		else if (strstr(buff, "nopost") != NULL)
 		{
@@ -481,17 +481,17 @@ sxn_Legal_fo02r:	for (; it < limes ; it++)
 			}
 			////////////////////////////// REPORT ILLEGALMOVE        ///////////////////
 			Print(1, "Illegal move ^& %s\n", s);
-end_user_move: ;		
+end_user_move: ;
 		}
-		else if ( strstr(buff,"nLegal") != NULL )	
-		{	
+		else if ( strstr(buff,"nLegal") != NULL )
+		{
 			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-xn_Legal_for:	
+xn_Legal_for:
 			for (; it < limes ; it++)
 			{
 				Print(1, "%d  %s\n", it, print_smith_notation( &NML->mdata[it]));
@@ -599,67 +599,67 @@ int chess_engine_testing(int argc, char *argv)
 		}
 
 		else if (strstr(buff,"nsearch") != NULL)
-		{	
+		{
 			sscanf(buff, "nsearch %d", &n);
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
 			count = 0;
 
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			score = nnegamax( &Ncb, &Npline, -WIN-300, +WIN+300, color, n, 0);
-			gettimeofday(&end, NULL);	
+			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"ndivide") != NULL)
-		{	
+		{
 			sscanf(buff, "ndivide %d", &n);
 			gettimeofday(&start, NULL);
 			count = Ndivide_perft(n, &Ncb, NML);
 			gettimeofday(&end, NULL);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %6.2f %12llu\n", n, razmisljao, count); 
+			Print(1, "%2d %6.2f %12llu\n", n, razmisljao, count);
 		}
 		else if (strstr(buff,"mTT") != NULL)
-		{	
+		{
 			sscanf(buff, "mTT %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
 
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);	
+			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
 		}
 		else if (strstr(buff,"msearch") != NULL)
-		{	
+		{
 			sscanf(buff, "msearch %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);	
+			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"aTT") != NULL)
-		{	
+		{
 			sscanf(buff, "aTT %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 			TThit = 0;
 			TTwr = 0;
 
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			marray = malloc( sizeof(move_1)*216*(n+1) );
 			score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
 			free( marray);
-			gettimeofday(&end, NULL);	
+			gettimeofday(&end, NULL);
 
 			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
@@ -693,32 +693,32 @@ int chess_engine_testing(int argc, char *argv)
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"asearch") != NULL)
-		{	
+		{
 			sscanf(buff, "asearch %d", &n);
 			color = -1 + ((cb.info & 1ULL) << 1 );
 			count = 0;
 
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			marray = malloc( sizeof(move_1)*216*(n+1) );
 			score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
 			free( marray);
-			gettimeofday(&end, NULL);	
+			gettimeofday(&end, NULL);
 
 			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"mdivide") != NULL)
-		{	
+		{
 			sscanf(buff, "mdivide %d", &n);
-			gettimeofday(&start, NULL);	
+			gettimeofday(&start, NULL);
 			count = mdivide_perft(n, &cb);
 			gettimeofday(&end, NULL);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
 		}
 		else if (strstr(buff,"adivide") != NULL)
-		{	
+		{
 			sscanf(buff, "adivide %d", &n);
 			gettimeofday(&start, NULL);
 			marray = malloc( sizeof(move_1)*216*(n+1) );
@@ -737,7 +737,7 @@ int chess_engine_testing(int argc, char *argv)
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-sortnLegal_for:     
+sortnLegal_for:
 			for (; it < limes ; it++)
 			{
 				Print(1, "%d %s\n", it, print_smith_notation( &NML->mdata[it]));
@@ -755,14 +755,14 @@ sortnLegal_for:
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		}
 		else if ( strstr(buff,"nLegal") != NULL )
-		{	
+		{
 			score = generate_moves(NML, Ncb);
 			capt = NML->captcount;
 			int limes;
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-nLegal_for:	
+nLegal_for:
 			for (; it < limes ; it++)
 			{
 				Print(1, "%d %s\n", it, print_smith_notation( &(NML->mdata[it])));
@@ -778,7 +778,7 @@ nLegal_for:
 			Print(1, "quiet count:%3d\n", NML->quietcount);
 			Print(1, "capt count:%4d\n", 255-NML->captcount);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
-		} 
+		}
 		else if ( strstr(buff,"ntestLegal") != 0 )
 		{
 			score = gm1(NML, Ncb);
@@ -787,7 +787,7 @@ nLegal_for:
 			it = (capt > 218) ? 218 : 0;
 			limes = (capt > 218) ? capt : NML->quietcount;
 
-ntestLegal_for:     
+ntestLegal_for:
 			for (; it < limes ; it++)
 			{
 				Print(1, "%d %s\n", it, print_smith_notation( &NML->mdata[it]));
@@ -805,30 +805,30 @@ ntestLegal_for:
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		}
 		else if ( strstr(buff,"legal") != 0 )
-		{	
+		{
 			marray = malloc( sizeof(move_1)*256);
 			score = generate_moves_1(cb, marray);
-			for (n = 0; n < score; n++)     
+			for (n = 0; n < score; n++)
 			{
 				Print(1, "%d %s\n", n+1, printmove_1( &marray[n]));
 			}
 			Print(1, "moves count: %d\n", score);
-			free(marray);		
-		} 
+			free(marray);
+		}
 		else if (strstr(buff, "setboard") != NULL)
 		{
 			char fen[127];
 			sscanf(buff, "setboard %[^\n]", fen);
 
 			Ncb = NimportFEN(fen);
-			cb = importFEN(fen);	
-			set_zobrist_1( &cb);	
+			cb = importFEN(fen);
+			set_zobrist_1( &cb);
 			set_zobrist_keys(&Ncb);
 
 			Print(0, "%s", printboard(Ncb));
 		}
 		else if (strstr(buff,"do_move") != NULL )
-		{	
+		{
 			sscanf(buff, "do_move %d", &n);
 			ln[d] = n;
 			score = generate_moves(&NML[d], Ncb);
@@ -836,13 +836,13 @@ ntestLegal_for:
 			Print(0, "%s", printBits(8, &NML[d].mdata[n]));
 			do_move( &Ncb, NML[d].mdata[n]);
 			Print(0, "%s", printboard(Ncb));
-			d++;		
+			d++;
 		}
 		else if ( strstr(buff,"undomove") != NULL )
 		{
 			d--;
 			undo_move( &Ncb, &NML[d], NML[d].mdata[ln[d]]);
-			Print(0, "%s", printboard(Ncb));		
+			Print(0, "%s", printboard(Ncb));
 
 		}
 		else if ( strstr(buff,"state") != NULL )
@@ -851,29 +851,29 @@ ntestLegal_for:
 		}
 		else if ( strstr(buff,"Ndisp") != NULL )
 		{
-			Print(1, "%s", printboard(Ncb));	
+			Print(1, "%s", printboard(Ncb));
 		}
 		else if ( strstr(buff,"disp") != NULL )
 		{
-			Print(1, "%s", printboard_1(cb));		
+			Print(1, "%s", printboard_1(cb));
 		}
 		else if ( strstr(buff,"change_stm") != NULL )
 		{
 			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
 			set_zobrist_1( &cb);
-			Print(0, "%s", printboard_1(cb));		
+			Print(0, "%s", printboard_1(cb));
 		}
 		else if ( strstr(buff,"new") != NULL )
 		{
-			cb = importFEN(START_FEN);	
-			Ncb = NimportFEN(START_FEN);	
-			set_zobrist_1( &cb);	
+			cb = importFEN(START_FEN);
+			Ncb = NimportFEN(START_FEN);
+			set_zobrist_1( &cb);
 			set_zobrist_keys( &Ncb);
 		}
 		else if ( strstr(buff,"quit") != NULL )
 		{
-			break;	
+			break;
 		}
-	}	
+	}
 }

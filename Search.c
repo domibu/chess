@@ -57,7 +57,7 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	if (entry)
 	{
 		if (((entry->data >> 32)  & 0x0000000000FF) >= depth)
-		{	
+		{
 			val = (short)(entry->data >> 48);
 			flag = entry->data >> 40 & 0x000000000000003;
 			//exact
@@ -76,12 +76,12 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 				if ( val < beta ) beta = val;
 			}
 		}
-		hash_move = (flag == 3) ? 0 : entry->data;		
+		hash_move = (flag == 3) ? 0 : entry->data;
 	}
 
-	if ( !depth ) 
+	if ( !depth )
 	{
-		return Quiesce( pos, pline, alpha, beta, color, depth, draft); 
+		return Quiesce( pos, pline, alpha, beta, color, depth, draft);
 	}
 
 	old_alpha = alpha;
@@ -94,7 +94,7 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
 
-forpetlja: 
+forpetlja:
 	for (; (it < limes) && (en_state == THINKING); it++  )
 	{
 		do_move_1 = NML[depth].mdata[it];
@@ -102,8 +102,8 @@ forpetlja:
 		val = -search( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
 		undo_move(pos, &NML[depth], do_move_1);
 
-		if ( val >= beta)       
-		{	
+		if ( val >= beta)
+		{
 			U64 data = 0ULL;
 			data ^= (short)val;
 			data <<= 48;
@@ -153,7 +153,7 @@ forpetlja:
 }
 
 int neval( board *b)
-{	
+{
 	int w_score = 0, b_score = 0;
 
 	w_score += 9 * __builtin_popcountll( b->pieceset[1] );
@@ -178,7 +178,7 @@ int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	unsigned char quiet, capt;
 	line nline;
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		pline->cmove = 0;
 		return color*evaluate( *pos, draft, color, pos);
@@ -192,7 +192,7 @@ int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
 
-forpetlja: 
+forpetlja:
 	for (; it < limes ; it++  )
 	{
 		do_move(pos, NML[depth].mdata[it]);
@@ -210,7 +210,7 @@ forpetlja:
 				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
-		}	
+		}
 	}
 	if (it == (capt ))
 	{
@@ -251,9 +251,9 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 				if ( val < beta ) beta = val;
 			}
 		}
-		hash_move = entry->data;		
+		hash_move = entry->data;
 	}
-	if ( !depth ) 
+	if ( !depth )
 	{
 		pline->cmove = 0;
 		return color*evaluate( *pos , draft, color, pos);
@@ -269,15 +269,15 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
 
-forpetlja: 
+forpetlja:
 	for (; it < limes ; it++  )
 	{
 		do_move(pos, NML[depth].mdata[it]);
 		val = -pvs_02( pos, &nline, -beta, -alpha, -color, depth - 1, draft + 1);
 		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
-		if ( val >= beta)       
-		{	
+		if ( val >= beta)
+		{
 			U64 data = 0ULL;
 			data ^= (short)val;
 			data <<= 48;
@@ -295,7 +295,7 @@ forpetlja:
 				alpha = val;
 				pick = NML[depth].mdata[it];
 			}
-		}	
+		}
 	}
 	if (it == (capt ))
 	{
@@ -336,7 +336,7 @@ void sortmoves(node_move_list *m_list, move PV_move)
 sortforpetlja:
 	for (; it < limes ; it++  )
 	{
-		if (PV_move > 0)	
+		if (PV_move > 0)
 			if (m_list->mdata[it] == PV_move)	{
 				m_list->mdata[it] = m_list->mdata[start];
 				m_list->mdata[start] = PV_move;
@@ -393,7 +393,7 @@ int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	unsigned char quiet, capt;
 	line nline;
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		pline->cmove = 0;
 		return color * neval( pos);
@@ -407,7 +407,7 @@ int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
 
-forpetlja: 
+forpetlja:
 	for (; it < limes ; it++  )
 	{
 		do_move(pos, NML[depth].mdata[it]);
@@ -425,7 +425,7 @@ forpetlja:
 				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
-		}	
+		}
 	}
 	if (it == (capt ))
 	{
@@ -440,13 +440,13 @@ int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int d
 {
 	int best, val, it;
 	unsigned char quiet;
-	line nline; 
+	line nline;
 
 	if ( !depth )
 	{
 		pline->cmove = 0;
-		return color * neval( pos); 
-	}                
+		return color * neval( pos);
+	}
 
 	best = -WIN;
 	gm1(&NML[depth] , *pos);
@@ -469,7 +469,7 @@ int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int d
 				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
 				pline->cmove = nline.cmove +1;
 			}
-		}       
+		}
 	}
 	return best;
 }
@@ -504,7 +504,7 @@ int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 			}
 		}
 
-	if ( !depth ) 
+	if ( !depth )
 	{
 		return color * neval( pos);
 	}
@@ -518,15 +518,15 @@ int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int dep
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
 
-forpetlja: 
+forpetlja:
 	for (; it < limes ; it++  )
 	{
 		do_move(pos, NML[depth].mdata[it]);
 		val = -nTTnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
 		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
 
-		if ( val >= beta)       
-		{	
+		if ( val >= beta)
+		{
 			U64 data = 0ULL;
 			data ^= (short)val;
 			data <<= 48;
@@ -545,7 +545,7 @@ forpetlja:
 				alpha = val;
 				pick = NML[depth].mdata[it];
 			}
-		}	
+		}
 	}
 	if (it == (capt ))
 	{

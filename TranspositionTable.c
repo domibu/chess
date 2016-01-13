@@ -16,15 +16,15 @@ U64 zobrist[782];
 TTentry *nTT = NULL;
 
 /* The array for the state vector */
-static U64 mt[NN]; 
+static U64 mt[NN];
 /* mti==NN+1 means mt[NN] is not initialized */
-static int mti=NN+1; 
+static int mti=NN+1;
 
 /* initializes mt[NN] with a seed */
 void init_genrand64(U64 seed)
 {
 	mt[0] = seed;
-	for (mti=1; mti<NN; mti++) 
+	for (mti=1; mti<NN; mti++)
 		mt[mti] =  (UINT64_C (6364136223846793005) * (mt[mti-1] ^ (mt[mti-1] >> 62)) + mti);
 }
 
@@ -38,8 +38,8 @@ U64 genrand64_int64(void)
 	if (mti >= NN) { /* generate NN words at one time */
 		/* if init_genrand64() has not been called, */
 		/* a default initial seed is used     */
-		if (mti == NN+1) 
-			init_genrand64(UINT64_C(5489)); 
+		if (mti == NN+1)
+			init_genrand64(UINT64_C(5489));
 
 		for (i=0;i<NN-MM;i++) {
 			x = (mt[i]&UM)|(mt[i+1]&LM);
@@ -124,7 +124,7 @@ U64 set_TT( U64 n)
 TTentry *lookup_TT(U64 key)
 {
 	unsigned ind = key % TTentry_count;
-	if (nTT[ ind].zobrist != key) 
+	if (nTT[ ind].zobrist != key)
 		return NULL;
 	TThit++;
 	return &nTT[ ind];
@@ -170,7 +170,7 @@ char *print_TT_PV( board pos, char n)
 	for ( i = 0; i < n; i++)
 	{
 		entry = lookup_TT( pos.zobrist);
-		if (!entry)   
+		if (!entry)
 		{
 			strcat(buff, "!entry");
 			goto print_TT_PV_end;
