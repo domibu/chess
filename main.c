@@ -541,67 +541,6 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
-		else if (strstr(buff,"pvs02") != NULL)
-		{
-			sscanf(buff, "pvs02 %d", &n);
-			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-			count = 0;
-			TThit = 0;
-			TTowr = 0;
-			TTwr = 0;
-
-			gettimeofday(&start, NULL);
-			score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
-		}
-		else if (strstr(buff,"nTT") != NULL)
-		{
-			sscanf(buff, "nTT %d", &n);
-			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-			count = 0;
-			TThit = 0;
-			TTowr = 0;
-			TTwr = 0;
-
-			gettimeofday(&start, NULL);
-			score = nTTnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
-		}
-		else if (strstr(buff,"pvs01") != NULL)
-		{
-			sscanf(buff, "pvs01 %d", &n);
-			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-			count = 0;
-
-			gettimeofday(&start, NULL);
-
-			score = pvs_01( &Ncb, &Npline, -WIN, +WIN, color, n, 0, 0);
-
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
-		}
-
-		else if (strstr(buff,"nsearch") != NULL)
-		{
-			sscanf(buff, "nsearch %d", &n);
-			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-			count = 0;
-
-			gettimeofday(&start, NULL);
-			score = nnegamax( &Ncb, &Npline, -WIN-300, +WIN+300, color, n, 0);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
-		}
 		else if (strstr(buff,"ndivide") != NULL)
 		{
 			sscanf(buff, "ndivide %d", &n);
