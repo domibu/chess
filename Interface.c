@@ -2,48 +2,6 @@
 #include <string.h>
 #include "Interface.h"
 
-void objtoarr(board_1 *arg, board *to)
-{
-	to->pieceset[0] = arg->w.K;
-	to->pieceset[1] = arg->w.Q;
-	to->pieceset[2] = arg->w.R;
-	to->pieceset[3] = arg->w.B;
-	to->pieceset[4] = arg->w.N;
-	to->pieceset[5] = arg->w.P ;
-	to->pieceset[6] = arg->w.pieces ;
-	to->pieceset[7] = arg->w.atack;
-	to->pieceset[8] = arg->b.K;
-	to->pieceset[9] = arg->b.Q;
-	to->pieceset[10] = arg->b.R;
-	to->pieceset[11] = arg->b.B;
-	to->pieceset[12] = arg->b.N;
-	to->pieceset[13] = arg->b.P;
-	to->pieceset[14] = arg->b.pieces;
-	to->pieceset[15] = arg->b.atack;
-	to->pieceset[16] = arg->all_p;
-}
-
-void arrtoobj(board *to, board_1 *arg)
-{
-	arg->w.K = to->pieceset[0];
-	arg->w.Q = to->pieceset[1];
-	arg->w.R = to->pieceset[2];
-	arg->w.B = to->pieceset[3];
-	arg->w.N = to->pieceset[4];
-	arg->w.P = to->pieceset[5];
-	arg->w.pieces = to->pieceset[6];
-	arg->w.atack = to->pieceset[7];
-	arg->b.K = to->pieceset[8];
-	arg->b.Q = to->pieceset[9];
-	arg->b.R = to->pieceset[10];
-	arg->b.B = to->pieceset[11];
-	arg->b.N = to->pieceset[12];
-	arg->b.P = to->pieceset[13];
-	arg->b.pieces = to->pieceset[14];
-	arg->b.atack = to->pieceset[15];
-	arg->all_p = to->pieceset[16];
-}
-
 char *printboard(board arg)
 {
 	static char buff[512];
@@ -100,123 +58,6 @@ char *printboard(board arg)
 
 	sprintf(buff, "%s%c %s %s %d %d\n", buff, stm, castle, enp, hm, fm);
 	return buff;
-}
-
-char *printboard_1(board_1 arg)
-{
-	char buff[128];
-	unsigned i, fm;
-	unsigned short hm;
-	char stm, castle[4] = "", enp[2] = "";
-	U64 m = 0x8000000000000000;
-
-	buff[0] = '\0';
-	sprintf(buff, "%llu\n", arg.zobrist);
-	for (i = 0; i<64; i++)
-	{
-		if (arg.w.P & (m >> i) ) strcat(buff,"P");
-		else if (arg.w.N & (m >> i)) strcat(buff,"N");
-		else if (arg.w.B & (m >> i)) strcat(buff, "B");
-		else if (arg.w.R & (m >> i)) strcat(buff, "R");
-		else if (arg.w.Q & (m >> i)) strcat(buff, "Q");
-		else if (arg.w.K & (m >> i)) strcat(buff, "K");
-		else if (arg.b.P & (m >> i)) strcat(buff, "p");
-		else if (arg.b.N & (m >> i)) strcat(buff, "n");
-		else if (arg.b.B & (m >> i)) strcat(buff, "b");
-		else if (arg.b.R & (m >> i)) strcat(buff, "r");
-		else if (arg.b.Q & (m >> i)) strcat(buff, "q");
-		else if (arg.b.K & (m >> i)) strcat(buff, "k");
-		else if (~arg.all_p & (m >> i)) strcat(buff, "¤");
-		strcat(buff," ");
-		if ((i+1)%8 == 0) strcat(buff,"\n");
-	}
-	hm = arg.info >> 16;
-	fm = arg.info >> 32;
-	stm = (arg.info & 1LL) ? 119 : 98;
-
-	strcat(castle, 1LL << 1 & arg.info ? "K" : "");
-	strcat(castle, 1LL << 2 & arg.info ? "Q" : "");
-	strcat(castle, 1LL << 3 & arg.info ? "k" : "");
-	strcat(castle, 1LL << 4 & arg.info ? "q" : "");
-	if (!(0xFFLL << 8 & arg.info))    strcat(enp, " - ");
-	else
-	{
-		if (arg.info & (1LL << 8) ) strcat(enp, "h");
-		else if (arg.info & (1LL << 9) ) strcat(enp, "g");
-		else if (arg.info & (1LL << 10) ) strcat(enp, "f");
-		else if (arg.info & (1LL << 11) ) strcat(enp, "e");
-		else if (arg.info & (1LL << 12) ) strcat(enp, "d");
-		else if (arg.info & (1LL << 13) ) strcat(enp, "c");
-		else if (arg.info & (1LL << 14) ) strcat(enp, "b");
-		else if (arg.info & (1LL << 15) ) strcat(enp, "a");
-		strcat(enp, 1LL & arg.info ? "6" : "3");
-	}
-
-	sprintf(buff, "%s%c %s %s %d %d\n", buff, stm, castle, enp, hm, fm);
-	return buff;
-}
-
-board_1 importFEN(char *fen)
-{
-	U64 m = 0x8000000000000000;
-	board_1 chessb;
-	int n, s = 0, enp;
-	short hm_,fm_;
-	char b[90], s_t_m[2], castle[5], enpas[2], hm[3], fm[5];
-	sscanf(fen, "%s %s %s %s %s %s", b, s_t_m, castle, enpas, hm, fm);
-	resetboard_1(&chessb);
-	for (n = 0; n <= strlen(b); n++ )
-		switch (b[n])
-		{
-			case 'p' : chessb.b.P |= m >> (n + s); break;
-			case 'r' : chessb.b.R |= m >> (n + s); break;
-			case 'n' : chessb.b.N |= m >> (n + s); break;
-			case 'b' : chessb.b.B |= m >> (n + s); break;
-			case 'q' : chessb.b.Q |= m >> (n + s); break;
-			case 'k' : chessb.b.K |= m >> (n + s); break;
-			case 'P' : chessb.w.P |= m >> (n + s); break;
-			case 'R' : chessb.w.R |= m >> (n + s); break;
-			case 'N' : chessb.w.N |= m >> (n + s); break;
-			case 'B' : chessb.w.B |= m >> (n + s); break;
-			case 'Q' : chessb.w.Q |= m >> (n + s); break;
-			case 'K' : chessb.w.K |= m >> (n + s); break;
-			case '/' : s--; break;
-			case '1' : break;
-			case '2' : s++; break;
-			case '3' : s+=2; break;
-			case '4' : s+=3; break;
-			case '5' : s+=4; break;
-			case '6' : s+=5; break;
-			case '7' : s+=6; break;
-			case '8' : s+=7; break;
-		}
-	chessb.w.pieces = chessb.w.P ^ chessb.w.N ^ chessb.w.R ^ chessb.w.B ^ chessb.w.K ^ chessb.w.Q;
-	chessb.b.pieces = chessb.b.P ^ chessb.b.N ^ chessb.b.R ^ chessb.b.B ^ chessb.b.K ^ chessb.b.Q;
-	chessb.all_p = chessb.w.pieces ^ chessb.b.pieces;
-	chessb.info = 0LL;
-	if (s_t_m[0] == 'w')	chessb.info |= 1LL;	else	  chessb.info &= ~1LL;
-	if (strstr(castle,"K") != NULL)	chessb.info |= (1LL << 1);	else	  chessb.info &= ~(1LL << 1);
-	if (strstr(castle,"Q") != NULL)	chessb.info |= (1LL << 2);	else	  chessb.info &= ~(1LL << 2);
-	if (strstr(castle,"k") != NULL)	chessb.info |= (1LL << 3);	else	  chessb.info &= ~(1LL << 3);
-	if (strstr(castle,"q") != NULL)	chessb.info |= (1LL << 4);	else	  chessb.info &= ~(1LL << 4);
-	switch (enpas[0])
-	{
-		case 'h' : enp = 1 ; break;
-		case 'g' : enp = 2; break;
-		case 'f' : enp = 3; break;
-		case 'e' : enp = 4; break;
-		case 'd' : enp = 5; break;
-		case 'c' : enp = 6; break;
-		case 'b' : enp = 7; break;
-		case 'a' : enp = 8; break;
-		default : enp = 0;
-	}
-	chessb.info &= ~(0X00000000000000FF << 5);
-	if (enp) chessb.info |= (1LL << 7 + enp);
-	hm_ = strtol( hm, NULL, 10);
-	fm_ = strtol( fm, NULL, 10);
-	chessb.info ^= ((fm_^0LL) << 32) ^ ((hm_^0LL) << 16);
-	return chessb;
 }
 
 board NimportFEN(char *fen)
@@ -278,23 +119,6 @@ board NimportFEN(char *fen)
 	chessb.info ^= ((hm_) << 8) ^ ((fm_) << 16);
 	if (s_t_m[0] == 'w')	chessb.info |= 1LL << 14;	else	  chessb.info &= ~(1LL << 14);
 	return chessb;
-}
-
-void resetboard_1(board_1 *arg)
-{
-	U64 n = 0LL;
-	arg->w.P &= n;
-	arg->w.N &= n;
-	arg->w.R &= n;
-	arg->w.K &= n;
-	arg->w.Q &= n;
-	arg->w.B &= n;
-	arg->b.P &= n;
-	arg->b.N &= n;
-	arg->b.R &= n;
-	arg->b.K &= n;
-	arg->b.Q &= n;
-	arg->b.B &= n;
 }
 
 void resetboard(board *arg)

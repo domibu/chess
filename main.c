@@ -10,14 +10,7 @@
 #include "MoveGeneration.h"
 #include "Search.h"
 #include "TranspositionTable.h"
-// old board_1, move_1, TT structures, for backtesting
-#include "MoveGeneration-1.h"
-#include "Search-1.h"
-#include "TranspositionTable-1.h"
 
-
-extern move_1 *marray;
-extern line_1 pline;
 extern line Npline;
 extern int TThit;
 
@@ -37,7 +30,6 @@ int ping=0;
 int computer=0, cores=0, egtpath=0, option=0;
 
 int input_max_length = 512;
-board_1 cb;
 board Ncb;
 
 struct t_man {
@@ -123,7 +115,6 @@ void *Thinking(void *void_ptr )
 }
 
 unsigned char capt, it;
-move_1 *fst_pick, *list, *domove = NULL;
 move *temp;
 unsigned char ln[10], d = 0;
 char buff[2048];
@@ -620,51 +611,6 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %6.2f %12llu\n", n, razmisljao, count);
 		}
-		else if (strstr(buff,"mTT") != NULL)
-		{
-			sscanf(buff, "mTT %d", &n);
-			color = -1 + ((cb.info & 1ULL) << 1 );
-			count = 0;
-			TThit = 0;
-
-			gettimeofday(&start, NULL);
-			score = mTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
-		}
-		else if (strstr(buff,"msearch") != NULL)
-		{
-			sscanf(buff, "msearch %d", &n);
-			color = -1 + ((cb.info & 1ULL) << 1 );
-			count = 0;
-
-			gettimeofday(&start, NULL);
-			score = mnegamax( &cb, &pline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
-		}
-		else if (strstr(buff,"aTT") != NULL)
-		{
-			sscanf(buff, "aTT %d", &n);
-			color = -1 + ((cb.info & 1ULL) << 1 );
-			count = 0;
-			TThit = 0;
-			TTwr = 0;
-
-			gettimeofday(&start, NULL);
-			marray = malloc( sizeof(move_1)*216*(n+1) );
-			score = aTTnegamax( &cb, &pline, -WIN, +WIN, color, n);
-			free( marray);
-			gettimeofday(&end, NULL);
-
-			TTextractPV_1( cb, n);
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
-		}
 		else if (strstr(buff,"quesc") != NULL)
 		{
 			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
@@ -691,42 +637,6 @@ int chess_engine_testing(int argc, char *argv)
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
-		}
-		else if (strstr(buff,"asearch") != NULL)
-		{
-			sscanf(buff, "asearch %d", &n);
-			color = -1 + ((cb.info & 1ULL) << 1 );
-			count = 0;
-
-			gettimeofday(&start, NULL);
-			marray = malloc( sizeof(move_1)*216*(n+1) );
-			score = anegamax( &cb, &pline, -WIN, +WIN, color, n);
-			free( marray);
-			gettimeofday(&end, NULL);
-
-			printline_1( pline);
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
-		}
-		else if (strstr(buff,"mdivide") != NULL)
-		{
-			sscanf(buff, "mdivide %d", &n);
-			gettimeofday(&start, NULL);
-			count = mdivide_perft(n, &cb);
-			gettimeofday(&end, NULL);
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
-		}
-		else if (strstr(buff,"adivide") != NULL)
-		{
-			sscanf(buff, "adivide %d", &n);
-			gettimeofday(&start, NULL);
-			marray = malloc( sizeof(move_1)*216*(n+1) );
-			count = divide_perft(n, &cb);
-			free( marray);
-			gettimeofday(&end, NULL);
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %6.2f %12llu", n, razmisljao*100, count);
 		}
 		else if ( strstr(buff,"sortmoves") != 0 )
 		{
@@ -804,25 +714,12 @@ ntestLegal_for:
 			Print(1, "capt count:%4d\n", 255-NML->captcount);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		}
-		else if ( strstr(buff,"legal") != 0 )
-		{
-			marray = malloc( sizeof(move_1)*256);
-			score = generate_moves_1(cb, marray);
-			for (n = 0; n < score; n++)
-			{
-				Print(1, "%d %s\n", n+1, printmove_1( &marray[n]));
-			}
-			Print(1, "moves count: %d\n", score);
-			free(marray);
-		}
 		else if (strstr(buff, "setboard") != NULL)
 		{
 			char fen[127];
 			sscanf(buff, "setboard %[^\n]", fen);
 
 			Ncb = NimportFEN(fen);
-			cb = importFEN(fen);
-			set_zobrist_1( &cb);
 			set_zobrist_keys(&Ncb);
 
 			Print(0, "%s", printboard(Ncb));
@@ -853,22 +750,15 @@ ntestLegal_for:
 		{
 			Print(1, "%s", printboard(Ncb));
 		}
-		else if ( strstr(buff,"disp") != NULL )
-		{
-			Print(1, "%s", printboard_1(cb));
-		}
 		else if ( strstr(buff,"change_stm") != NULL )
 		{
-			cb.info ^= 1LL;
 			Ncb.info ^= 1LL << 14;
-			set_zobrist_1( &cb);
-			Print(0, "%s", printboard_1(cb));
+			set_zobrist_keys(&Ncb);
+			Print(0, "%s", printboard(Ncb));
 		}
 		else if ( strstr(buff,"new") != NULL )
 		{
-			cb = importFEN(START_FEN);
 			Ncb = NimportFEN(START_FEN);
-			set_zobrist_1( &cb);
 			set_zobrist_keys( &Ncb);
 		}
 		else if ( strstr(buff,"quit") != NULL )
