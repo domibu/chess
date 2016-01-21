@@ -624,20 +624,6 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu\n", n, score*100, razmisljao*100, count);
 		}
-		else if (strstr(buff,"ntestsearch") != NULL)
-		{
-			sscanf(buff, "ntestsearch %d", &n);
-			Print(0, "%s", printboard(Ncb));
-			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
-			count = 0;
-
-			gettimeofday(&start, NULL);
-			score = ntestnegamax( &Ncb, &Npline, -WIN, +WIN, color, n);
-			gettimeofday(&end, NULL);
-
-			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
-		}
 		else if ( strstr(buff,"sortmoves") != 0 )
 		{
 			score = generate_moves(NML, Ncb);
@@ -683,31 +669,6 @@ nLegal_for:
 				it = 0;
 				limes = NML->quietcount;
 				goto nLegal_for;
-			}
-
-			Print(1, "quiet count:%3d\n", NML->quietcount);
-			Print(1, "capt count:%4d\n", 255-NML->captcount);
-			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
-		}
-		else if ( strstr(buff,"ntestLegal") != 0 )
-		{
-			score = gm1(NML, Ncb);
-			capt = NML->captcount;
-			int limes;
-			it = (capt > 218) ? 218 : 0;
-			limes = (capt > 218) ? capt : NML->quietcount;
-
-ntestLegal_for:
-			for (; it < limes ; it++)
-			{
-				Print(1, "%d %s\n", it, print_smith_notation( &NML->mdata[it]));
-			}
-
-			if (it == (capt ))
-			{
-				it = 0;
-				limes = NML->quietcount;
-				goto ntestLegal_for;
 			}
 
 			Print(1, "quiet count:%3d\n", NML->quietcount);

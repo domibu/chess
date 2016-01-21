@@ -18,7 +18,6 @@ int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth
 int pvs_01( board *pos, line *pline, int alpha, int beta, int color, int depth, int is_PV, int draft);
 int pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, int draft);
 
-int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth);
 
 U64 NPerft(int depth, board *arg, node_move_list *ml);

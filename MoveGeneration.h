@@ -16,10 +16,8 @@ char *print_SAN_notation(move *m);
 
 U64 generate_hostile_atackmap(board arg);
 char generate_moves(node_move_list *ZZZ, board arg);
-char gm1(node_move_list *ZZZ, board arg);
 
 U64 generate_captures(node_move_list *ZZZ, board arg);
-U64 gc2(node_move_list *ZZZ, board arg);
 
 int evaluate( board arg, int draft, int color, board *rb);
 

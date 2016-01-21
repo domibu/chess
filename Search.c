@@ -436,44 +436,6 @@ forpetlja:
 	return best;
 }
 
-int ntestnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
-{
-	int best, val, it;
-	unsigned char quiet;
-	line nline;
-
-	if ( !depth )
-	{
-		pline->cmove = 0;
-		return color * neval( pos);
-	}
-
-	best = -WIN;
-	gm1(&NML[depth] , *pos);
-	quiet = NML[depth].quietcount;
-
-	for (it = quiet-1; it >= 0 ; it--  )
-	{
-		do_move(pos, NML[depth].mdata[it]);
-		val = -ntestnegamax( pos, &nline, -beta, -alpha, -color, depth - 1);
-		undo_move(pos, &NML[depth], NML[depth].mdata[it]);
-
-		if ( val >= beta)       return val; //fail-soft
-		if ( val > best)
-		{
-			best = val;
-			if ( val > alpha )
-			{
-				alpha = val;
-				pline->argmove[0] = NML[depth].mdata[it];
-				memcpy( pline->argmove + 1, nline.argmove, nline.cmove * sizeof(move));
-				pline->cmove = nline.cmove +1;
-			}
-		}
-	}
-	return best;
-}
-
 int nTTnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth)
 {
 	int best, val, old_alpha, it, limes;
