@@ -4,9 +4,6 @@
 #include "MoveGeneration.h"
 #include "Search.h"
 
-static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination);
-static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask);
-
 U64 generate_captures(node_move_list *ZZZ, board arg)
 {
 	//if (stop) return 0;
@@ -135,26 +132,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				//checking for check?<$1>
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 				//new move pp on mpp<$1>
-				ZZZ->mdata[tmp] &= 0LL;
-				ZZZ->mdata[tmp] ^= piecetype; //piecetype
-				ZZZ->mdata[tmp] ^= pp << 6; //source
-				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> mpp) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[2] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[3] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[4] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[5] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
+				CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
 
 				mpb &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
@@ -171,26 +150,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			if (mpp)
 			{
 				//without promotion<1$>
-				ZZZ->mdata[captcount] &= 0LL;
-				ZZZ->mdata[captcount] ^= 5; //piecetype
-				ZZZ->mdata[captcount] ^= pp << 6; //source
-				ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> (mpp-1)) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[2] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[3] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[4] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[5] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+				QUIET_MV(ZZZ->mdata[captcount], 5, pp, (mpp - 1));
+				CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
@@ -205,27 +166,9 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
-						ZZZ->mdata[captcount] &= 0LL;
-						ZZZ->mdata[captcount] ^= 5; //piecetype
-						ZZZ->mdata[captcount] ^= pp << 6; //source
-						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
+						QUIET_MV(ZZZ->mdata[captcount], 5, pp, (mpp - 1));
 						ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
-						//determine captured piece<$1>
-						f = (ho[1] >> (mpp-1)) & 1LL;
-						mask = 0x0000000000000008;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[2] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[3] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[4] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[5] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+						CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 						captcount++;
 					}
@@ -239,26 +182,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 					if (mpp)
 					{
 						//promotion excluded when en'passan<1$>
-						ZZZ->mdata[captcount] &= 0LL;
-						ZZZ->mdata[captcount] ^= 7; //piecetype
-						ZZZ->mdata[captcount] ^= pp << 6; //source
-						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-						//determine captured piece<$1>
-						f = (ho[1] >> (mpp-1)) & 1LL;
-						mask = 0x0000000000000008;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[2] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[3] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[4] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[5] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+						QUIET_MV(ZZZ->mdata[captcount], 7, pp, (mpp - 1));
+						CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 						mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 						captcount++;
@@ -299,26 +224,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 				//capture = (1LL << mpp) & ho[6] ? 1LL << 6 : 0LL;
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 				//new move pp on mpp<$1>
-				ZZZ->mdata[tmp] &= 0LL;
-				ZZZ->mdata[tmp] ^= piecetype; //piecetype
-				ZZZ->mdata[tmp] ^= pp << 6; //source
-				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> mpp) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[2] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[3] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[4] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[5] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
+				CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
 
 				mpr &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
@@ -335,10 +242,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		//without promotion<1$>
 		if (mpp)
 		{
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 5; //piecetype
-			ZZZ->mdata[quietcount] ^= pp << 6; //source
-			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 5, pp, (mpp - 1));
 			ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
 			mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
@@ -348,10 +252,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 			: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 		if (mpp)
 		{
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 5; //piecetype
-			ZZZ->mdata[quietcount] ^= pp << 6; //source
-			ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 5, pp, (mpp - 1));
 
 			mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 			quietcount++;
@@ -394,26 +295,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	{
 		//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 5; //piecetype
-		ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 5, (in - PW), in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mPW &= ~(1LL << in);
 		captcount++;
@@ -422,26 +305,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	{
 		//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 5; //piecetype
-		ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 5, (in - PE), in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mPE &= ~(1LL << in);
 		captcount++;
@@ -457,10 +322,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		if (!(mR_q))
 		{
 			//promotion excluded when en'passan<1$>
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 7; //piecetype
-			ZZZ->mdata[captcount] ^= in << 6; //source
-			ZZZ->mdata[captcount] ^= enp_sq << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 7, in, enp_sq);
 
 			captcount++;
 		}
@@ -471,10 +333,7 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mP1_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 5; //piecetype
-			ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 5, (in - P1), in);
 			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
 
 			quietcount++;
@@ -487,27 +346,9 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mPW_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 5; //piecetype
-			ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 5, (in - PW), in);
 			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
@@ -518,27 +359,9 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mPE_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 5; //piecetype
-			ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 5, (in - PE), in);
 			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
@@ -554,26 +377,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mN_c))
 		{
 			in = __builtin_ffsll(mN_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 4; //piecetype
-			ZZZ->mdata[captcount] ^= in_N << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 4, in_N, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mN_c &= ~(1LL << in);
 			captcount++;
@@ -592,26 +397,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mB_c))
 		{
 			in = __builtin_ffsll(mB_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 3; //piecetype
-			ZZZ->mdata[captcount] ^= in_B << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 3, in_B, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mB_c &= ~(1LL << in);
 			captcount++;
@@ -630,26 +417,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mR_c))
 		{
 			in = __builtin_ffsll(mR_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 2; //piecetype
-			ZZZ->mdata[captcount] ^= in_R << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 2, in_R, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mR_c &= ~(1LL << in);
 			captcount++;
@@ -670,26 +439,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mQ_c))
 		{
 			in = __builtin_ffsll(mQ_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 1; //piecetype
-			ZZZ->mdata[captcount] ^= in_Q << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 1, in_Q, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mQ_c &= ~(1LL << in);
 			captcount++;
@@ -705,26 +456,8 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	while (__builtin_popcountll(mK_c))
 	{
 		in = __builtin_ffsll(mK_c)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 0; //piecetype
-		ZZZ->mdata[captcount] ^= in_K << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 0, in_K, in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mK_c &= ~(1LL << in);
 		captcount++;
@@ -740,35 +473,6 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 // a definition using static inline
 static inline int max(int a, int b) {
 	return a > b ? a : b;
-}
-
-static inline void fill_move( move *move, U64 p_type, U64 source, U64 destination)
-{
-	*move &= 0ULL;
-	*move ^= p_type; //piecetype
-	*move ^= source << 6; //source
-	*move ^= destination << 12; //destination
-}
-
-static inline void capt_type( U64 *ho, U64 in, move *move, U64 f, U64 mask)
-{
-	//determine captured piece<$1>
-	f = (ho[1] >> in) & 1LL;
-	mask = 0x0000000000000008;
-	*move |= (*move & ~mask) | ( -f & mask);
-	f = (ho[2] >> in) & 1LL;
-	mask += 8;
-	*move |= (*move & ~mask) | ( -f & mask);
-	f = (ho[3] >> in) & 1LL;
-	mask += 8;
-	*move |= (*move & ~mask) | ( -f & mask);
-	f = (ho[4] >> in) & 1LL;
-	mask += 8;
-	*move |= (*move & ~mask) | ( -f & mask);
-	f = (ho[5] >> in) & 1LL;
-	mask += 8;
-	*move |= (*move & ~mask) | ( -f & mask);
-
 }
 
 int evaluate( board arg, int draft, int color, board *rb)
@@ -1082,7 +786,6 @@ found_move:
 		return neval( rb);
 }
 
-
 U64 generate_hostile_atackmap( board arg)
 {
 	U64 in_N, in_B, in_R, in_Q, in_K, in, at;
@@ -1293,26 +996,9 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
 				//new move pp on mpp<$1>
-				ZZZ->mdata[tmp] &= 0LL;
-				ZZZ->mdata[tmp] ^= piecetype; //piecetype
-				ZZZ->mdata[tmp] ^= pp << 6; //source
-				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> mpp) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[2] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[3] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[4] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[5] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+				//				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
+				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
+				CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
 
 				mpb &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
@@ -1329,26 +1015,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			if (mpp)
 			{
 				//without promotion<1$>
-				ZZZ->mdata[captcount] &= 0LL;
-				ZZZ->mdata[captcount] ^= 5; //piecetype
-				ZZZ->mdata[captcount] ^= pp << 6; //source
-				ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> (mpp-1)) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[2] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[3] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[4] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-				f = (ho[5] >> (mpp-1)) & 1LL;
-				mask += 8;
-				ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+				QUIET_MV(ZZZ->mdata[captcount], 5, pp, (mpp-1));
+				CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 				mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				captcount++;
@@ -1363,28 +1031,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 					//promotion
 					for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 					{
-						ZZZ->mdata[captcount] &= 0LL;
-						ZZZ->mdata[captcount] ^= 5; //piecetype
-						ZZZ->mdata[captcount] ^= pp << 6; //source
-						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
+						QUIET_MV(ZZZ->mdata[captcount], 5, pp, (mpp-1));
 						ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
 
-						//determine captured piece<$1>
-						f = (ho[1] >> (mpp-1)) & 1LL;
-						mask = 0x0000000000000008;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[2] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[3] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[4] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[5] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+						CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 						captcount++;
 					}
@@ -1398,26 +1048,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 					if (mpp)
 					{
 						//promotion excluded when en'passan<1$>
-						ZZZ->mdata[captcount] &= 0LL;
-						ZZZ->mdata[captcount] ^= 7; //piecetype
-						ZZZ->mdata[captcount] ^= pp << 6; //source
-						ZZZ->mdata[captcount] ^= (mpp - 1) << 12; //destination
-						//determine captured piece<$1>
-						f = (ho[1] >> (mpp-1)) & 1LL;
-						mask = 0x0000000000000008;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[2] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[3] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[4] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-						f = (ho[5] >> (mpp-1)) & 1LL;
-						mask += 8;
-						ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+						QUIET_MV(ZZZ->mdata[captcount], 7, pp, (mpp-1));
+						CAPT_TYP(ho, (mpp-1), ZZZ->mdata[captcount], f, mask);
 
 						mpb &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 						captcount++;
@@ -1457,26 +1089,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
 				//new move pp on mpp<$1>
-				ZZZ->mdata[tmp] &= 0LL;
-				ZZZ->mdata[tmp] ^= piecetype; //piecetype
-				ZZZ->mdata[tmp] ^= pp << 6; //source
-				ZZZ->mdata[tmp] ^= mpp << 12; //destination
-				//determine captured piece<$1>
-				f = (ho[1] >> mpp) & 1LL;
-				mask = 0x0000000000000008;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[2] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[3] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[4] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
-				f = (ho[5] >> mpp) & 1LL;
-				mask += 8;
-				ZZZ->mdata[tmp] |= (ZZZ->mdata[tmp] & ~mask) | ( -f & mask);
+				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
+				CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
 
 				mpr &= ~(1LL << (mpp));
 				(tmp == captcount) ? captcount++ : quietcount++;
@@ -1493,10 +1107,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 			//without promotion<1$>
 			if (mpp)
 			{
-				ZZZ->mdata[quietcount] &= 0LL;
-				ZZZ->mdata[quietcount] ^= 5; //piecetype
-				ZZZ->mdata[quietcount] ^= pp << 6; //source
-				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+				QUIET_MV(ZZZ->mdata[quietcount], 5, pp, mpp-1);
 				ZZZ->mdata[quietcount] ^= (((mpp - 1)%8) << 22) ^ (1LL << 21); //enp_file
 
 				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
@@ -1506,10 +1117,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 				: __builtin_ffsll( mpr & (ppr >> 8) & ~arg.pieceset[16]) & check_grid;//include just one rank step<1$>
 			if (mpp)
 			{
-				ZZZ->mdata[quietcount] &= 0LL;
-				ZZZ->mdata[quietcount] ^= 5; //piecetype
-				ZZZ->mdata[quietcount] ^= pp << 6; //source
-				ZZZ->mdata[quietcount] ^= (mpp - 1) << 12; //destination
+				QUIET_MV(ZZZ->mdata[quietcount], 5, pp, mpp-1);
 
 				mpr &= ~(1LL << (mpp-1)); //do we really need that?<1$>
 				quietcount++;
@@ -1554,10 +1162,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	while (__builtin_popcountll(mP2))
 	{
 		in = __builtin_ffsll(mP2)-1;
-		ZZZ->mdata[quietcount] &= 0LL;
-		ZZZ->mdata[quietcount] ^= 5; //piecetype
-		ZZZ->mdata[quietcount] ^= (in - P2) << 6; //source
-		ZZZ->mdata[quietcount] ^= in << 12; //destination
+		QUIET_MV(ZZZ->mdata[quietcount], 5, in-P2, in);
 		ZZZ->mdata[quietcount] ^= ((in % 8) << 22) ^ (1LL << 21); //enp_file
 		mP2 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
@@ -1566,10 +1171,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	while (__builtin_popcountll(mP1))
 	{
 		in = __builtin_ffsll(mP1)-1;
-		ZZZ->mdata[quietcount] &= 0LL;
-		ZZZ->mdata[quietcount] ^= 5; //piecetype
-		ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
-		ZZZ->mdata[quietcount] ^= in << 12; //destination
+		QUIET_MV(ZZZ->mdata[quietcount], 5, in-P1, in);
 		mP1 &= ~(1LL << in); //do we really need that?<1$>
 		quietcount++;
 	}
@@ -1577,26 +1179,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	{
 		//without promotion<1$>
 		in = __builtin_ffsll(mPW)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 5; //piecetype
-		ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 5, in-PW, in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mPW &= ~(1LL << in);
 		captcount++;
@@ -1605,26 +1189,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	{
 		//without promotion<1$>
 		in = __builtin_ffsll(mPE)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 5; //piecetype
-		ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 5, in-PE, in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mPE &= ~(1LL << in);
 		captcount++;
@@ -1640,10 +1206,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		if (!(mR_q))
 		{
 			//promotion excluded when en'passan<1$>
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 7; //piecetype
-			ZZZ->mdata[captcount] ^= in << 6; //source
-			ZZZ->mdata[captcount] ^= enp_sq << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 7, in, enp_sq);
 
 			captcount++;
 		}
@@ -1654,10 +1217,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mP1_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 5; //piecetype
-			ZZZ->mdata[quietcount] ^= (in - P1) << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 5, in-P1, in);
 			ZZZ->mdata[quietcount] ^= it_prom ^ 0x0000000000040000; //promotion
 
 			quietcount++;
@@ -1670,27 +1230,9 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mPW_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 5; //piecetype
-			ZZZ->mdata[captcount] ^= (in - PW) << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 5, in-PW, in);
 			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
@@ -1701,27 +1243,9 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		in = __builtin_ffsll(mPE_prom)-1;
 		for (it_prom = 0x0000000000000000; it_prom ^ 0x0000000000200000; it_prom += 0x80000)
 		{
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 5; //piecetype
-			ZZZ->mdata[captcount] ^= (in - PE) << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[captcount], 5, in-PE, in);
 			ZZZ->mdata[captcount] ^= it_prom ^ 0x0000000000040000; //promotion
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 			captcount++;
 		}
 		//check is missing, write as const except stm<1$>
@@ -1738,10 +1262,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mN_q))
 		{
 			in = __builtin_ffsll(mN_q)-1;
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 4; //piecetype
-			ZZZ->mdata[quietcount] ^= in_N << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 4, in_N, in);
 
 			mN_q &= ~(1LL << in);
 			quietcount++;
@@ -1749,26 +1270,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mN_c))
 		{
 			in = __builtin_ffsll(mN_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 4; //piecetype
-			ZZZ->mdata[captcount] ^= in_N << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 4, in_N, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mN_c &= ~(1LL << in);
 			captcount++;
@@ -1788,10 +1291,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mB_q))
 		{
 			in = __builtin_ffsll(mB_q)-1;
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 3; //piecetype
-			ZZZ->mdata[quietcount] ^= in_B << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 3, in_B, in);
 
 			mB_q &= ~(1LL << in);
 			quietcount++;
@@ -1799,26 +1299,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mB_c))
 		{
 			in = __builtin_ffsll(mB_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 3; //piecetype
-			ZZZ->mdata[captcount] ^= in_B << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 3, in_B, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mB_c &= ~(1LL << in);
 			captcount++;
@@ -1838,10 +1320,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mR_q))
 		{
 			in = __builtin_ffsll(mR_q)-1;
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 2; //piecetype
-			ZZZ->mdata[quietcount] ^= in_R << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 2, in_R, in);
 
 			mR_q &= ~(1LL << in);
 			quietcount++;
@@ -1850,26 +1329,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mR_c))
 		{
 			in = __builtin_ffsll(mR_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 2; //piecetype
-			ZZZ->mdata[captcount] ^= in_R << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 2, in_R, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mR_c &= ~(1LL << in);
 			captcount++;
@@ -1890,10 +1351,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mQ_q))
 		{
 			in = __builtin_ffsll(mQ_q)-1;
-			ZZZ->mdata[quietcount] &= 0LL;
-			ZZZ->mdata[quietcount] ^= 1; //piecetype
-			ZZZ->mdata[quietcount] ^= in_Q << 6; //source
-			ZZZ->mdata[quietcount] ^= in << 12; //destination
+			QUIET_MV(ZZZ->mdata[quietcount], 1, in_Q, in);
 
 			mQ_q &= ~(1LL << in);
 			quietcount++;
@@ -1901,26 +1359,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 		while (__builtin_popcountll(mQ_c))
 		{
 			in = __builtin_ffsll(mQ_c)-1;
-			ZZZ->mdata[captcount] &= 0LL;
-			ZZZ->mdata[captcount] ^= 1; //piecetype
-			ZZZ->mdata[captcount] ^= in_Q << 6; //source
-			ZZZ->mdata[captcount] ^= in << 12; //destination
-			//determine captured piece<$1>
-			f = (ho[1] >> in) & 1LL;
-			mask = 0x0000000000000008;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[2] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[3] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[4] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-			f = (ho[5] >> in) & 1LL;
-			mask += 8;
-			ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+			QUIET_MV(ZZZ->mdata[captcount], 1, in_Q, in);
+			CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 			mQ_c &= ~(1LL << in);
 			captcount++;
@@ -1936,10 +1376,7 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	while (__builtin_popcountll(mK_q))
 	{
 		in = __builtin_ffsll(mK_q)-1;
-		ZZZ->mdata[quietcount] &= 0LL;
-		ZZZ->mdata[quietcount] ^= 0; //piecetype
-		ZZZ->mdata[quietcount] ^= in_K << 6; //source
-		ZZZ->mdata[quietcount] ^= in << 12; //destination
+		QUIET_MV(ZZZ->mdata[quietcount], 0, in_K, in);
 
 		mK_q &= ~(1LL << in);
 		quietcount++;
@@ -1947,26 +1384,8 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	while (__builtin_popcountll(mK_c))
 	{
 		in = __builtin_ffsll(mK_c)-1;
-		ZZZ->mdata[captcount] &= 0LL;
-		ZZZ->mdata[captcount] ^= 0; //piecetype
-		ZZZ->mdata[captcount] ^= in_K << 6; //source
-		ZZZ->mdata[captcount] ^= in << 12; //destination
-		//determine captured piece<$1>
-		f = (ho[1] >> in) & 1LL;
-		mask = 0x0000000000000008;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[2] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[3] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[4] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
-		f = (ho[5] >> in) & 1LL;
-		mask += 8;
-		ZZZ->mdata[captcount] |= (ZZZ->mdata[captcount] & ~mask) | ( -f & mask);
+		QUIET_MV(ZZZ->mdata[captcount], 0, in_K, in);
+		CAPT_TYP(ho, in, ZZZ->mdata[captcount], f, mask);
 
 		mK_c &= ~(1LL << in);
 		captcount++;
@@ -1976,19 +1395,13 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	//CASTLE
 	if ( arg.info & cas_bit_K && !(ho[7] & cas_at_K) && !(arg.pieceset[16] & cas_occ_K) )
 	{
-		ZZZ->mdata[quietcount] &= 0LL;
-		ZZZ->mdata[quietcount] ^= 6 ^ (6 << 3);
-		ZZZ->mdata[quietcount] ^= king << 6; //source
-		ZZZ->mdata[quietcount] ^= (king-2) << 12; //destination
+		QUIET_MV(ZZZ->mdata[quietcount], 6 ^ (6 << 3), king, king-2);
 
 		quietcount++;
 	}
 	if ( arg.info & cas_bit_Q && !(ho[7] & cas_at_Q) && !(arg.pieceset[16] & cas_occ_Q) )
 	{
-		ZZZ->mdata[quietcount] &= 0LL;
-		ZZZ->mdata[quietcount] ^= 6 ^ (7 << 3);
-		ZZZ->mdata[quietcount] ^= king << 6; //source
-		ZZZ->mdata[quietcount] ^= (king+2) << 12; //destination
+		QUIET_MV(ZZZ->mdata[quietcount], 6 ^ (7 << 3), king, king+2);
 		quietcount++;
 	}
 
