@@ -26,7 +26,7 @@ int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth,
 	if ( alpha < stand_pat )	alpha = stand_pat;
 
 	unsigned capt_count;
-	generate_moves(&NML[draft+1], *pos);
+	generate_captures(&NML[draft+1], *pos);
 	capt_count = NML[draft+1].captcount;
 	int it;
 

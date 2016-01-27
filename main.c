@@ -535,7 +535,9 @@ int chess_engine_testing(int argc, char *argv)
 			TTwr = 0;
 
 			gettimeofday(&start, NULL);
+			en_state = THINKING;
 			score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
+			en_state = WAITING;
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
@@ -611,7 +613,7 @@ nLegal_for:
 			}
 
 			Print(1, "quiet count:%3d\n", NML->quietcount);
-			Print(1, "capt count:%4d\n", 255-NML->captcount);
+			Print(1, "capt count:%4d\n", NML->captcount-218);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		}
 		else if (strstr(buff, "setboard") != NULL)

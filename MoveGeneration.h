@@ -23,6 +23,9 @@
 		move |= (move & ~mask) | ( -f & mask);	\
 		})
 
+#define BISHOP_MOVE(occupancy, epicenter) (magicMovesBishop[epicenter][((occupancy & occupancyMaskBishop[epicenter]) * magicNumberBishop[epicenter]) >> magicNumberShiftsBishop[epicenter]])
+#define ROOK_MOVE(occupancy, epicenter) (magicMovesRook[epicenter][((occupancy & occupancyMaskRook[epicenter]) * magicNumberRook[epicenter] ) >> magicNumberShiftsRook[epicenter]])
+
 node_move_list *NML;
 
 extern int stop;
