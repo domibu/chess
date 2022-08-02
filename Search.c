@@ -372,7 +372,8 @@ sortforpetlja:
 		goto sortforpetlja;
 	}
 
-	unsigned value, j;
+	unsigned value;
+	int j;
 	if (start > 0)
 		for (; it < m_list->captcount; it++)
 		{
