@@ -723,6 +723,21 @@ int chess_engine_testing(int argc, char *argv)
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, printline_1( pline));
 		}
+		else if (strstr(buff,"evaluate") != NULL)
+		{
+			color = -1 + (((Ncb.info >> 14) & 1ULL) << 1 );
+			count = 0;
+
+			board_1 b;
+			int i;
+
+			en_state = THINKING;
+			score = evaluate(Ncb, 0, color, &Ncb);
+			en_state = OBSERVING;
+
+			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+			Print(1, "score = %7d\n", score);
+		}		
 		else if (strstr(buff,"mdivide") != NULL)
 		{
 			sscanf(buff, "mdivide %d", &n);
