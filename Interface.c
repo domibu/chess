@@ -338,6 +338,23 @@ void square2(char *sq, int *index)
 	*index = (sq[1]-49)*8 + (104-sq[0]);
 }
 
+char *print_binary(U64 bits)
+{
+	static char buff[130];
+	U64 m = 0x8000000000000000;
+	buff[0] = '\0';
+
+	for (int i = 0; i<64; i++)
+	{
+		strcat(buff, bits & (m >> i) ? "1" : "0");
+
+		strcat(buff," ");
+		if ((i+1)%8 == 0) strcat(buff,"\n");
+	}
+	
+	return buff;
+}
+
 char *printBits(size_t const size, void const * const ptr)
 {
 	unsigned char *b = (unsigned char*) ptr;

@@ -17,6 +17,7 @@ board NimportFEN(char *fen);
 void resetboard_1(board_1 *arg);
 void resetboard(board *arg);
 
+char *print_binary(U64 bits);
 char *printBits(size_t const size, void const * const ptr);
 char *piece(int index);
 void square(int index, char *sq);
