@@ -553,9 +553,11 @@ int chess_engine_testing(int argc, char *argv)
 			TTowr = 0;
 			TTwr = 0;
 
+			en_state = THINKING;
 			gettimeofday(&start, NULL);
 			score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
 			gettimeofday(&end, NULL);
+			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
@@ -569,9 +571,11 @@ int chess_engine_testing(int argc, char *argv)
 			TTowr = 0;
 			TTwr = 0;
 
+			en_state = THINKING;
 			gettimeofday(&start, NULL);
 			score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
 			gettimeofday(&end, NULL);
+			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
