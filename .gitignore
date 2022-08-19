@@ -1,0 +1,10 @@
+logs/
+.vscode/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+domibu
+*.o
+*.exe
+.gitignore.swp
