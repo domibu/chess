@@ -96,7 +96,7 @@ void *Thinking(void *void_ptr )
 			if (post)
 			{
 				/////PRINTING THINKING OUTPUT/////////////
-				Print(1, "%2d %7d %6.2f %12llu %s", i, score*100, search_time*100, count, print_TT_PV( Ncb, i));
+				Print(1, "%2d %7d %6.2f %12llu %s", i, score, search_time*100, count, print_TT_PV( Ncb, i));
 			}
 			pm = TTfind_move( Ncb.zobrist);
 		}
@@ -560,7 +560,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"pvs02") != NULL)
 		{
@@ -578,7 +578,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"nTT") != NULL)
 		{
@@ -594,7 +594,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_TT_PV( Ncb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"pvs01") != NULL)
 		{
@@ -609,7 +609,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 
 		else if (strstr(buff,"nsearch") != NULL)
@@ -623,7 +623,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"ndivide") != NULL)
 		{
@@ -646,7 +646,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, TTextractPV_1( cb, n));
 		}
 		else if (strstr(buff,"msearch") != NULL)
 		{
@@ -659,7 +659,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"aTT") != NULL)
 		{
@@ -677,7 +677,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			TTextractPV_1( cb, n);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, TTextractPV_1( cb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, TTextractPV_1( cb, n));
 		}
 		else if (strstr(buff,"quesc") != NULL)
 		{
@@ -690,7 +690,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu\n", n, score*100, razmisljao*100, count);
+			Print(1, "%2d %7d %6.2f %12llu\n", n, score, razmisljao*100, count);
 		}
 		else if (strstr(buff,"ntestsearch") != NULL)
 		{
@@ -704,7 +704,7 @@ int chess_engine_testing(int argc, char *argv)
 			gettimeofday(&end, NULL);
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, print_line_Smith_notation( Npline));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_line_Smith_notation( Npline));
 		}
 		else if (strstr(buff,"asearch") != NULL)
 		{
@@ -720,7 +720,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			printline_1( pline);
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score*100, razmisljao*100, count, printline_1( pline));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, printline_1( pline));
 		}
 		else if (strstr(buff,"mdivide") != NULL)
 		{

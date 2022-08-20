@@ -1,7 +1,7 @@
 #ifndef domibudata1
 #define domibudata1
 
-#define WIN 18000
+#define WIN 30000
 
 typedef unsigned long long U64;
 
