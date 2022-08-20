@@ -87,7 +87,7 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	old_alpha = alpha;
 	best = -WIN-300;
 	generate_moves(&NML[depth] , *pos);
-	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
+	if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
@@ -262,7 +262,7 @@ int  pvs_02(board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	old_alpha = alpha;
 	best = -WIN-300;
 	generate_moves(&NML[depth] , *pos);
-	//if (hash_move > 0) sortmoves( &NML[depth], hash_move);
+	if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
