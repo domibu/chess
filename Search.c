@@ -152,26 +152,6 @@ forpetlja:
 	return best;
 }
 
-int neval( board *b)
-{
-	int w_score = 0, b_score = 0;
-
-	w_score += 2538 * __builtin_popcountll( b->pieceset[1] );
-	w_score += 1276 * __builtin_popcountll( b->pieceset[2] );
-	w_score += 825 * __builtin_popcountll( b->pieceset[3] );
-	w_score += 781 * __builtin_popcountll( b->pieceset[4] );
-	w_score += 124 * __builtin_popcountll( b->pieceset[5] );
-
-	b_score -= 2538 * __builtin_popcountll( b->pieceset[9] );
-	b_score -= 1276 * __builtin_popcountll( b->pieceset[10] );
-	b_score -= 825 * __builtin_popcountll( b->pieceset[11] );
-	b_score -= 781 * __builtin_popcountll( b->pieceset[12] );
-	b_score -= 124 * __builtin_popcountll( b->pieceset[13] );
-
-	count++;
-	return w_score + b_score;
-}
-
 int nnegamax( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int best, val, it, limes;
