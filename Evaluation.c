@@ -170,28 +170,13 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & f_ppb )) //maybe popcount isn't neccessary<1$>
 		{
-			while ( __builtin_popcountll(mpb))
-			{
-				mpp = __builtin_ffsll(mpb)-1;
-				// if (fr[3] & ppb)	piecetype = 3;
-				// else piecetype = 1;
 
 				//TODO mobility area not defined yet
 				eval.mobility_f_mg += (fr[3] & f_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
 				eval.mobility_f_eg += (fr[3] & f_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
 
-				//checking for check?<$1>
-				// tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
 
-				//new move pp on mpp<$1>
-				//				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
-
-				mpb &= ~(1LL << (mpp));
-				// (tmp == captcount) ? captcount++ : quietcount++;
-				move_count ++;
-			}
+			move_count += __builtin_popcountll(mpb);
 		}
 		//checking for pawn<1$>
 		if ( fr[5] & f_ppb)
@@ -248,28 +233,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (ho[1] ^ ho[3]) & h_ppb )) //maybe popcount isn't neccessary<1$>
 		{
-			while ( __builtin_popcountll(mpb))
-			{
-				mpp = __builtin_ffsll(mpb)-1;
-				// if (fr[3] & ppb)	piecetype = 3;
-				// else piecetype = 1;
-
 				//TODO mobility area not defined yet
 				eval.mobility_h_mg += (ho[3] & h_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
 				eval.mobility_h_eg += (ho[3] & h_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
 
-				//checking for check?<$1>
-				// tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
-
-				//new move pp on mpp<$1>
-				//				QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
-
-				mpb &= ~(1LL << (mpp));
-				// (tmp == captcount) ? captcount++ : quietcount++;
-				//move_count ++;
-			}
 		}
 		//checking for pawn<1$>
 		// if ( ho[5] & h_ppb)
@@ -327,27 +294,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (fr[1] ^ fr[2]) & f_ppr ))
 		{
-			while ( __builtin_popcountll(mpr))
-			{
-				mpp = __builtin_ffsll(mpr)-1;
-
 				eval.mobility_f_mg += (fr[2] & f_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
 				eval.mobility_f_eg += (fr[2] & f_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
 	
 				move_count += __builtin_popcountll(mpr);
-
-				// if (fr[2] & ppr)	piecetype = 2;
-				// else piecetype = 1;
-				// //checking for check?<$1>
-				// tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
-
-				// //new move pp on mpp<$1>
-				// QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
-
-				mpr &= ~(1LL << (mpp));
-				// (tmp == captcount) ? captcount++ : quietcount++;
-			}
 		}
 		//checking for pawn<1$>
 		if ( fr[5] & f_ppr)
@@ -388,28 +338,11 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (ho[1] ^ ho[2]) & h_ppr ))
 		{
-			while ( __builtin_popcountll(mpr))
-			{
-				mpp = __builtin_ffsll(mpr)-1;
-
 				//TODO mobility area not defined yet
 				eval.mobility_h_mg += (ho[2] & h_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
 				eval.mobility_h_eg += (ho[2] & h_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
 	
-				//move_count += __builtin_popcountll(mpr);
-
-				// if (fr[2] & ppr)	piecetype = 2;
-				// else piecetype = 1;
-				// //checking for check?<$1>
-				// tmp = (1LL << mpp) & ho[6] ? captcount : quietcount;
-
-				// //new move pp on mpp<$1>
-				// QUIET_MV(ZZZ->mdata[tmp], piecetype, pp, mpp);
-				// CAPT_TYP(ho, mpp, ZZZ->mdata[tmp], f, mask);
-
-				mpr &= ~(1LL << (mpp));
-				// (tmp == captcount) ? captcount++ : quietcount++;
-			}
+			//move_count += __builtin_popcountll(mpr);
 		}
 		//checking for pawn<1$>
 		// if ( ho[5] & h_ppr)
