@@ -280,10 +280,23 @@ int evaluate( board arg, int draft, int color, board *rb)
 		if (__builtin_popcountll( (fr[1] ^ fr[3]) & f_ppb )) //maybe popcount isn't neccessary<1$>
 		{
 
-				//TODO mobility area not defined yet
-				eval.mobility_f_mg += (fr[3] & f_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
-				eval.mobility_f_eg += (fr[3] & f_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			//TODO mobility area not defined yet
+			eval.mobility_f_mg += (fr[3] & f_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			eval.mobility_f_eg += (fr[3] & f_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mpb), eval.mobility_f_mg);
 
+			if (fr[3] & f_ppb)
+			{
+				eval.psqt_f_mg += (stm) ? bishop_psqt_mg[in_pp] : bishop_psqt_mg_flip[in_pp];
+				eval.psqt_f_eg += (stm) ? bishop_psqt_eg[in_pp] : bishop_psqt_eg_flip[in_pp];
+
+				
+			}
+			else
+			{
+				eval.psqt_f_mg += (stm) ? queen_psqt_mg[in_pp] : queen_psqt_mg_flip[in_pp];
+				eval.psqt_f_eg += (stm) ? queen_psqt_eg[in_pp] : queen_psqt_eg_flip[in_pp];
+			}
 
 			move_count += __builtin_popcountll(mpb);
 		}
@@ -291,6 +304,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 		if ( fr[5] & f_ppb)
 		{
 			in_pp = __builtin_ffsll(f_ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+
+			eval.psqt_f_mg += (stm) ? pawn_psqt_mg[in_pp] : pawn_psqt_mg_flip[in_pp];
+			eval.psqt_f_eg += (stm) ? pawn_psqt_eg[in_pp] : pawn_psqt_eg_flip[in_pp];
+
 			if (stm) mpp =__builtin_ffsll( mpb & (((f_ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((f_ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & ho[6] & ~f_promotion & check_grid);
 			else mpp = __builtin_ffsll( mpb & (((f_ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((f_ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & ho[6] & ~f_promotion & check_grid );
 			//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
@@ -315,6 +332,9 @@ int evaluate( board arg, int draft, int color, board *rb)
 				}
 			}
 		}
+
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_pp, eval.psqt_f_mg, eval.psqt_h_mg);
+
 		at_b &= ~(1LL << at);
 	}
 
@@ -342,15 +362,31 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (ho[1] ^ ho[3]) & h_ppb )) //maybe popcount isn't neccessary<1$>
 		{
-				//TODO mobility area not defined yet
-				eval.mobility_h_mg += (ho[3] & h_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
-				eval.mobility_h_eg += (ho[3] & h_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			//TODO mobility area not defined yet
+			eval.mobility_h_mg += (ho[3] & h_ppb) ? mobility_bishop_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			eval.mobility_h_eg += (ho[3] & h_ppb) ? mobility_bishop_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpb /*& mobility_area*/)];
+			//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mpb), eval.mobility_h_mg);
 
+			if (ho[3] & h_ppb)
+			{
+				eval.psqt_h_mg += (stm) ? bishop_psqt_mg_flip[in_pp] : bishop_psqt_mg[in_pp];
+				eval.psqt_h_eg += (stm) ? bishop_psqt_eg_flip[in_pp] : bishop_psqt_eg[in_pp];
+			}
+			else
+			{
+				eval.psqt_h_mg += (stm) ? queen_psqt_mg_flip[in_pp] : queen_psqt_mg[in_pp];
+				eval.psqt_h_eg += (stm) ? queen_psqt_eg_flip[in_pp] : queen_psqt_eg[in_pp];
+			}
+
+			//move_count += __builtin_popcountll(mpb);
 		}
 		//checking for pawn<1$>
-		// if ( ho[5] & h_ppb)
-		// {
-		// 	in_pp = __builtin_ffsll(h_ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+		if ( ho[5] & h_ppb)
+		{
+		 	in_pp = __builtin_ffsll(h_ppb)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+			eval.psqt_h_mg += (stm) ? pawn_psqt_mg_flip[in_pp] : pawn_psqt_mg[in_pp];
+			eval.psqt_h_eg += (stm) ? pawn_psqt_eg_flip[in_pp] : pawn_psqt_eg[in_pp];
+
 		// 	if (!stm) mpp =__builtin_ffsll( mpb & (((h_ppb & 0x7F7F7F7F7F7F7F7F)<<9) ^ ((h_ppb & 0xFEFEFEFEFEFEFEFE)<<7)) & fr[6] & ~h_promotion & ho_check_grid);
 		// 	else mpp = __builtin_ffsll( mpb & (((h_ppb & 0x7F7F7F7F7F7F7F7F) >> 7) ^ ((h_ppb & 0xFEFEFEFEFEFEFEFE) >> 9)) & fr[6] & ~h_promotion & ho_check_grid );
 		// 	//add limit for a,h file depending of direction of capture, possible that limits aren't needed<1$>
@@ -374,7 +410,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 		// 				move_count += __builtin_popcountll(mpp);
 		// 		}
 		// 	}
-		// }
+		}
+
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_pp, eval.psqt_f_mg, eval.psqt_h_mg);
+
 		at_b &= ~(1LL << at);
 	}
 
@@ -403,15 +442,31 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (fr[1] ^ fr[2]) & f_ppr ))
 		{
-				eval.mobility_f_mg += (fr[2] & f_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
-				eval.mobility_f_eg += (fr[2] & f_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
-	
-				move_count += __builtin_popcountll(mpr);
+			eval.mobility_f_mg += (fr[2] & f_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
+			eval.mobility_f_eg += (fr[2] & f_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
+			//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mpr), eval.mobility_f_mg);
+
+			if (fr[2] & f_ppr)
+			{
+				eval.psqt_f_mg += (stm) ? rook_psqt_mg[in_pp] : rook_psqt_mg_flip[in_pp];
+				eval.psqt_f_eg += (stm) ? rook_psqt_eg[in_pp] : rook_psqt_eg_flip[in_pp];
+			}
+			else
+			{
+				eval.psqt_f_mg += (stm) ? queen_psqt_mg[in_pp] : queen_psqt_mg_flip[in_pp];
+				eval.psqt_f_eg += (stm) ? queen_psqt_eg[in_pp] : queen_psqt_eg_flip[in_pp];
+			}
+
+			move_count += __builtin_popcountll(mpr);
 		}
 		//checking for pawn<1$>
 		if ( fr[5] & f_ppr)
 		{
 			in_pp = __builtin_ffsll(f_ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+
+			eval.psqt_f_mg += (stm) ? pawn_psqt_mg[in_pp] : pawn_psqt_mg_flip[in_pp];
+			eval.psqt_f_eg += (stm) ? pawn_psqt_eg[in_pp] : pawn_psqt_eg_flip[in_pp];
+
 			if (stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & f_ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
 			else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & f_ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & check_grid);//include just two rank step<1$>
 			//pawn advance or pawn capture<1$>
@@ -424,6 +479,9 @@ int evaluate( board arg, int draft, int color, board *rb)
 			if (mpp)
 				move_count += __builtin_popcountll(mpp);
 		}
+
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_pp, eval.psqt_f_mg, eval.psqt_h_mg);
+
 		at_r &= ~(1LL << at);
 	}
 	
@@ -447,28 +505,48 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		if (__builtin_popcountll( (ho[1] ^ ho[2]) & h_ppr ))
 		{
-				//TODO mobility area not defined yet
-				eval.mobility_h_mg += (ho[2] & h_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
-				eval.mobility_h_eg += (ho[2] & h_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
-	
+			//TODO mobility area not defined yet
+			eval.mobility_h_mg += (ho[2] & h_ppr) ? mobility_rook_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_mg[__builtin_popcountll(mpr /*& mobility_area*/)];
+			eval.mobility_h_eg += (ho[2] & h_ppr) ? mobility_rook_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)] : mobility_queen_bonus_eg[__builtin_popcountll(mpr /*& mobility_area*/)];
+			//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mpr), eval.mobility_h_mg);
+
+			if (ho[2] & h_ppr)
+			{
+				eval.psqt_h_mg += (stm) ? rook_psqt_mg_flip[in_pp] : rook_psqt_mg[in_pp];
+				eval.psqt_h_eg += (stm) ? rook_psqt_eg_flip[in_pp] : rook_psqt_eg[in_pp];
+			}
+			else
+			{
+				eval.psqt_h_mg += (stm) ? queen_psqt_mg_flip[in_pp] : queen_psqt_mg[in_pp];
+				eval.psqt_h_eg += (stm) ? queen_psqt_eg_flip[in_pp] : queen_psqt_eg[in_pp];
+			}
+
 			//move_count += __builtin_popcountll(mpr);
 		}
 		//checking for pawn<1$>
-		// if ( ho[5] & h_ppr)
-		// {
-		// 	in_pp = __builtin_ffsll(h_ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
-		// 	if (!stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & h_ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & ho_check_grid);//include just two rank step<1$>
-		// 	else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & h_ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & ho_check_grid);//include just two rank step<1$>
-		// 	//pawn advance or pawn capture<1$>
-		// 	//without promotion<1$>
-		// 	//if (mpp)
-		// 		move_count += __builtin_popcountll(mpp);
-		// 	//else
-		// 	mpp = (!stm) ? __builtin_ffsll( mpr & (h_ppr << 8) & ~arg.pieceset[16]) & ho_check_grid
-		// 		: __builtin_ffsll( mpr & (h_ppr >> 8) & ~arg.pieceset[16]) & ho_check_grid;//include just one rank step<1$>
-		// 	if (mpp)
-		// 		move_count += __builtin_popcountll(mpp);
-		// }
+		if ( ho[5] & h_ppr)
+		{
+			in_pp = __builtin_ffsll(h_ppr)-1;  //maybe possible to use pp from above because one at has one pinned_piece<1$>
+
+			eval.psqt_h_mg += (stm) ? pawn_psqt_mg_flip[in_pp] : pawn_psqt_mg[in_pp];
+			eval.psqt_h_eg += (stm) ? pawn_psqt_eg_flip[in_pp] : pawn_psqt_eg[in_pp];
+
+
+			// if (!stm)	mpp = __builtin_ffsll( mpr & ((((0x000000000000FF00 & h_ppr) << 8) & ~arg.pieceset[16]) << 8) & ~arg.pieceset[16] & ho_check_grid);//include just two rank step<1$>
+			// else mpp = __builtin_ffsll( mpr & ((((0x00FF000000000000 & h_ppr) >> 8) & ~arg.pieceset[16]) >> 8) & ~arg.pieceset[16] & ho_check_grid);//include just two rank step<1$>
+			// //pawn advance or pawn capture<1$>
+			// //without promotion<1$>
+			// //if (mpp)
+			// 	move_count += __builtin_popcountll(mpp);
+			// //else
+			// mpp = (!stm) ? __builtin_ffsll( mpr & (h_ppr << 8) & ~arg.pieceset[16]) & ho_check_grid
+			// 	: __builtin_ffsll( mpr & (h_ppr >> 8) & ~arg.pieceset[16]) & ho_check_grid;//include just one rank step<1$>
+			// if (mpp)
+			// 	move_count += __builtin_popcountll(mpp);
+		}
+
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_pp, eval.psqt_f_mg, eval.psqt_h_mg);
+
 		at_r &= ~(1LL << at);
 	}
 	
@@ -530,13 +608,39 @@ int evaluate( board arg, int draft, int color, board *rb)
 		oPW = (ho[5] & 0x7F7F7F7F7F7F7F7F) << 9;// & ho_check_grid;
 	}
 
+
 	U64 f_mobility_area = 0LL, h_mobility_area = 0LL;
 
 	f_mobility_area = 0xFFFFFFFFFFFFFFFF & (~fr[0] & ~fr[1] & ~oPE & ~oPW & ~(fr[5] & f_mobility_area_mask) & ~(fr[5] & arg.pieceset[16] >> 8) & ~f_ppb & ~f_ppr);   
 	h_mobility_area = 0xFFFFFFFFFFFFFFFF & (~ho[0] & ~ho[1] & ~f_PE & ~f_PW & ~(ho[5] & h_mobility_area_mask) & ~(ho[5] & arg.pieceset[16] << 8) & ~h_ppb & ~h_ppr);   
-	//Print(1, "mobility_area=\n%s", print_binary(mobility_area));
+	//Print(1, "f_mobility_area=\n%s", print_binary(f_mobility_area));
+	//Print(1, "h_mobility_area=\n%s", print_binary(h_mobility_area));
 
 	move_count +=  __builtin_popcountll(f_mP1 | f_mP2 | f_mPE | f_mPW | f_mENP);
+
+	int in;
+
+	while (__builtin_popcountll(fr[5]))
+	{
+		in = __builtin_ffsll(fr[5])-1;
+	
+		eval.psqt_f_mg += (stm) ? pawn_psqt_mg[in] : pawn_psqt_mg_flip[in];
+		eval.psqt_f_eg += (stm) ? pawn_psqt_eg[in] : pawn_psqt_eg_flip[in];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in, eval.psqt_f_mg, eval.psqt_h_mg);
+
+		fr[5] &= ~(1LL << in);
+	}
+
+	while (__builtin_popcountll(ho[5]))
+	{
+		in = __builtin_ffsll(ho[5])-1;
+	
+		eval.psqt_h_mg += (stm) ? pawn_psqt_mg_flip[in] : pawn_psqt_mg[in];
+		eval.psqt_h_eg += (stm) ? pawn_psqt_eg_flip[in] : pawn_psqt_eg[in];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in, eval.psqt_f_mg, eval.psqt_h_mg);
+
+		ho[5] &= ~(1LL << in);
+	}
 
 	//KNIGHT
 	int in_N;
@@ -554,6 +658,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_f_mg += mobility_knight_bonus_mg[__builtin_popcountll(mN_q & f_mobility_area)];
 		eval.mobility_f_eg += mobility_knight_bonus_eg[__builtin_popcountll(mN_q & f_mobility_area)];
+		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mN_q & f_mobility_area), eval.mobility_f_mg);
+		eval.psqt_f_mg += (stm) ? knight_psqt_mg[in_N] : knight_psqt_mg_flip[in_N];
+		eval.psqt_f_eg += (stm) ? knight_psqt_eg[in_N] : knight_psqt_eg_flip[in_N];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_N, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		if (__builtin_popcountll(mN_q))
 			move_count += __builtin_popcountll(mN_q);
@@ -573,6 +681,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_h_mg += mobility_knight_bonus_mg[__builtin_popcountll(mN_q & h_mobility_area)];
 		eval.mobility_h_eg += mobility_knight_bonus_eg[__builtin_popcountll(mN_q & h_mobility_area)];
+		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mN_q & h_mobility_area), eval.mobility_h_mg);
+		eval.psqt_h_mg += (stm) ? knight_psqt_mg_flip[in_N] : knight_psqt_mg[in_N];
+		eval.psqt_h_eg += (stm) ? knight_psqt_eg_flip[in_N] : knight_psqt_eg[in_N];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_N, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		//if (__builtin_popcountll(mN_q))
 			//move_count += __builtin_popcountll(mN_q);
@@ -580,7 +692,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		ho[4] &= ~(1LL << in_N);
 	}	
 
-	int in_B, in;
+	int in_B;
 	U64 mB_q;
 	//BISHOP
 
@@ -598,6 +710,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_f_mg += mobility_bishop_bonus_mg[__builtin_popcountll(mB_ray & f_mobility_area)];
 		eval.mobility_f_eg += mobility_bishop_bonus_eg[__builtin_popcountll(mB_ray & f_mobility_area)];
+		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mB_ray & f_mobility_area), eval.mobility_f_mg);
+		eval.psqt_f_mg += (stm) ? bishop_psqt_mg[in_B] : bishop_psqt_mg_flip[in_B];
+		eval.psqt_f_eg += (stm) ? bishop_psqt_eg[in_B] : bishop_psqt_eg_flip[in_B];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_B, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		if (__builtin_popcountll(mB_q))
 			move_count += __builtin_popcountll(mB_q);
@@ -619,6 +735,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_h_mg += mobility_bishop_bonus_mg[__builtin_popcountll(mB_ray & h_mobility_area)];
 		eval.mobility_h_eg += mobility_bishop_bonus_eg[__builtin_popcountll(mB_ray & h_mobility_area)];
+		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mB_ray & h_mobility_area), eval.mobility_h_mg);
+		eval.psqt_h_mg += (stm) ? bishop_psqt_mg_flip[in_B] : bishop_psqt_mg[in_B];
+		eval.psqt_h_eg += (stm) ? bishop_psqt_eg_flip[in_B] : bishop_psqt_eg[in_B];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_B, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		//if (__builtin_popcountll(mB_q))
 			//move_count += __builtin_popcountll(mB_q);
@@ -644,6 +764,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_f_mg += mobility_rook_bonus_mg[__builtin_popcountll(mR_ray & f_mobility_area)];
 		eval.mobility_f_eg += mobility_rook_bonus_eg[__builtin_popcountll(mR_ray & f_mobility_area)];
+		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mR_ray & f_mobility_area), eval.mobility_f_mg);
+		eval.psqt_f_mg += (stm) ? rook_psqt_mg[in_R] : rook_psqt_mg_flip[in_R];
+		eval.psqt_f_eg += (stm) ? rook_psqt_eg[in_R] : rook_psqt_eg_flip[in_R];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_R, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		if (__builtin_popcountll(mR_q))
 			move_count += __builtin_popcountll(mR_q);
@@ -665,6 +789,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_h_mg += mobility_rook_bonus_mg[__builtin_popcountll(mR_ray & h_mobility_area)];
 		eval.mobility_h_eg += mobility_rook_bonus_eg[__builtin_popcountll(mR_ray & h_mobility_area)];
+		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mR_ray & h_mobility_area), eval.mobility_h_mg);
+		eval.psqt_h_mg += (stm) ? rook_psqt_mg_flip[in_R] : rook_psqt_mg[in_R];
+		eval.psqt_h_eg += (stm) ? rook_psqt_eg_flip[in_R] : rook_psqt_eg[in_R];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_R, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		//if (__builtin_popcountll(mR_q))
 			//move_count += __builtin_popcountll(mR_q);
@@ -691,6 +819,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_f_mg += mobility_queen_bonus_mg[__builtin_popcountll(mQ_ray & f_mobility_area)];
 		eval.mobility_f_eg += mobility_queen_bonus_eg[__builtin_popcountll(mQ_ray & f_mobility_area)];
+		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mQ_ray & f_mobility_area), eval.mobility_f_mg);
+		eval.psqt_f_mg += (stm) ? queen_psqt_mg[in_Q] : queen_psqt_mg_flip[in_Q];
+		eval.psqt_f_eg += (stm) ? queen_psqt_eg[in_Q] : queen_psqt_eg_flip[in_Q];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_Q, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		if (__builtin_popcountll(mQ_q))
 			move_count += __builtin_popcountll(mQ_q);
@@ -713,6 +845,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		eval.mobility_h_mg += mobility_queen_bonus_mg[__builtin_popcountll(mQ_ray & h_mobility_area)];
 		eval.mobility_h_eg += mobility_queen_bonus_eg[__builtin_popcountll(mQ_ray & h_mobility_area)];
+		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mQ_ray & h_mobility_area), eval.mobility_h_mg);
+		eval.psqt_h_mg += (stm) ? queen_psqt_mg_flip[in_Q] : queen_psqt_mg[in_Q];
+		eval.psqt_h_eg += (stm) ? queen_psqt_eg_flip[in_Q] : queen_psqt_eg[in_Q];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_Q, eval.psqt_f_mg, eval.psqt_h_mg);
 
 		//if (__builtin_popcountll(mQ_q))
 			//move_count += __builtin_popcountll(mQ_q);
@@ -722,12 +858,20 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 	U64 mK_q;
 	//fr_KING
+	eval.psqt_f_mg += (stm) ? king_psqt_mg[f_king] : king_psqt_mg_flip[f_king];
+	eval.psqt_f_eg += (stm) ? king_psqt_eg[f_king] : king_psqt_eg_flip[f_king];
+	//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", f_king, eval.psqt_f_mg, eval.psqt_h_mg);
+
 	mK_q = movesKing[f_king] & ~fr[6] & ~ho[7];
 
 	if (__builtin_popcountll(mK_q))
 			move_count += __builtin_popcountll(mK_q);
 
 	//ho_KING
+	eval.psqt_h_mg += (stm) ? king_psqt_mg_flip[h_king] : king_psqt_mg[h_king];
+	eval.psqt_h_eg += (stm) ? king_psqt_eg_flip[h_king] : king_psqt_eg[h_king];
+		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", h_king, eval.psqt_f_mg, eval.psqt_h_mg);
+
 	mK_q = movesKing[h_king] & ~ho[6] & ~fr[7];
 
 	if (__builtin_popcountll(mK_q))
