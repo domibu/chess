@@ -44,8 +44,9 @@ int mobility_queen_bonus_eg[28] = {
 
 
 int knight_psqt_mg_flip[64];
-int knight_psqt_mg[64] = {
-	-201,-83,-56,-26,-26,-56,-83,-201
+int knight_psqt_mg[64];
+int knight_psqt_mg_org[64] = {
+	-201,-83,-56,-26,-26,-56,-83,-201,
 	-67,-27,4,37,37,4,-27,-67,
 	-9,22,58,53,53,58,22,-9,
 	-34,13,44,51,51,44,13,-34,
@@ -55,8 +56,22 @@ int knight_psqt_mg[64] = {
 	-175,-92,-74,-73,-73,-74,-92,-175
 };
 
+int knight_psqt_eg_flip[64];
+int knight_psqt_eg[64];
+int knight_psqt_eg_org[64] = {
+	-96,-65,-49,-21,-21,-49,-65,-96,
+	-67,-54,-18,8,8,-18,-54,-67,
+	-40,-27,-8,29,29,-8,-27,-40,
+	-35,-2,13,28,28,13,-2,-35,
+	-45,-16,9,39,39,9,-16,-45,
+	-51,-44,-16,17,17,-16,-44,-51,
+	-69,-50,-51,12,12,-51,-50,-69,
+	-100,-88,-56,-17,-17,-56,-88,-100
+};
+
 int bishop_psqt_mg_flip[64];
-int bishop_psqt_mg[64] = {
+int bishop_psqt_mg[64];
+int bishop_psqt_mg_org[64] = {
 	-48,1,-14,-23,-23,-14,1,-48,
 	-17,-14,5,0,0,5,-14,-17,
 	-16,6,1,11,11,1,6,-16,
@@ -67,8 +82,22 @@ int bishop_psqt_mg[64] = {
 	-53,-5,-8,-23,-23,-8,-5,-53
 };
 
+int bishop_psqt_eg_flip[64];
+int bishop_psqt_eg[64];
+int bishop_psqt_eg_org[64] = {
+	-57,-30,-37,-12,-12,-37,-30,-57,
+	-37,-13,-17,1,1,-17,-13,-37,
+	-16,-1,-2,10,10,-2,-1,-16,
+	-20,-6,0,17,17,0,-6,-20,
+	-17,-1,-14,15,15,-14,-1,-17,
+	-30,6,4,6,6,4,6,-30,
+	-31,-20,-1,1,1,-1,-20,-31,
+	-46,-42,-37,-24,-46,-42,-37,-24
+};
+
 int rook_psqt_mg_flip[64];
-int rook_psqt_mg[64] = {
+int rook_psqt_mg[64];
+int rook_psqt_mg_org[64] = {
 	-17,-19,-1,9,9,-1,-19,-17,
 	-2,12,16,18,18,16,12,-2,
 	-22,-2,6,12,12,6,-2,-22,
@@ -80,8 +109,22 @@ int rook_psqt_mg[64] = {
 
 };
 
+int rook_psqt_eg_flip[64];
+int rook_psqt_eg[64];
+int rook_psqt_eg_org[64] = {
+	-9,-13,-10,-9,-9,-10,-13,-9,
+	-12,-9,-1,-2,-2,-1,-9,
+	6,-8,-2,-6,-6,-2,-8,6,
+	-6,1,-9,7,7,-9,1,-6,
+	-5,8,7,-6,-6,7,8,-5,
+	6,1,-7,10,10,-7,1,6,
+	4,5,20,-5,-5,20,5,4,
+	18,0,19,13,13,19,0,18
+};
+
 int queen_psqt_mg_flip[64];
-int queen_psqt_mg[64] = {
+int queen_psqt_mg[64];
+int queen_psqt_mg_org[64] = {
 	-2,-2,1,-2,-2,1,-2,-2,
 	-5,6,10,8,8,10,6,-5,
 	-4,10,6,8,8,6,10,-4,
@@ -92,8 +135,22 @@ int queen_psqt_mg[64] = {
 	3,-5,-5,4,4,-5,-5,3
 };
 
+int queen_psqt_eg_flip[64];
+int queen_psqt_eg[64];
+int queen_psqt_eg_org[64] = {
+	-69,-57,-47,-26,-26,-47,-57,-69,
+	-55,-31,-22,-4,-4,-22,-31,-55,
+	-39,-18,-9,3,3,-9,-18,-39,
+	-23,-3,13,24,24,13,-3,-23,
+	-29,-6,9,21,21,9,-6,-29,
+	-38,-18,-12,1,1,-12,-18,-38,
+	-50,-27,-24,-8,-8,-24,-27,-50,
+	-75,-52,-43,-36,-36,-43,-53,-75
+};
+
 int king_psqt_mg_flip[64];
-int king_psqt_mg[64] = {
+int king_psqt_mg[64];
+int king_psqt_mg_org[64] = {
 	59,89,45,-1,-1,45,89,59,
 	88,120,65,33,33,65,120,88,
 	123,145,81,31,31,81,145,123,
@@ -104,8 +161,22 @@ int king_psqt_mg[64] = {
 	271,327,271,198,198,271,327,271
 };
 
+int king_psqt_eg_flip[64];
+int king_psqt_eg[64];
+int king_psqt_eg_org[64] = {
+	1,45,85,76,76,85,45,1,
+	53,100,133,135,135,133,100,53,
+	88,130,169,175,175,169,130,88,
+	103,156,172,172,172,172,156,103,
+	96,166,199,199,199,199,166,96,
+	92,172,184,191,191,184,172,92,
+	47,121,116,131,131,116,121,47,
+	11,59,73,78,78,73,59,11
+};
+
 int pawn_psqt_mg_flip[64];
-int pawn_psqt_mg[64] = {
+int pawn_psqt_mg[64];
+int pawn_psqt_mg_org[64] = {
 	0,0,0,0,0,0,0,0,
 	-7,7,-3,-13,5,-16,10,-8,
 	5,-12,-7,22,-8,-5,-15,-8,
@@ -117,7 +188,8 @@ int pawn_psqt_mg[64] = {
 };
 
 int pawn_psqt_eg_flip[64];
-int pawn_psqt_eg[64] = {
+int pawn_psqt_eg[64];
+int pawn_psqt_eg_org[64] = {
 	0,0,0,0,0,0,0,0,
 	0,-11,12,21,25,19,4,7,
 	28,20,21,28,30,7,6,13,
@@ -128,7 +200,7 @@ int pawn_psqt_eg[64] = {
 	0,0,0,0,0,0,0,0
 };
 
-void flip_psqt_val(int *in, int *out)
+void flip_vertical(int *in, int *out)
 {
 	int x, y; 
 	for (int i=0; i < 64;i++)
@@ -139,16 +211,57 @@ void flip_psqt_val(int *in, int *out)
 	}
 }
 
-void init_flipped_psqt()
+void flip_horizontal(int *in, int *out)
 {
-	flip_psqt_val(pawn_psqt_mg, pawn_psqt_mg_flip);
-	flip_psqt_val(knight_psqt_mg, knight_psqt_mg_flip);
-	flip_psqt_val(bishop_psqt_mg, bishop_psqt_mg_flip);
-	flip_psqt_val(rook_psqt_mg, rook_psqt_mg_flip);
-	flip_psqt_val(queen_psqt_mg, queen_psqt_mg_flip);
-	flip_psqt_val(king_psqt_mg, king_psqt_mg_flip);
+	int x, y; 
+	for (int i=0; i < 64;i++)
+	{
+		x = i % 8;
+		y = i / 8;
+		out[y * 8 + 7 - x] = in[i];
+	}
+}
 
-	flip_psqt_val(pawn_psqt_eg, pawn_psqt_eg_flip);
+void init_psqt()
+{
+	flip_horizontal(pawn_psqt_mg_org, pawn_psqt_mg_flip);
+	flip_vertical(pawn_psqt_mg_flip, pawn_psqt_mg);
+
+	flip_horizontal(knight_psqt_mg_org, knight_psqt_mg_flip);
+	flip_vertical(knight_psqt_mg_flip, knight_psqt_mg);
+
+	flip_horizontal(bishop_psqt_mg_org, bishop_psqt_mg_flip);
+	flip_vertical(bishop_psqt_mg_flip, bishop_psqt_mg);
+
+	flip_horizontal(rook_psqt_mg_org, rook_psqt_mg_flip);
+	flip_vertical(rook_psqt_mg_flip, rook_psqt_mg);
+
+	flip_horizontal(queen_psqt_mg_org, queen_psqt_mg_flip);
+	flip_vertical(queen_psqt_mg_flip, queen_psqt_mg);
+
+	flip_horizontal(king_psqt_mg_org, king_psqt_mg_flip);
+	flip_vertical(king_psqt_mg_flip, king_psqt_mg);
+
+	flip_horizontal(pawn_psqt_eg_org, pawn_psqt_eg_flip);
+	flip_vertical(pawn_psqt_eg_flip, pawn_psqt_eg);
+
+	flip_horizontal(pawn_psqt_eg_org, pawn_psqt_eg_flip);
+	flip_vertical(pawn_psqt_eg_flip, pawn_psqt_eg);
+
+	flip_horizontal(knight_psqt_eg_org, knight_psqt_eg);
+	flip_vertical(knight_psqt_eg, knight_psqt_eg_flip);
+
+	flip_horizontal(bishop_psqt_eg_org, bishop_psqt_eg);
+	flip_vertical(bishop_psqt_eg, bishop_psqt_eg_flip);
+
+	flip_horizontal(rook_psqt_eg_org, rook_psqt_eg);
+	flip_vertical(rook_psqt_eg, rook_psqt_eg_flip);
+
+	flip_horizontal(queen_psqt_eg_org, queen_psqt_eg);
+	flip_vertical(queen_psqt_eg, queen_psqt_eg_flip);
+
+	flip_horizontal(king_psqt_eg_org, king_psqt_eg);
+	flip_vertical(king_psqt_eg, king_psqt_eg_flip);
 }
 
 eval_score init_eval()
@@ -626,7 +739,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	
 		eval.psqt_f_mg += (stm) ? pawn_psqt_mg[in] : pawn_psqt_mg_flip[in];
 		eval.psqt_f_eg += (stm) ? pawn_psqt_eg[in] : pawn_psqt_eg_flip[in];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		fr[5] &= ~(1LL << in);
 	}
@@ -637,7 +750,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	
 		eval.psqt_h_mg += (stm) ? pawn_psqt_mg_flip[in] : pawn_psqt_mg[in];
 		eval.psqt_h_eg += (stm) ? pawn_psqt_eg_flip[in] : pawn_psqt_eg[in];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		ho[5] &= ~(1LL << in);
 	}
@@ -661,7 +774,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mN_q & f_mobility_area), eval.mobility_f_mg);
 		eval.psqt_f_mg += (stm) ? knight_psqt_mg[in_N] : knight_psqt_mg_flip[in_N];
 		eval.psqt_f_eg += (stm) ? knight_psqt_eg[in_N] : knight_psqt_eg_flip[in_N];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_N, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_N, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		if (__builtin_popcountll(mN_q))
 			move_count += __builtin_popcountll(mN_q);
@@ -684,7 +797,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mN_q & h_mobility_area), eval.mobility_h_mg);
 		eval.psqt_h_mg += (stm) ? knight_psqt_mg_flip[in_N] : knight_psqt_mg[in_N];
 		eval.psqt_h_eg += (stm) ? knight_psqt_eg_flip[in_N] : knight_psqt_eg[in_N];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_N, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_N, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		//if (__builtin_popcountll(mN_q))
 			//move_count += __builtin_popcountll(mN_q);
@@ -713,7 +826,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mB_ray & f_mobility_area), eval.mobility_f_mg);
 		eval.psqt_f_mg += (stm) ? bishop_psqt_mg[in_B] : bishop_psqt_mg_flip[in_B];
 		eval.psqt_f_eg += (stm) ? bishop_psqt_eg[in_B] : bishop_psqt_eg_flip[in_B];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_B, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_B, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		if (__builtin_popcountll(mB_q))
 			move_count += __builtin_popcountll(mB_q);
@@ -738,7 +851,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mB_ray & h_mobility_area), eval.mobility_h_mg);
 		eval.psqt_h_mg += (stm) ? bishop_psqt_mg_flip[in_B] : bishop_psqt_mg[in_B];
 		eval.psqt_h_eg += (stm) ? bishop_psqt_eg_flip[in_B] : bishop_psqt_eg[in_B];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_B, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_B, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		//if (__builtin_popcountll(mB_q))
 			//move_count += __builtin_popcountll(mB_q);
@@ -767,7 +880,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mR_ray & f_mobility_area), eval.mobility_f_mg);
 		eval.psqt_f_mg += (stm) ? rook_psqt_mg[in_R] : rook_psqt_mg_flip[in_R];
 		eval.psqt_f_eg += (stm) ? rook_psqt_eg[in_R] : rook_psqt_eg_flip[in_R];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_R, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_R, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		if (__builtin_popcountll(mR_q))
 			move_count += __builtin_popcountll(mR_q);
@@ -792,7 +905,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mR_ray & h_mobility_area), eval.mobility_h_mg);
 		eval.psqt_h_mg += (stm) ? rook_psqt_mg_flip[in_R] : rook_psqt_mg[in_R];
 		eval.psqt_h_eg += (stm) ? rook_psqt_eg_flip[in_R] : rook_psqt_eg[in_R];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_R, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_R, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		//if (__builtin_popcountll(mR_q))
 			//move_count += __builtin_popcountll(mR_q);
@@ -822,7 +935,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_f_mg=%4d\n", __builtin_popcountll(mQ_ray & f_mobility_area), eval.mobility_f_mg);
 		eval.psqt_f_mg += (stm) ? queen_psqt_mg[in_Q] : queen_psqt_mg_flip[in_Q];
 		eval.psqt_f_eg += (stm) ? queen_psqt_eg[in_Q] : queen_psqt_eg_flip[in_Q];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_Q, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_Q, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		if (__builtin_popcountll(mQ_q))
 			move_count += __builtin_popcountll(mQ_q);
@@ -848,7 +961,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 		//Print(1, "%2u mobility_h_mg=%4d\n", __builtin_popcountll(mQ_ray & h_mobility_area), eval.mobility_h_mg);
 		eval.psqt_h_mg += (stm) ? queen_psqt_mg_flip[in_Q] : queen_psqt_mg[in_Q];
 		eval.psqt_h_eg += (stm) ? queen_psqt_eg_flip[in_Q] : queen_psqt_eg[in_Q];
-		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", in_Q, eval.psqt_f_mg, eval.psqt_h_mg);
+		//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", in_Q, eval.psqt_f_eg, eval.psqt_h_eg);
 
 		//if (__builtin_popcountll(mQ_q))
 			//move_count += __builtin_popcountll(mQ_q);
@@ -860,7 +973,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	//fr_KING
 	eval.psqt_f_mg += (stm) ? king_psqt_mg[f_king] : king_psqt_mg_flip[f_king];
 	eval.psqt_f_eg += (stm) ? king_psqt_eg[f_king] : king_psqt_eg_flip[f_king];
-	//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", f_king, eval.psqt_f_mg, eval.psqt_h_mg);
+	//Print(1, "%2d psqt_f_eg=%4d, psqt_h_eg=%4d\n", f_king, eval.psqt_f_eg, eval.psqt_h_eg);
 
 	mK_q = movesKing[f_king] & ~fr[6] & ~ho[7];
 
@@ -888,8 +1001,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 	// 											+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg);
 	// Print(1, "material_mg: %4d %4d\n", eval.material_f_mg, eval.material_h_mg);
 	// Print(1, "psqt_mg:     %4d %4d\n", eval.psqt_f_mg, eval.psqt_h_mg);
+	// Print(1, "psqt_eg:     %4d %4d\n", eval.psqt_f_eg, eval.psqt_h_eg);
 	// Print(1, "mobility_mg: %4d %4d\n", eval.mobility_f_mg, eval.mobility_h_mg);
-	// Print(1, "pawns_mg:    %4d %4d\n", eval.pawns_f_mg, eval.pawns_h_mg);
+	// Print(1, "mobility_eg: %4d %4d\n", eval.mobility_f_eg, eval.mobility_h_eg);
+	//Print(1, "pawns_mg:    %4d %4d\n", eval.pawns_f_mg, eval.pawns_h_mg);
 
 	return eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
 					+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg;
