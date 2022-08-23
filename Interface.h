@@ -23,6 +23,7 @@ void square(int index, char *sq);
 void square2(char *sq, int *index);
 
 long int LargestPrime(long int n);
+int CreateLogDirectory(char dir_name);
 int InitializeLogId(char *log_path);
 void Print(int vb, char *fmt, ...);
 

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include "Interface.h"
 
 void objtoarr(board_1 *arg, board *to)
@@ -383,7 +385,7 @@ int InitializeLogId(char *log_path)
 
 	for (log_id=0; log_id<1000; log_id++)
 	{
-		sprintf(log_filename, "%s/log.%03d", log_path, log_id);
+		sprintf(log_filename, "./%s/log.%03d", log_path, log_id);
 		log_file = fopen(log_filename, "r");
 		if (!log_file)
 			break;
@@ -392,6 +394,33 @@ int InitializeLogId(char *log_path)
 	free(log_filename);
 
 	return log_id;
+}
+
+int CreateLogDirectory(char dir_name)
+{
+    errno = 0;
+
+    int ret = mkdir("logs", S_IRWXU);
+    if (ret == -1) {
+        switch (errno) {
+            case EACCES :
+                printf("the parent directory does not allow write\n");
+				break;
+
+            case EEXIST:
+                printf("pathname already exists\n");
+				return 0;
+
+            case ENAMETOOLONG:
+                printf("pathname is too long\n");
+				break;
+				
+            default:
+                perror("mkdir error\n");
+        }
+    }	
+
+	return ret;
 }
 
 void Print(int vb, char *fmt, ...)

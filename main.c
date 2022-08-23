@@ -151,8 +151,18 @@ int main ( int argc, char *argv[])
 	t_manager.lag = 10;
 	t_manager.est_moves_game = 16;
 
-	sprintf(buff, "%s/log.%03d", LOG_PATH, InitializeLogId(LOG_PATH));
+	if (CreateLogDirectory(LOG_RELATIVE_PATH) < 0)
+	{
+		return -1;
+	}
+
+	sprintf(buff, "./%s/log.%03d", LOG_RELATIVE_PATH, InitializeLogId(LOG_RELATIVE_PATH));
 	log_file = fopen(buff, "w");
+	if (log_file == NULL)
+	{
+		perror("log file not open ");
+		return -1;
+	}
 
 	InitializeMoveDatabase();
 	initZobrist();
