@@ -807,7 +807,7 @@ nLegal_for:
 			}
 
 			Print(1, "quiet count:%3d\n", NML->quietcount);
-			Print(1, "capt count:%4d\n", 255-NML->captcount);
+			Print(1, "capt count:%4d\n", 218-NML->captcount);
 			Print(1, "moves count:%3d\n", NML->quietcount + NML->captcount - 218);
 		}
 		else if ( strstr(buff,"ntestLegal") != 0 )
