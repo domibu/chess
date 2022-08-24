@@ -721,6 +721,8 @@ int evaluate( board arg, int draft, int color, board *rb)
 		oPW = (ho[5] & 0x7F7F7F7F7F7F7F7F) << 9;// & ho_check_grid;
 	}
 
+//pawn eval score
+//
 
 	U64 f_mobility_area = 0LL, h_mobility_area = 0LL;
 
