@@ -35,6 +35,7 @@ char *print_move_details(move *ff);
 char *print_SAN_notation(move *m);
 
 U64 generate_hostile_atackmap(board arg);
+U64 generate_check_grid( board *arg, U64 stm);
 char generate_moves(node_move_list *ZZZ, board arg);
 char gm1(node_move_list *ZZZ, board arg);
 
