@@ -1,6 +1,7 @@
 #ifndef domibudata
 #define domibudata
 
+#define SD_MAX 110
 #define WIN 30000
 #define DRAW_SCORE 0
 
@@ -104,7 +105,7 @@ typedef struct TTentry {
 
 typedef struct line {
   int cmove;
-  move argmove[50]; // 20 je moveMAX
+  move argmove[SD_MAX]; // 20 je moveMAX
 } line;
 
 #endif

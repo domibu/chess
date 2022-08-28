@@ -29,7 +29,6 @@ struct timeval start, end;
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define MEMORY_MAX 2048
 int n=200, memory = 64, score, color;
-#define SD_MAX 50
 int search_depth = SD_MAX;
 int post=1;
 extern int stop;
