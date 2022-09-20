@@ -38,6 +38,30 @@ int mobility_queen_bonus_eg[28] = {
     -48,-30,-7,19,40,55,59,75,78,96,96,100,121,127,131,133,136,141,147,150,151,168,168,171,182,182,192,219
 };
 
+eval_score init_eval()
+{
+	eval_score result;
+
+	result.material_f_eg = 0;
+	result.material_h_eg = 0;
+	result.material_f_mg = 0;
+	result.material_h_mg = 0;
+	result.pawns_f_eg = 0;
+	result.pawns_h_eg = 0;
+	result.pawns_f_mg = 0;
+	result.pawns_h_mg = 0;
+	result.mobility_f_eg = 0;
+	result.mobility_h_eg = 0;
+	result.mobility_f_mg = 0;
+	result.mobility_h_mg = 0;
+	result.psqt_f_eg = 0;
+	result.psqt_h_eg = 0;
+	result.psqt_f_mg = 0;
+	result.psqt_h_mg = 0;
+
+	return result;
+}
+
 int evaluate( board arg, int draft, int color, board *rb)
 {
 	U64 blank = 0LL;
