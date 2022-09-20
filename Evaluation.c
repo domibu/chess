@@ -984,10 +984,9 @@ int evaluate( board arg, int draft, int color, board *rb)
 	eval.psqt_h_mg += (stm) ? king_psqt_mg_flip[h_king] : king_psqt_mg[h_king];
 	eval.psqt_h_eg += (stm) ? king_psqt_eg_flip[h_king] : king_psqt_eg[h_king];
 		//Print(1, "%2d psqt_f_mg=%4d, psqt_h_mg=%4d\n", h_king, eval.psqt_f_mg, eval.psqt_h_mg);
+	//mK_q = movesKing[h_king] & ~ho[6] & ~fr[7];
 
-	mK_q = movesKing[h_king] & ~ho[6] & ~fr[7];
-
-	if (__builtin_popcountll(mK_q))
+	//if (__builtin_popcountll(mK_q))
 			//move_count += __builtin_popcountll(mK_q);
 
 	if (!move_count)
