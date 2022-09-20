@@ -102,8 +102,8 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 	U64 check_grid = ~0LL, ho_check_grid = ~0LL;
 
-	check_grid |= generate_check_grid(&arg, stm);
-	ho_check_grid |= generate_check_grid(&arg, stm ^ (0x0000000000000008 << 11));
+	check_grid &= generate_check_grid(&arg, stm);
+	ho_check_grid &= generate_check_grid(&arg, stm ^ (0x0000000000000008 << 11));
 
 	int f_king, h_king;
 	f_king = __builtin_ffsll(fr[0])-1;
