@@ -167,6 +167,7 @@ int main ( int argc, char *argv[])
 
 	InitializeMoveDatabase();
 	initZobrist();
+	init_flipped_psqt();
 
 	Ncb = NimportFEN(START_FEN);
 	set_zobrist_keys( &Ncb);
