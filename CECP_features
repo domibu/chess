@@ -9,7 +9,7 @@
  sigterm=0
  reuse=1
  analyze=0
- myname="domibuch"
+ myname="db_mob_psqt"
  variants="normal"
  colors=0
  name=0
