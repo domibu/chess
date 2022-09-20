@@ -2,6 +2,7 @@
 #define domibudata
 
 #define WIN 30000
+#define DRAW_SCORE 0
 
 typedef unsigned long long U64;
 
@@ -74,6 +75,7 @@ typedef struct node_move_list {
         unsigned 	undo;
         U64             old_zobrist;
 	move            mdata[256];
+        U64   is_check;
 } node_move_list;
 
 #endif

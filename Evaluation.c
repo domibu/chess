@@ -558,13 +558,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 	if (!move_count)
 	{
 //stand pat
-		int score;
-		if ((fr[0]&ho[7])>0)
-			score = -WIN - 300 - draft;
-		else
-			score = 0;
-
-		return score;	//MATE SCORE
+		return fr[0] & ho[7] ? - WIN + draft : DRAW_SCORE;
 	}
 
 // found_move

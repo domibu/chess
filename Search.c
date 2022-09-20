@@ -86,15 +86,14 @@ int search( board *pos, line *pline, int alpha, int beta, int color, int depth, 
 	}
 
 	old_alpha = alpha;
-	best = -WIN-300;
-	generate_moves(&NML[depth] , *pos);
+	best = generate_moves(&NML[depth] , *pos) ? -WIN : NML[depth].is_check ? -WIN + draft : DRAW_SCORE;
+
 	if (hash_move > 0) sortmoves( &NML[depth], hash_move);
 	quiet = NML[depth].quietcount;
 	capt = NML[depth].captcount;
 
 	it = (capt > 218) ? 218 : 0;
 	limes = (capt > 218) ? capt : quiet;
-
 forpetlja:
 	for (; (it < limes) && (en_state == THINKING); it++  )
 	{

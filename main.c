@@ -86,7 +86,7 @@ void *Thinking(void *void_ptr )
 	{
 		count = 0;
 
-		score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, i, 0);
+		score = search( &Ncb, &Npline, -WIN, +WIN, color, i, 0);
 
 		timer_gettime(timer_id, &curr_tick);
 		double search_time = its.it_value.tv_sec + (double)its.it_value.tv_nsec/1000000000;
@@ -556,7 +556,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			en_state = THINKING;
 			gettimeofday(&start, NULL);
-			score = search( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
+			score = search( &Ncb, &Npline, -WIN, +WIN, color, n, 0);
 			gettimeofday(&end, NULL);
 			en_state = OBSERVING;
 
@@ -574,7 +574,7 @@ int chess_engine_testing(int argc, char *argv)
 
 			en_state = THINKING;
 			gettimeofday(&start, NULL);
-			score = pvs_02( &Ncb, &Npline, -WIN -300, +WIN +300, color, n, 0);
+			score = pvs_02( &Ncb, &Npline, -WIN, +WIN, color, n, 0);
 			gettimeofday(&end, NULL);
 			en_state = OBSERVING;
 

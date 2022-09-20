@@ -55,9 +55,10 @@ U64 gc2(node_move_list *ZZZ, board arg)
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
+	ZZZ->is_check = fr[0] & ho[7];
 
 	//check if king is in CHECK<$1>
-	if (fr[0] & ho[7])
+	if (ZZZ->is_check)
 	{
 		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
@@ -524,9 +525,10 @@ U64 generate_captures(node_move_list *ZZZ, board arg)
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
+	ZZZ->is_check = fr[0] & ho[7];
 
 	//check if king is in CHECK<$1>
-	if (fr[0] & ho[7])
+	if (ZZZ->is_check)
 	{
 		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
@@ -1009,8 +1011,9 @@ char gm1(node_move_list *ZZZ, board arg)
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
+	ZZZ->is_check = fr[0] & ho[7];
 	//check if king is in CHECK<$1>
-	if (fr[0] & ho[7])
+	if (ZZZ->is_check)
 	{
 		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
@@ -1695,8 +1698,10 @@ char generate_moves(node_move_list *ZZZ, board arg)
 	//save (enp, cast, hm, stm) for undo<1$>
 	ZZZ->undo = arg.info;
 	ZZZ->old_zobrist = arg.zobrist;
+	ZZZ->is_check = fr[0] & ho[7];
+
 	//check if king is in CHECK<$1>
-	if (fr[0] & ho[7])
+	if (ZZZ->is_check)
 	{
 		if (stm)	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) << 7 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) << 9 & ho[5];
 		else	in_K = (fr[0] & 0xFEFEFEFEFEFEFEFE) >> 9 & ho[5] | (fr[0] & 0x7F7F7F7F7F7F7F7F) >> 7 & ho[5];
