@@ -97,7 +97,7 @@ void *Thinking(void *void_ptr )
 			if (post)
 			{
 				/////PRINTING THINKING OUTPUT/////////////
-				Print(1, "%2d %7d %6.2f %12llu %s", i, score, search_time*100, count, print_TT_PV( Ncb, i));
+				Print(1, "%2d %7d %7d %6.2f %12llu %s", i, score * color, score, search_time*100, count, print_TT_PV( Ncb, i));
 			}
 			pm = TTfind_move( Ncb.zobrist);
 		}
@@ -561,7 +561,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu %s", n, score, razmisljao*100, count, print_TT_PV( Ncb, n));
+			Print(1, "%2d %7d %6.2f %12llu %s", n, color * score, razmisljao*100, count, print_TT_PV( Ncb, n));
 		}
 		else if (strstr(buff,"pvs02") != NULL)
 		{
@@ -691,7 +691,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "%2d %7d %6.2f %12llu\n", n, score, razmisljao*100, count);
+			Print(1, "%2d %7d %6.2f %12llu\n", n, color*score, razmisljao*100, count);
 		}
 		else if (strstr(buff,"ntestsearch") != NULL)
 		{
@@ -736,7 +736,7 @@ int chess_engine_testing(int argc, char *argv)
 			en_state = OBSERVING;
 
 			razmisljao = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-			Print(1, "score = %7d\n", score);
+			Print(1, "score = %7d\n", color * score);
 		}		
 		else if (strstr(buff,"mdivide") != NULL)
 		{

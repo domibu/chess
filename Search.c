@@ -15,7 +15,7 @@ int stop = 0;
 int Quiesce( board *pos, line *pline, int alpha, int beta, int color, int depth, int draft)
 {
 	int score;
-	int stand_pat = color*evaluate(*pos, draft, color, pos);
+	int stand_pat = evaluate(*pos, draft, color, pos);
 
 	if (depth < QUIESCE_DEPTH)
 	{

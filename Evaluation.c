@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "BitBoardMagic.h"
-
+#include "MoveGeneration.h"
 #include "Evaluation.h"
 #include "Search.h"
 
@@ -560,7 +560,7 @@ int evaluate( board arg, int draft, int color, board *rb)
 //stand pat
 		int score;
 		if ((fr[0]&ho[7])>0)
-			score = color*(-WIN - draft);
+			score = -WIN - 300 - draft;
 		else
 			score = 0;
 
