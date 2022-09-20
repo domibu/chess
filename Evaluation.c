@@ -5,6 +5,10 @@
 #include "Evaluation.h"
 #include "Search.h"
 
+//king, queen, rook, bishop, knight, pawn
+int material_score_mg[6] = {0, 2538, 1276, 825, 781, 124};
+int material_score_eg[6] = {0, 2682, 1380, 915, 854, 206};
+
 int mobility_knight_bonus_mg[9] = {
     -62,-53,-12,-4,3,13,22,28,33
 };
@@ -65,7 +69,7 @@ eval_score init_eval()
 int evaluate( board arg, int draft, int color, board *rb)
 {
 	U64 blank = 0LL;
-	int move_count = 0;
+	int move_count = 0, piece_count = 0;
 	eval_score eval;
 
 	eval = init_eval();
@@ -408,6 +412,14 @@ int evaluate( board arg, int draft, int color, board *rb)
 	U64 f_PE, f_PW, oPE, oPW;
 	U64 f_mP1, f_mP2, f_mPE, f_mPW, f_mENP, f_mP1_prom, f_mPE_prom, f_mPW_prom;
 	//PAWN
+
+	piece_count = __builtin_popcountll(fr[5]);
+	eval.material_f_mg += material_score_mg[5] * piece_count;
+	eval.material_f_eg += material_score_eg[5] * piece_count;
+	piece_count = __builtin_popcountll(ho[5]);
+	eval.material_h_mg += material_score_mg[5] * piece_count;
+	eval.material_h_eg += material_score_eg[5] * piece_count;
+
 	fr[5] &= ~ f_all_pp;
 	ho[5] &= ~ h_all_pp;
 	if (stm)
@@ -447,6 +459,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 	int in_N;
 	U64 mN_q;
 
+	piece_count = __builtin_popcountll(fr[4]);
+	eval.material_f_mg += material_score_mg[4] * piece_count;
+	eval.material_f_eg += material_score_eg[4] * piece_count;
+
 	fr[4] &= ~ f_all_pp;
 	while (__builtin_popcountll(fr[4]))
 	{
@@ -458,6 +474,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		fr[4] &= ~(1LL << in_N);
 	}
+
+	piece_count = __builtin_popcountll(ho[4]);
+	eval.material_h_mg += material_score_mg[4] * piece_count;
+	eval.material_h_eg += material_score_eg[4] * piece_count;
 
 	ho[4] &= ~ h_all_pp;
 	while (__builtin_popcountll(ho[4]))
@@ -474,6 +494,11 @@ int evaluate( board arg, int draft, int color, board *rb)
 	int in_B, in;
 	U64 mB_q;
 	//BISHOP
+
+	piece_count = __builtin_popcountll(fr[3]);
+	eval.material_f_mg += material_score_mg[3] * piece_count;
+	eval.material_f_eg += material_score_eg[3] * piece_count;
+
 	fr[3] &= ~ f_all_pp;
 	while (__builtin_popcountll(fr[3]))
 	{
@@ -487,6 +512,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		fr[3] &= ~(1LL << in_B);
 	}
+
+	piece_count = __builtin_popcountll(ho[3]);
+	eval.material_h_mg += material_score_mg[3] * piece_count;
+	eval.material_h_eg += material_score_eg[3] * piece_count;
 
 	ho[3] &= ~ h_all_pp;
 	while (__builtin_popcountll(ho[3]))
@@ -505,6 +534,11 @@ int evaluate( board arg, int draft, int color, board *rb)
 	int in_R;
 	U64 mR_q;
 	//ROOK
+
+	piece_count = __builtin_popcountll(fr[2]);
+	eval.material_f_mg += material_score_mg[2] * piece_count;
+	eval.material_f_eg += material_score_eg[2] * piece_count;
+
 	fr[2] &= ~ f_all_pp;
 	while (__builtin_popcountll(fr[2]))
 	{
@@ -518,6 +552,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		fr[2] &= ~1LL << in_R;
 	}
+
+	piece_count = __builtin_popcountll(ho[2]);
+	eval.material_h_mg += material_score_mg[2] * piece_count;
+	eval.material_h_eg += material_score_eg[2] * piece_count;
 
 	ho[2] &= ~ h_all_pp;
 	while (__builtin_popcountll(ho[2]))
@@ -536,6 +574,11 @@ int evaluate( board arg, int draft, int color, board *rb)
 	int in_Q;
 	U64 mQ_q;
 	//QUEEN
+
+	piece_count = __builtin_popcountll(fr[1]);
+	eval.material_f_mg += material_score_mg[1] * piece_count;
+	eval.material_f_eg += material_score_eg[1] * piece_count;
+
 	fr[1] &= ~ f_all_pp;
 	while (__builtin_popcountll(fr[1]))
 	{
@@ -550,6 +593,10 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 		fr[1] &= ~1LL << in_Q;
 	}
+
+	piece_count = __builtin_popcountll(ho[1]);
+	eval.material_h_mg += material_score_mg[1] * piece_count;
+	eval.material_h_eg += material_score_eg[1] * piece_count;
 
 	ho[1] &= ~ h_all_pp;
 	while (__builtin_popcountll(ho[1]))
@@ -586,14 +633,14 @@ int evaluate( board arg, int draft, int color, board *rb)
 	}
 
 // found_move
-	// Print(1, "score:         %4d\n", neval(rb) + eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
+	// Print(1, "score:         %4d\n", eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
 	// 											+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg);
 	// Print(1, "material_mg: %4d %4d\n", eval.material_f_mg, eval.material_h_mg);
 	// Print(1, "psqt_mg:     %4d %4d\n", eval.psqt_f_mg, eval.psqt_h_mg);
 	// Print(1, "mobility_mg: %4d %4d\n", eval.mobility_f_mg, eval.mobility_h_mg);
 	// Print(1, "pawns_mg:    %4d %4d\n", eval.pawns_f_mg, eval.pawns_h_mg);
 
-	return neval(rb) + eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
+	return eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
 					+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg;
 }
 
