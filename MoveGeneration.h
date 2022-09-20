@@ -42,8 +42,6 @@ char gm1(node_move_list *ZZZ, board arg);
 U64 generate_captures(node_move_list *ZZZ, board arg);
 U64 gc2(node_move_list *ZZZ, board arg);
 
-int evaluate( board arg, int draft, int color, board *rb);
-
 int do_move(board *b, move m);
 int undo_move(board *b, node_move_list *ml, move m);
 
