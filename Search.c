@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Search.h"
 #include "MoveGeneration.h"
+#include "Evaluation.h"
 #include "TranspositionTable.h"
 
 extern int en_state;

@@ -8,6 +8,7 @@
 #include "Interface.h"
 
 #include "MoveGeneration.h"
+#include "Evaluation.h"
 #include "Search.h"
 #include "TranspositionTable.h"
 // old board_1, move_1, TT structures, for backtesting
