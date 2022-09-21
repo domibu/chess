@@ -1009,6 +1009,12 @@ int evaluate( board arg, int draft, int color, board *rb)
 
 	return eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
 					+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg;
+	int endgame = eval.material_f_eg - eval.material_h_eg + eval.psqt_f_eg - eval.psqt_h_eg 
+					+ eval.mobility_f_eg - eval.mobility_h_eg + eval.pawns_f_eg - eval.pawns_h_eg;
+
+	// Print(1, "npm=%4d phase=%4d\n", npm, phase);
+	count++;
+	return (midgame * phase + endgame * (128 - phase)) / 128;
 }
 
 int neval( board *b)
