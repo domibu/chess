@@ -7,6 +7,8 @@
 #define EVAL_SCORE
 
 typedef struct eval_score {
+    int material_pawn_f;
+    int material_pawn_h;
 	int material_f_mg;
     int material_h_mg;
     int material_f_eg;

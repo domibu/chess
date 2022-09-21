@@ -5,6 +5,8 @@
 #include "Evaluation.h"
 #include "Search.h"
 
+#define NON_PAWN_MAX 15258
+#define NON_PAWN_MIN 3915
 //king, queen, rook, bishop, knight, pawn
 int material_score_mg[6] = {0, 2538, 1276, 825, 781, 124};
 int material_score_eg[6] = {0, 2682, 1380, 915, 854, 206};
@@ -668,10 +670,12 @@ int evaluate( board arg, int draft, int color, board *rb)
 	//PAWN
 
 	piece_count = __builtin_popcountll(fr[5]);
-	eval.material_f_mg += material_score_mg[5] * piece_count;
+	eval.material_pawn_f = material_score_mg[5] * piece_count;
+	eval.material_f_mg += eval.material_pawn_f;
 	eval.material_f_eg += material_score_eg[5] * piece_count;
 	piece_count = __builtin_popcountll(ho[5]);
-	eval.material_h_mg += material_score_mg[5] * piece_count;
+	eval.material_pawn_h = material_score_mg[5] * piece_count;
+	eval.material_h_mg += eval.material_pawn_h;
 	eval.material_h_eg += material_score_eg[5] * piece_count;
 
 	fr[5] &= ~ f_all_pp;
@@ -1005,9 +1009,12 @@ int evaluate( board arg, int draft, int color, board *rb)
 	// Print(1, "psqt_eg:     %4d %4d\n", eval.psqt_f_eg, eval.psqt_h_eg);
 	// Print(1, "mobility_mg: %4d %4d\n", eval.mobility_f_mg, eval.mobility_h_mg);
 	// Print(1, "mobility_eg: %4d %4d\n", eval.mobility_f_eg, eval.mobility_h_eg);
-	//Print(1, "pawns_mg:    %4d %4d\n", eval.pawns_f_mg, eval.pawns_h_mg);
+	int npm = eval.material_f_mg - eval.material_pawn_f + eval.material_h_mg - eval.material_pawn_h;
+	npm = NON_PAWN_MAX > npm ? npm : NON_PAWN_MAX;
+	npm = NON_PAWN_MIN > npm ? NON_PAWN_MIN : npm;
 
-	return eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
+	int phase = (npm - NON_PAWN_MIN) * 128 / (NON_PAWN_MAX - NON_PAWN_MIN);
+	int midgame = eval.material_f_mg - eval.material_h_mg + eval.psqt_f_mg - eval.psqt_h_mg 
 					+ eval.mobility_f_mg - eval.mobility_h_mg + eval.pawns_f_mg - eval.pawns_h_mg;
 	int endgame = eval.material_f_eg - eval.material_h_eg + eval.psqt_f_eg - eval.psqt_h_eg 
 					+ eval.mobility_f_eg - eval.mobility_h_eg + eval.pawns_f_eg - eval.pawns_h_eg;
