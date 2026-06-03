@@ -1,4 +1,4 @@
- ping=0
+ ping=1
  setboard=1
  playother=1
  san=0

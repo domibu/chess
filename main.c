@@ -218,10 +218,21 @@ int chess_engine_communication_protocol()
 
 	while (1)
 	{
-		////////////////////CHECK PING////////////////////////////////
-		read=getline(&buff, &len, stdin);
-		Print(2, "%s", buff);
+        ////////////////////CHECK PING////////////////////////////////
+        read=getline(&buff, &len, stdin);
+        if (read == -1)
+        {
+            break;
+        }
+        Print(2, "%s", buff);
 
+        ////////////////////CHECK PING////////////////////////////////
+        if (sscanf(buff, "ping %d", &ping) == 1)
+        {
+            Print(1, "pong %d\n", ping);
+            continue;
+        }
+		
 		if ( strstr(buff,"new") != NULL )
 		{
 			//	reset history	///////////
