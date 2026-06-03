@@ -2496,23 +2496,26 @@ char *print_SAN_notation(move *m)
 
 char *print_smith_notation(move *m)
 {
-	int piece_type, capt_type, from, dest, count = 0;
-	short d_pa;
-	char promotion, fr[3], dst[3];
-	static char buff[7];
+    unsigned from, dest, promtype;
+    static char buff[7];
 
-	piece_type = *m & 0x0000000000000007;
-	capt_type = (*m >> 3) & 0x0000000000000007;
-	from = (*m >> 6) & 0x000000000000003F;
-	dest = (*m >> 12) & 0x000000000000003F;
-	square( dest, dst);
-	square( from, fr);
+    from = (m >> 6)  & 0x3F;
+    dest = (m >> 12) & 0x3F;
 
-	buff[0] = '\0';
-	if (piece_type == 7 ) 	sprintf(buff, "%s%s%s ", buff, fr, dst);
-	else	sprintf(buff, "%s%s%s ", buff, fr, dst);
+    buff[0] = 'a' + (from & 7);
+    buff[1] = '1' + (from >> 3);
+    buff[2] = 'a' + (dest & 7);
+    buff[3] = '1' + (dest >> 3);
 
-	return buff;
+    if (m & 0x001C0000) {
+        promtype = (m >> 19) & 0x3;
+        buff[4] = "qrbn"[promtype];
+        buff[5] = '\0';
+    } else {
+        buff[4] = '\0';
+    }
+
+    return buff;
 }
 
 char *print_move_details(move *ff)
