@@ -2499,16 +2499,16 @@ char *print_smith_notation(move *m)
     unsigned from, dest, promtype;
     static char buff[7];
 
-    from = (m >> 6)  & 0x3F;
-    dest = (m >> 12) & 0x3F;
+    from = (*m >> 6)  & 0x3F;
+    dest = (*m >> 12) & 0x3F;
 
-    buff[0] = 'a' + (from & 7);
+    buff[0] = 'h' - (from & 7);
     buff[1] = '1' + (from >> 3);
-    buff[2] = 'a' + (dest & 7);
+    buff[2] = 'h' - (dest & 7);
     buff[3] = '1' + (dest >> 3);
 
-    if (m & 0x001C0000) {
-        promtype = (m >> 19) & 0x3;
+    if (*m & 0x001C0000) {
+        promtype = (*m >> 19) & 0x3;
         buff[4] = "qrbn"[promtype];
         buff[5] = '\0';
     } else {
